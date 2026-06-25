@@ -1,12 +1,13 @@
 /**
- * Ollama 로컬 임베딩 클라이언트 (nomic-embed-text, 768차원).
+ * Ollama 로컬 임베딩 클라이언트 (bge-m3, 1024차원).
  * 비용 0 원칙: 외부 API 금지, 전부 localhost:11434.
+ * 모델은 yohan-mcp(get_context 소비측)와 동일한 bge-m3 — 같은 벡터공간이라 검색 정합 보장.
  */
 import { Ollama } from 'ollama'
 import { VECTOR_SIZE } from './collections'
 
 const OLLAMA_HOST = process.env.OLLAMA_HOST ?? 'http://localhost:11434'
-export const EMBED_MODEL = process.env.OLLAMA_EMBED_MODEL ?? 'nomic-embed-text'
+export const EMBED_MODEL = process.env.OLLAMA_EMBED_MODEL ?? 'bge-m3'
 
 let client: Ollama | null = null
 

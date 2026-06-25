@@ -13,10 +13,11 @@ async function main(): Promise<void> {
   const version = await qdrantVersion()
   console.log(`  Qdrant version: ${version}`)
 
-  console.log('▶ 컬렉션 보장(없으면 생성, 768차원 · Cosine)...')
-  const { created, existing } = await ensureAllCollections()
+  console.log('▶ 컬렉션 보장(없으면 생성, 1024차원 · Cosine · 차원 불일치 시 재생성)...')
+  const { created, recreated, kept } = await ensureAllCollections()
   if (created.length > 0) console.log(`  생성됨: ${created.join(', ')}`)
-  if (existing.length > 0) console.log(`  기존 유지: ${existing.join(', ')}`)
+  if (recreated.length > 0) console.log(`  재생성(차원 변경): ${recreated.join(', ')}`)
+  if (kept.length > 0) console.log(`  기존 유지: ${kept.join(', ')}`)
 
   console.log('▶ 현재 상태:')
   for (const def of COLLECTIONS) {

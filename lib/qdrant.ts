@@ -32,18 +32,51 @@ export async function listCollections(): Promise<string[]> {
   return res.collections.map((c) => c.name)
 }
 
-/** 컬렉션 4종을 보장(없는 것만 생성). */
-export async function ensureAllCollections(): Promise<{ created: string[]; existing: string[] }> {
+/** 컬렉션의 벡터 차원 조회. 미존재/조회실패 시 null. */
+async function collectionVectorSize(name: CollectionName): Promise<number | null> {
+  try {
+    const info = await getQdrant().getCollection(name)
+    const vectors = (info as { config?: { params?: { vectors?: unknown } } }).config?.params?.vectors
+    if (vectors && typeof vectors === 'object' && 'size' in vectors) {
+      const size = (vectors as { size?: unknown }).size
+      return typeof size === 'number' ? size : null
+    }
+    return null
+  } catch {
+    return null
+  }
+}
+
+/**
+ * 컬렉션 4종 보장. 없으면 생성, 차원이 VECTOR_SIZE 와 다르면 재생성(자가치유).
+ * 차원 변경(768→1024 등) 시 멱등 마이그레이션. 데이터가 있으면 재생성=삭제이므로 주의.
+ */
+export async function ensureAllCollections(): Promise<{
+  created: string[]
+  recreated: string[]
+  kept: string[]
+}> {
   const qc = getQdrant()
   const existing = await listCollections()
   const created: string[] = []
+  const recreated: string[] = []
+  const kept: string[] = []
   for (const name of COLLECTION_NAMES) {
     if (!existing.includes(name)) {
       await qc.createCollection(name, { vectors: { size: VECTOR_SIZE, distance: DISTANCE } })
       created.push(name)
+      continue
+    }
+    const size = await collectionVectorSize(name)
+    if (size !== null && size !== VECTOR_SIZE) {
+      await qc.deleteCollection(name)
+      await qc.createCollection(name, { vectors: { size: VECTOR_SIZE, distance: DISTANCE } })
+      recreated.push(name)
+    } else {
+      kept.push(name)
     }
   }
-  return { created, existing: existing.filter((n) => (COLLECTION_NAMES as string[]).includes(n)) }
+  return { created, recreated, kept }
 }
 
 /** 컬렉션 재생성(삭제 후 생성) — 관제탑 "초기화" 용도. */

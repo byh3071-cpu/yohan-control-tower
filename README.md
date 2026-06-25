@@ -9,7 +9,7 @@
 
 ```
 [노션 12-DB] --Notion API(읽기)--> [관제탑 3001] --Ollama 임베딩--> [Qdrant 6333]
-                                       (청킹 512/50)                    (4 컬렉션, 768d, Cosine)
+                                       (청킹 512/50)                    (4 컬렉션, 1024d, Cosine)
 ```
 
 ---
@@ -36,8 +36,8 @@
 ```powershell
 winget install Ollama.Ollama      # 또는 https://ollama.com/download 에서 설치
 # 새 터미널에서:
-ollama pull nomic-embed-text       # 768차원, ~274MB, 4060Ti 8GB 충분
-ollama list                        # nomic-embed-text 보이면 OK
+ollama pull bge-m3                 # 1024차원, ~1.2GB, 한국어 강함, 4060Ti 8GB 충분
+ollama list                        # bge-m3 보이면 OK
 ```
 
 Ollama 설치 후 서버는 자동으로 `localhost:11434` 에서 뜬다.
@@ -81,7 +81,7 @@ npm run dev                 # http://localhost:3001
 |---|---|---|
 | 1 | Qdrant localhost:6333 응답 | 🟢 통과 |
 | 2 | 컬렉션 4개 생성 | 🟢 통과 |
-| 3 | nomic-embed-text 768차원 | ⏳ Ollama 설치 후 |
+| 3 | bge-m3 1024차원 | ⏳ Ollama 설치 후 |
 | 4 | localhost:3001 대시보드 렌더 | 🟢 통과 |
 | 5 | AI 사전 인제스트(버튼) | ⏳ Ollama+토큰 후 |
 | 6 | "온톨로지와 비슷한 개념" 검색 ≥3 | ⏳ 인제스트 후 |
@@ -106,10 +106,10 @@ yohan-control-tower/
 │       └── ingest/<slug>/route.ts  # 12 소스 + all(Tier1)
 ├── lib/
 │   ├── types.ts                 # 공용 타입(any 금지)
-│   ├── collections.ts           # 4 컬렉션 정의(768/Cosine)
+│   ├── collections.ts           # 4 컬렉션 정의(1024/Cosine)
 │   ├── sources.ts               # 12 소스 레지스트리(UI·라우트 공용 SoT)
 │   ├── qdrant.ts                # Qdrant 클라이언트(멱등 pointId)
-│   ├── ollama.ts                # 임베딩(768 검증)
+│   ├── ollama.ts                # 임베딩(1024 검증)
 │   ├── notion.ts                # v5 dataSources.query + 블록 직렬화
 │   ├── chunking.ts              # 512토큰/50오버랩/최소50병합
 │   ├── producers.ts             # 소스별 텍스트 구성

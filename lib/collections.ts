@@ -4,8 +4,8 @@
  */
 import type { CollectionName, SourceDb } from './types'
 
-/** nomic-embed-text 기본 출력 차원. */
-export const VECTOR_SIZE = 768
+/** bge-m3 출력 차원(한국어 검색 품질 우선 — yohan-mcp와 동일 모델로 통일). */
+export const VECTOR_SIZE = 1024
 
 /** 거리 측정. Qdrant enum 문자열. */
 export const DISTANCE = 'Cosine' as const
