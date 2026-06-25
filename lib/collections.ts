@@ -1,6 +1,6 @@
 /**
  * Qdrant 컬렉션 4종 정의 (P0 단일 SoT 스펙 기준).
- * 모두 768차원(nomic-embed-text) · Cosine 거리.
+ * 모두 1024차원(bge-m3) · Cosine 거리.
  */
 import type { CollectionName, SourceDb } from './types'
 
