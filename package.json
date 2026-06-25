@@ -3,13 +3,18 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 3001",
     "build": "next build",
-    "start": "next start",
-    "lint": "eslint"
+    "start": "next start -p 3001",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "init:collections": "tsx scripts/init-collections.ts"
   },
   "dependencies": {
+    "@notionhq/client": "^5.22.0",
+    "@qdrant/js-client-rest": "^1.18.0",
     "next": "16.2.9",
+    "ollama": "^0.6.3",
     "react": "19.2.4",
     "react-dom": "19.2.4"
   },
@@ -21,6 +26,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.9",
     "tailwindcss": "^4",
+    "tsx": "^4.22.4",
     "typescript": "^5"
   }
 }
