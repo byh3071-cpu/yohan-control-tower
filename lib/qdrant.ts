@@ -93,6 +93,9 @@ export async function upsertPoints(name: CollectionName, points: QdrantPoint[]):
   const BATCH = 64
   for (let i = 0; i < points.length; i += BATCH) {
     // Qdrant 클라이언트는 payload 를 Record<string, unknown> 로 기대 — 경계에서만 캐스트.
+    // 송신 방향: p.payload 는 이미 PointPayload 로 정적 보장(QdrantPoint.payload) → 런타임
+    // 가드는 부적절. PointPayload 에 인덱스 시그니처가 없어 widening 에 unknown 경유가 필수
+    // (단일 캐스트는 TS2352). 그대로 유지.
     const batch = points.slice(i, i + BATCH).map((p) => ({
       id: p.id,
       vector: p.vector,
@@ -113,6 +116,22 @@ export async function countPoints(name: CollectionName): Promise<number> {
   }
 }
 
+/**
+ * Qdrant 가 돌려준 payload(외부 경계, 정적 타입 미상)가 PointPayload 인지 런타임 검증.
+ * 우리가 upsert 하는 코어 필드(문자열)만 확인 — 합치면 안전하게 narrow.
+ * (선택 필드까지 강제하면 정상 payload 를 떨굴 위험이 있어 코어만 검사.)
+ */
+function isPointPayload(v: unknown): v is PointPayload {
+  if (v === null || typeof v !== 'object') return false
+  const p = v as Record<string, unknown>
+  return (
+    typeof p.source_db === 'string' &&
+    typeof p.notion_page_id === 'string' &&
+    typeof p.title === 'string' &&
+    typeof p.text === 'string'
+  )
+}
+
 /** 벡터 유사도 검색. */
 export async function searchCollection(
   name: CollectionName,
@@ -123,7 +142,8 @@ export async function searchCollection(
   return res.map((r) => ({
     id: r.id,
     score: r.score,
-    payload: (r.payload ?? {}) as unknown as PointPayload,
+    // 정상 payload 면 가드로 narrow, 비정상/누락이면 기존과 동일하게 빈 객체 폴백.
+    payload: isPointPayload(r.payload) ? r.payload : ({} as PointPayload),
   }))
 }
 
