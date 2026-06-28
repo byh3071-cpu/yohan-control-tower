@@ -82,11 +82,29 @@ function extractTitle(props: PageObjectResponse['properties']): string {
   return '(제목 없음)'
 }
 
-/** 블록 1개 → 평문(마크다운 약식). 공통 rich_text 형태를 컨트롤된 캐스트로 추출. */
+/**
+ * 블록 콘텐츠 홀더(`block[type]`)에서 rich_text 배열만 런타임 검증해 추출.
+ * 노션 블록 union 을 동적 키로 인덱싱하는 자리라 정적 타입이 닿지 않음 →
+ * 캐스트로 단언하는 대신 실제 형태(rich_text: {plain_text:string}[])를 확인하고,
+ * 아니면 undefined(=빈 텍스트). 잘못된 형태여도 throw 없이 기존처럼 건너뛴다.
+ */
+function richTextItemsOf(holder: unknown): RichTextItem[] | undefined {
+  if (holder === null || typeof holder !== 'object') return undefined
+  const rt = (holder as { rich_text?: unknown }).rich_text
+  if (!Array.isArray(rt)) return undefined
+  for (const item of rt) {
+    if (item === null || typeof item !== 'object') return undefined
+    if (typeof (item as { plain_text?: unknown }).plain_text !== 'string') return undefined
+  }
+  return rt as RichTextItem[]
+}
+
+/** 블록 1개 → 평문(마크다운 약식). 공통 rich_text 형태를 런타임 검증으로 추출. */
 function blockText(block: BlockObjectResponse): string {
   const type = block.type
-  const holder = (block as unknown as Record<string, { rich_text?: RichTextItem[] } | undefined>)[type]
-  const content = rich(holder?.rich_text)
+  // 동적 키 인덱싱(블록 union 의 type 별 콘텐츠 키) — 결과는 가드로 검증.
+  const holder = (block as Record<string, unknown>)[type]
+  const content = rich(richTextItemsOf(holder))
   if (!content) return ''
   switch (type) {
     case 'heading_1':
@@ -129,12 +147,27 @@ async function pageBodyText(blockId: string, depth = 0): Promise<string> {
   return lines.join('\n')
 }
 
+/**
+ * databases.retrieve 응답에서 첫 data source id 를 런타임 검증으로 추출.
+ * v5 응답에 data_sources 가 SDK 정적 타입에 없어 캐스트로 단언하던 자리 →
+ * data_sources 가 {id:string}[] 형태인지 확인하고 아니면 undefined.
+ */
+function firstDataSourceId(db: unknown): string | undefined {
+  if (db === null || typeof db !== 'object') return undefined
+  const sources = (db as { data_sources?: unknown }).data_sources
+  if (!Array.isArray(sources) || sources.length === 0) return undefined
+  const first = sources[0]
+  if (first === null || typeof first !== 'object') return undefined
+  const id = (first as { id?: unknown }).id
+  return typeof id === 'string' ? id : undefined
+}
+
 /** database_id → 첫 번째 data source id (v5). 실패 시 입력값을 그대로 폴백. */
 async function resolveDataSourceId(databaseId: string): Promise<string> {
   try {
     const db = await getNotion().databases.retrieve({ database_id: databaseId })
-    const sources = (db as unknown as { data_sources?: Array<{ id: string }> }).data_sources
-    if (sources && sources.length > 0) return sources[0].id
+    const id = firstDataSourceId(db)
+    if (id) return id
   } catch {
     // 폴백: databaseId 자체가 data source id 일 수 있음
   }
