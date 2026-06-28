@@ -15,7 +15,8 @@ export async function POST(req: Request): Promise<Response> {
     }
     const collection = body.collection
     const query = body.query?.trim()
-    const topK = body.topK ?? 5
+    // topK 검증: 음수·0·과대값(예 10000) 무방비 전달 방지 — 1~100 클램프
+    const topK = Math.max(1, Math.min(100, Number(body.topK) || 5))
 
     if (!collection || !query) {
       return Response.json({ error: 'collection·query 는 필수입니다' }, { status: 400 })

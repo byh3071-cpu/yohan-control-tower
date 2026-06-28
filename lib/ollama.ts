@@ -16,7 +16,7 @@ function getOllama(): Ollama {
   return client
 }
 
-/** 단일 텍스트 → 768차원 임베딩. 차원 불일치 시 모델 오설정으로 보고 throw. */
+/** 단일 텍스트 → 1024차원 임베딩. 차원 불일치 시 모델 오설정으로 보고 throw. */
 export async function embed(text: string): Promise<number[]> {
   const res = await getOllama().embeddings({ model: EMBED_MODEL, prompt: text })
   const v = res.embedding
