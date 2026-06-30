@@ -41,7 +41,7 @@ export const SOURCES: SourceConfig[] = [
   // ── Tier 3 ──
   { slug: 'execution-log', source: 'execution_log', collection: 'execution_history', tier: 3, label: 'EXEC LOG', kind: 'database', notionId: 'b495b7091df84a1a96bb98a605ff09ae', envVar: 'NOTION_EXECUTION_LOG_DB_ID', expected: 115 },
   { slug: 'retrospect', source: 'retrospect', collection: 'execution_history', tier: 3, label: 'RETROSPECT', kind: 'database', notionId: '7a4f88d644d04b19b9cfde0c8bcf1c5f', envVar: 'NOTION_RETROSPECT_DB_ID', expected: 50 },
-  { slug: 'resource', source: 'resource', collection: 'semantic_cache', tier: 3, label: 'RESOURCE', kind: 'database', notionId: 'c6d7e376f19b4fadb5040673118721c7', envVar: 'NOTION_RESOURCE_DB_ID', expected: 50 },
+  { slug: 'resource', source: 'resource', collection: 'semantic_cache', tier: 3, label: 'RESOURCE', kind: 'database', notionId: 'ad9393ca0d324f10b27e4902106fa9b8', envVar: 'NOTION_RESOURCE_DB_ID', expected: 50 },
 ]
 
 export function getSource(slug: string): SourceConfig | undefined {
