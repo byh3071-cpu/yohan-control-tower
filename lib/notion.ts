@@ -99,11 +99,36 @@ function richTextItemsOf(holder: unknown): RichTextItem[] | undefined {
   return rt as RichTextItem[]
 }
 
+/**
+ * 표 행 홀더(`block.table_row`)에서 cells(2차원 rich_text 배열)를 런타임 검증해 추출.
+ * cells: RichTextItem[][] 구조라 richTextItemsOf 의 `.rich_text` 키 검사를 통과 못 함 →
+ * 셀 배열을 직접 검증한다. 형태가 다르면 undefined(=표 행 아님).
+ */
+function tableRowCellsOf(holder: unknown): RichTextItem[][] | undefined {
+  if (holder === null || typeof holder !== 'object') return undefined
+  const cells = (holder as { cells?: unknown }).cells
+  if (!Array.isArray(cells)) return undefined
+  for (const cell of cells) {
+    if (!Array.isArray(cell)) return undefined
+    for (const item of cell) {
+      if (item === null || typeof item !== 'object') return undefined
+      if (typeof (item as { plain_text?: unknown }).plain_text !== 'string') return undefined
+    }
+  }
+  return cells as RichTextItem[][]
+}
+
 /** 블록 1개 → 평문(마크다운 약식). 공통 rich_text 형태를 런타임 검증으로 추출. */
 function blockText(block: BlockObjectResponse): string {
   const type = block.type
   // 동적 키 인덱싱(블록 union 의 type 별 콘텐츠 키) — 결과는 가드로 검증.
   const holder = (block as Record<string, unknown>)[type]
+  // 표 행은 rich_text 가 아닌 cells(2차원) 구조 → 셀별로 펼쳐 '| ' 로 합친다.
+  if (type === 'table_row') {
+    const cells = tableRowCellsOf(holder)
+    if (!cells) return ''
+    return cells.map((cell) => rich(cell)).join(' | ')
+  }
   const content = rich(richTextItemsOf(holder))
   if (!content) return ''
   switch (type) {
