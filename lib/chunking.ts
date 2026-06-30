@@ -97,9 +97,10 @@ export function splitByHeadings(body: string): Array<{ section: string; text: st
   const flush = (): void => {
     const content = buf.join('\n').trim()
     buf = []
-    if (!content && !label) return
+    // 본문 없는 섹션(라벨-only)은 정보량 0 청크이므로 스킵 — 헤딩 텍스트만 임베딩되는 빈청크 방지.
+    if (!content) return
     const text = label ? `${label}\n${content}`.trim() : content
-    if (text) sections.push({ section: label || '서두', text })
+    sections.push({ section: label || '서두', text })
   }
 
   for (const line of lines) {
