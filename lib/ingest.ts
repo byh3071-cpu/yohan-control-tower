@@ -95,12 +95,15 @@ export async function runIngest(
     byRecord.set(s.record.id, arr)
   }
 
+  // upserted/chunksFailed 는 청크 단위, recordsFailed 는 레코드(그룹) 단위 — 절대 혼용 금지.
   let upserted = 0
-  let failed = 0
+  let recordsFailed = 0
   const errors: IngestError[] = []
 
   for (const group of byRecord.values()) {
     const title = group[0]?.record.title ?? '(unknown)'
+    // 그룹은 한 레코드의 모든 청크 → upsert 실패 시 group.length 청크 전부 손실.
+    const groupChunks = group.length
     try {
       const points: QdrantPoint[] = []
       for (const s of group) {
@@ -123,14 +126,20 @@ export async function runIngest(
       }
       upserted += await upsertPoints(cfg.collection, points)
     } catch (e) {
-      failed += 1
+      recordsFailed += 1
       const message = e instanceof Error ? e.message : String(e)
-      errors.push({ page: title, message })
-      log(`  ⚠️ 실패: ${title} — ${message}`)
+      errors.push({ page: title, message, chunksLost: groupChunks })
+      log(`  ⚠️ 실패: ${title} — ${message} (${groupChunks}청크 손실)`)
     }
   }
 
-  log(`임베딩+저장: ${upserted}청크 완료${failed ? ` (${failed}건 실패)` : ''}`)
+  // 청크 손실 규모 = 생성된 총 청크 − 저장 성공 청크(부분 upsert 없음: 그룹 실패 시 전량 미저장).
+  const chunksFailed = subs.length - upserted
+
+  log(
+    `임베딩+저장: ${upserted}청크 완료` +
+      (recordsFailed ? ` (${recordsFailed}레코드 / ${chunksFailed}청크 손실)` : ''),
+  )
   log(`✅ 완료: ${cfg.collection} ← ${upserted}청크 / ${records.length}건 (${Date.now() - start}ms)`)
 
   return {
@@ -139,7 +148,8 @@ export async function runIngest(
     pages: records.length,
     chunks: subs.length,
     upserted,
-    failed,
+    recordsFailed,
+    chunksFailed,
     errors,
     durationMs: Date.now() - start,
     logs,
@@ -178,14 +188,16 @@ export function ingestTierHandler(tier: 1 | 2 | 3) {
         results.push(await runIngest(cfg, getProducer(cfg)))
       } catch (e) {
         const message = e instanceof Error ? e.message : String(e)
+        // 소스 전체 실패(레코드 조회 이전 예외) → 청크 미생성이라 chunksFailed 는 0.
         results.push({
           source_db: cfg.source,
           collection: cfg.collection,
           pages: 0,
           chunks: 0,
           upserted: 0,
-          failed: 1,
-          errors: [{ page: cfg.label, message }],
+          recordsFailed: 1,
+          chunksFailed: 0,
+          errors: [{ page: cfg.label, message, chunksLost: 0 }],
           durationMs: 0,
           logs: [`${cfg.label} 실패: ${message}`],
         })
