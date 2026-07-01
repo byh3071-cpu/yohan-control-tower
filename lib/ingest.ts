@@ -56,7 +56,12 @@ export async function runIngest(
     onLog(line)
   }
 
-  await ensureAllCollections()
+  // 컬렉션 보장은 차원 불일치 시 삭제→재생성(자가치유)이라 기존 벡터가 전량 소실될 수 있다.
+  // 파괴적 재생성을 조용히 넘기지 말고 반드시 경고로 노출한다(관측성).
+  const { recreated } = await ensureAllCollections()
+  if (recreated.length > 0) {
+    log(`  ⚠️ 컬렉션 재생성(기존 벡터 삭제됨): ${recreated.join(', ')}`)
+  }
   log(`${cfg.label} 인제스트 시작...`)
 
   // 1) 노션 조회 (page=loadPage, database=loadRecords)
