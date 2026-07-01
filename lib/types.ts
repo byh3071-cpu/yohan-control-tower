@@ -103,16 +103,28 @@ export interface SearchHit {
 export interface IngestError {
   page: string
   message: string
+  /** 이 레코드에서 손실된 청크 수(임베딩+upsert 실패로 저장 안 됨). */
+  chunksLost: number
 }
 
-/** 인제스트 1회 실행 결과 요약(API 응답 본문). */
+/**
+ * 인제스트 1회 실행 결과 요약(API 응답 본문).
+ *
+ * 단위 경계(혼용 금지):
+ * - pages: 노션 레코드 수(레코드 단위)
+ * - chunks: 생성된 총 청크 수(청크 단위) = upserted + chunksFailed
+ * - upserted: Qdrant 저장 성공 청크 수(청크 단위)
+ * - recordsFailed: 임베딩/저장이 실패한 레코드 수(레코드 단위)
+ * - chunksFailed: 저장 못 한 청크 수(청크 단위) = chunks - upserted
+ */
 export interface IngestSummary {
   source_db: SourceDb
   collection: CollectionName
   pages: number
   chunks: number
   upserted: number
-  failed: number
+  recordsFailed: number
+  chunksFailed: number
   errors: IngestError[]
   durationMs: number
   logs: string[]
