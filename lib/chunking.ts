@@ -147,9 +147,14 @@ function splitLongParagraph(para: string, maxTokens: number): string[] {
   return out
 }
 
-/** 문장 1개가 한도 초과 시 글자 기준 하드컷(토큰≈문자/2 근사). */
+/**
+ * 문장 1개가 한도 초과 시 글자 기준 하드컷.
+ * estimateTokens 는 CJK 1글자=1토큰으로 세므로(최악 케이스) 1글자≈1토큰으로 잡아야
+ * 하드컷 조각이 maxTokens 를 넘지 않는다. maxTokens*2 로 잡으면 순수 CJK 블록에서
+ * 조각당 약 2배(≈1024토큰) 로 512 스펙을 위반한다. 영문은 이보다 더 짧아져 보수적.
+ */
 function hardCut(s: string, maxTokens: number): string[] {
-  const approxChars = Math.max(1, maxTokens * 2)
+  const approxChars = Math.max(1, maxTokens)
   const out: string[] = []
   for (let i = 0; i < s.length; i += approxChars) out.push(s.slice(i, i + approxChars))
   return out
