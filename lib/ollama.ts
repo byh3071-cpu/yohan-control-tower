@@ -9,10 +9,26 @@ import { VECTOR_SIZE } from './collections'
 const OLLAMA_HOST = process.env.OLLAMA_HOST ?? 'http://localhost:11434'
 export const EMBED_MODEL = process.env.OLLAMA_EMBED_MODEL ?? 'bge-m3'
 
+// 임베딩 요청 타임아웃(ms). ollama 라이브러리는 자체 타임아웃이 없어 Ollama 무응답 시
+// embed() 가 무한 대기 → 커스텀 fetch 로 AbortSignal.timeout 을 주입해 hang 방지.
+const OLLAMA_TIMEOUT_MS = Number(process.env.OLLAMA_TIMEOUT_MS) || 30000
+
 let client: Ollama | null = null
 
 function getOllama(): Ollama {
-  if (!client) client = new Ollama({ host: OLLAMA_HOST })
+  if (!client) {
+    client = new Ollama({
+      host: OLLAMA_HOST,
+      fetch: (input, init) => {
+        const timeoutSignal = AbortSignal.timeout(OLLAMA_TIMEOUT_MS)
+        // 라이브러리가 자체 signal 을 넘기면 둘 다 존중(먼저 발동하는 쪽이 중단).
+        const signal = init?.signal
+          ? AbortSignal.any([init.signal, timeoutSignal])
+          : timeoutSignal
+        return fetch(input, { ...init, signal })
+      },
+    })
+  }
   return client
 }
 
