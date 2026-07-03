@@ -1,10 +1,11 @@
 /**
- * 인제스트 엔진 — 노션 조회 → 청킹 → Ollama 임베딩 → Qdrant upsert.
+ * 인제스트 엔진 — 노션 조회 → 청킹 → Ollama 임베딩 → Qdrant upsert → 스테일 정리.
  *
  * 원칙:
  * - source_system: 'notion' 메타데이터 항상 부여.
  * - 레코드 단위로 묶어 처리: 한 페이지가 실패해도 전체 중단 없이 계속(검증 #10).
- * - 포인트 ID는 결정적 → 재인제스트 멱등.
+ * - 포인트 ID는 결정적 → 재인제스트 멱등. 단 upsert 는 덮어쓰기만 하므로,
+ *   청크 축소·페이지 삭제로 생기는 스테일 포인트는 인제스트 말미에 명시적으로 삭제한다.
  */
 import type {
   NotionRecord,
@@ -22,7 +23,13 @@ import {
 import { loadRecords, loadPage } from './notion'
 import { chunkText } from './chunking'
 import { embed } from './ollama'
-import { ensureAllCollections, upsertPoints, pointId } from './qdrant'
+import {
+  ensureAllCollections,
+  upsertPoints,
+  pointId,
+  deleteStaleChunks,
+  deleteOrphanPoints,
+} from './qdrant'
 import { getProducer } from './producers'
 
 /** 한 레코드에서 나오는 의미 단위. 각 piece 가 청킹되어 1개 이상의 sub-chunk 가 된다. */
@@ -101,7 +108,8 @@ export async function runIngest(
   const errors: IngestError[] = []
 
   for (const group of byRecord.values()) {
-    const title = group[0]?.record.title ?? '(unknown)'
+    const rec = group[0]?.record
+    const title = rec?.title ?? '(unknown)'
     // 그룹은 한 레코드의 모든 청크 → upsert 실패 시 group.length 청크 전부 손실.
     const groupChunks = group.length
     try {
@@ -124,12 +132,39 @@ export async function runIngest(
         }
         points.push({ id: pointId(s.record.id, s.index), vector, payload })
       }
+      // 청크 수 축소 대응: 새 인덱스 범위(0..N-1) 밖의 옛 청크를 upsert 전에 삭제.
+      // 삭제 후 upsert 실패 시에도 남는 건 어차피 스테일이던 데이터 일부라 손실 아님(다음 실행이 복구).
+      if (rec) await deleteStaleChunks(cfg.collection, rec.id, points.length)
       upserted += await upsertPoints(cfg.collection, points)
     } catch (e) {
       recordsFailed += 1
       const message = e instanceof Error ? e.message : String(e)
       errors.push({ page: title, message, chunksLost: groupChunks })
       log(`  ⚠️ 실패: ${title} — ${message} (${groupChunks}청크 손실)`)
+    }
+  }
+
+  // 4) 스테일 포인트 정리 — upsert-only 로는 삭제·축소가 반영되지 않는 구멍을 막는다.
+  //    정리 실패는 데이터 손실이 아니므로(스테일 잔존일 뿐) 카운터에 섞지 않고 로그만 남긴다.
+  //    a) 이번 실행에서 청크 0개가 된 페이지(본문 비움/생성기 제외): 옛 포인트 전량 삭제.
+  for (const r of records) {
+    if (byRecord.has(r.id)) continue
+    try {
+      await deleteStaleChunks(cfg.collection, r.id, 0)
+    } catch (e) {
+      const message = e instanceof Error ? e.message : String(e)
+      log(`  ⚠️ 빈 페이지 정리 실패: ${r.title} — ${message}`)
+    }
+  }
+  //    b) 노션에서 삭제된 페이지: 이번 조회에 없는 page_id 의 포인트 제거(source_db 범위 한정).
+  //       조회 0건이면 일시 장애 가능성이 있어 전량 삭제 대신 건너뜀(안전장치).
+  if (records.length > 0) {
+    try {
+      await deleteOrphanPoints(cfg.collection, cfg.source, records.map((r) => r.id))
+      log(`정리: 삭제 페이지·스테일 청크 제거 완료`)
+    } catch (e) {
+      const message = e instanceof Error ? e.message : String(e)
+      log(`  ⚠️ 고아 포인트 정리 실패: ${message}`)
     }
   }
 

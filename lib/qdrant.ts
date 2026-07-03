@@ -1,12 +1,12 @@
 /**
  * Qdrant 클라이언트 래퍼.
- * - 컬렉션 보장(없으면 생성) · upsert(배치) · count · search
+ * - 컬렉션 보장(없으면 생성) · upsert(배치) · 스테일/고아 포인트 삭제 · count · search
  * - 포인트 ID는 (notion_page_id + chunk_index)에서 결정적으로 생성 → 재인제스트 멱등.
  */
 import { QdrantClient } from '@qdrant/js-client-rest'
 import { createHash } from 'node:crypto'
 import { VECTOR_SIZE, DISTANCE, COLLECTION_NAMES } from './collections'
-import type { CollectionName, QdrantPoint, SearchHit, PointPayload } from './types'
+import type { CollectionName, QdrantPoint, SearchHit, PointPayload, SourceDb } from './types'
 
 const QDRANT_URL = process.env.QDRANT_URL ?? 'http://localhost:6333'
 
@@ -104,6 +104,49 @@ export async function upsertPoints(name: CollectionName, points: QdrantPoint[]):
     await qc.upsert(name, { wait: true, points: batch })
   }
   return points.length
+}
+
+/**
+ * 페이지의 스테일 청크 삭제 — chunk_index >= keepCount 포인트 제거.
+ * pointId 가 (page_id, chunk_index) 결정적이라 upsert 는 0..N-1 만 덮어쓴다 →
+ * 재인제스트에서 청크 수가 줄면(5→3) 상위 인덱스가 고아로 남는 구멍을 여기서 막는다.
+ * keepCount=0 이면 해당 페이지 포인트 전량 삭제(본문이 비워진 페이지).
+ */
+export async function deleteStaleChunks(
+  name: CollectionName,
+  notionPageId: string,
+  keepCount: number,
+): Promise<void> {
+  const filter =
+    keepCount > 0
+      ? {
+          must: [
+            { key: 'notion_page_id', match: { value: notionPageId } },
+            { key: 'chunk_index', range: { gte: keepCount } },
+          ],
+        }
+      : { must: [{ key: 'notion_page_id', match: { value: notionPageId } }] }
+  await getQdrant().delete(name, { wait: true, filter })
+}
+
+/**
+ * 소스의 고아 포인트 삭제 — 이번 노션 조회에 없는 page_id 의 포인트 제거(페이지 삭제 대응).
+ * source_db 로 범위를 한정해 같은 컬렉션의 다른 소스는 건드리지 않는다.
+ * keepPageIds 가 비면 전량 삭제 위험이 있어 no-op(호출측이 별도 판단).
+ */
+export async function deleteOrphanPoints(
+  name: CollectionName,
+  sourceDb: SourceDb,
+  keepPageIds: string[],
+): Promise<void> {
+  if (keepPageIds.length === 0) return
+  await getQdrant().delete(name, {
+    wait: true,
+    filter: {
+      must: [{ key: 'source_db', match: { value: sourceDb } }],
+      must_not: [{ key: 'notion_page_id', match: { any: keepPageIds } }],
+    },
+  })
 }
 
 /** 컬렉션 포인트 수(정확). 미존재 시 0. */
