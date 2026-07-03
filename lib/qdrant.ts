@@ -106,6 +106,47 @@ export async function upsertPoints(name: CollectionName, points: QdrantPoint[]):
   return points.length
 }
 
+/**
+ * 한 페이지의 잔존(stale) 청크 삭제 — chunk_index >= fromIndex.
+ * 재인제스트에서 청크 수가 줄면(5→3) 결정적 ID upsert 만으로는 옛 꼬리(idx 3,4)가
+ * 남아 SoT 미러 계약이 깨진다. 새 청크 upsert 후 이 함수로 꼬리를 제거한다.
+ */
+export async function deleteStaleChunks(
+  name: CollectionName,
+  notionPageId: string,
+  fromIndex: number,
+): Promise<void> {
+  await getQdrant().delete(name, {
+    wait: true,
+    filter: {
+      must: [
+        { key: 'notion_page_id', match: { value: notionPageId } },
+        { key: 'chunk_index', range: { gte: fromIndex } },
+      ],
+    },
+  })
+}
+
+/**
+ * 고아 포인트 삭제 — 같은 source_db 인데 이번 인제스트에서 노션에 존재하지 않은 페이지.
+ * 노션에서 레코드가 삭제되면 재인제스트가 그 페이지를 아예 순회하지 않으므로,
+ * 소스 단위로 "살아있는 페이지 ID 목록" 밖의 포인트를 걷어내야 미러가 유지된다.
+ * keepPageIds 가 비면(소스가 비었으면) 해당 source_db 포인트 전체 삭제 = 올바른 미러.
+ */
+export async function deleteOrphanPoints(
+  name: CollectionName,
+  sourceDb: string,
+  keepPageIds: string[],
+): Promise<void> {
+  await getQdrant().delete(name, {
+    wait: true,
+    filter: {
+      must: [{ key: 'source_db', match: { value: sourceDb } }],
+      must_not: [{ key: 'notion_page_id', match: { any: keepPageIds } }],
+    },
+  })
+}
+
 /** 컬렉션 포인트 수(정확). 미존재 시 0. */
 export async function countPoints(name: CollectionName): Promise<number> {
   try {

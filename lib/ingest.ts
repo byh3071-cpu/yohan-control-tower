@@ -5,6 +5,7 @@
  * - source_system: 'notion' 메타데이터 항상 부여.
  * - 레코드 단위로 묶어 처리: 한 페이지가 실패해도 전체 중단 없이 계속(검증 #10).
  * - 포인트 ID는 결정적 → 재인제스트 멱등.
+ * - 노션 SoT 미러: upsert 후 잔존 청크(축소분)·고아 포인트(노션에서 삭제된 레코드)를 정리.
  */
 import type {
   NotionRecord,
@@ -22,7 +23,13 @@ import {
 import { loadRecords, loadPage } from './notion'
 import { chunkText } from './chunking'
 import { embed } from './ollama'
-import { ensureAllCollections, upsertPoints, pointId } from './qdrant'
+import {
+  ensureAllCollections,
+  upsertPoints,
+  pointId,
+  deleteStaleChunks,
+  deleteOrphanPoints,
+} from './qdrant'
 import { getProducer } from './producers'
 
 /** 한 레코드에서 나오는 의미 단위. 각 piece 가 청킹되어 1개 이상의 sub-chunk 가 된다. */
@@ -99,9 +106,12 @@ export async function runIngest(
   let upserted = 0
   let recordsFailed = 0
   const errors: IngestError[] = []
+  // 실패한 레코드는 미러 정리(잔존 청크 삭제)에서 제외 → 마지막 성공 상태 보존(부분 실패 격리 유지).
+  const failedRecordIds = new Set<string>()
 
   for (const group of byRecord.values()) {
     const title = group[0]?.record.title ?? '(unknown)'
+    const recordId = group[0]?.record.id ?? ''
     // 그룹은 한 레코드의 모든 청크 → upsert 실패 시 group.length 청크 전부 손실.
     const groupChunks = group.length
     try {
@@ -127,10 +137,33 @@ export async function runIngest(
       upserted += await upsertPoints(cfg.collection, points)
     } catch (e) {
       recordsFailed += 1
+      failedRecordIds.add(recordId)
       const message = e instanceof Error ? e.message : String(e)
       errors.push({ page: title, message, chunksLost: groupChunks })
       log(`  ⚠️ 실패: ${title} — ${message} (${groupChunks}청크 손실)`)
     }
+  }
+
+  // 4) SoT 미러 정리 — upsert-only 는 축소·삭제를 반영 못 하므로(결정적 ID 잔존) 잔재를 걷어낸다.
+  //    a) 청크 수 축소(5→3): 새 total 이상 index 의 옛 꼬리 삭제 (성공 레코드만 — 실패 격리 유지)
+  //    b) 노션에서 삭제된 레코드: 이번 조회에 없는 page_id 의 포인트 전부 삭제(고아 제거)
+  //    정리 실패는 경고로만 남긴다(이미 저장된 신규 데이터를 실패로 되돌리지 않음).
+  try {
+    const totals = new Map<string, number>()
+    for (const s of subs) totals.set(s.record.id, s.total)
+    for (const record of records) {
+      if (failedRecordIds.has(record.id)) continue
+      await deleteStaleChunks(cfg.collection, record.id, totals.get(record.id) ?? 0)
+    }
+    await deleteOrphanPoints(
+      cfg.collection,
+      cfg.source,
+      records.map((r) => r.id),
+    )
+    log(`미러 정리: 잔존 청크·고아 포인트 삭제 완료`)
+  } catch (e) {
+    const message = e instanceof Error ? e.message : String(e)
+    log(`  ⚠️ 미러 정리 실패(신규 저장분은 유지됨): ${message}`)
   }
 
   // 청크 손실 규모 = 생성된 총 청크 − 저장 성공 청크(부분 upsert 없음: 그룹 실패 시 전량 미저장).
