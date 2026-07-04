@@ -10,10 +10,18 @@ import type { CollectionName, QdrantPoint, SearchHit, PointPayload } from './typ
 
 const QDRANT_URL = process.env.QDRANT_URL ?? 'http://localhost:6333'
 
+// 데이터 경로(upsert/search/count) 타임아웃(초). QdrantClient 기본값은 300초라
+// Qdrant 무응답 시 검색 요청이 사실상 무한 대기 → 명시적으로 짧게 잡아 hang 방지.
+// upsert 는 64개 배치라 로컬에선 여유. 필요 시 QDRANT_TIMEOUT_SEC 로 조정.
+// ⚠️ 생성자 timeout 은 밀리초 단위(내부 setTimeout(abort, timeout)ms, 기본 300000=300초)라
+//    초 값을 *1000 해서 넘겨야 함. 초를 그대로 주면 30ms 전역 타임아웃이 되어 모든 요청 즉시 실패.
+const QDRANT_TIMEOUT_SEC = Number(process.env.QDRANT_TIMEOUT_SEC) || 30
+const QDRANT_TIMEOUT_MS = QDRANT_TIMEOUT_SEC * 1000
+
 let client: QdrantClient | null = null
 
 export function getQdrant(): QdrantClient {
-  if (!client) client = new QdrantClient({ url: QDRANT_URL })
+  if (!client) client = new QdrantClient({ url: QDRANT_URL, timeout: QDRANT_TIMEOUT_MS })
   return client
 }
 

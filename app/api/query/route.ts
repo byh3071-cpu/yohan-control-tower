@@ -5,6 +5,8 @@ import { embed } from '@/lib/ollama'
 import { searchCollection } from '@/lib/qdrant'
 
 export const runtime = 'nodejs'
+// 검색 hot-path 상한. embed+search 가 타임아웃 없이 매달리는 최악을 라우트 레벨에서도 차단.
+export const maxDuration = 60
 
 export async function POST(req: Request): Promise<Response> {
   try {
