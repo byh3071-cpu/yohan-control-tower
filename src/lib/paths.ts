@@ -23,3 +23,18 @@ export function resolveRepoRoot(): string {
 export function getMemoryDir(): string {
   return join(/* turbopackIgnore: true */ resolveRepoRoot(), "memory")
 }
+
+/** 밤루프 감사 리포트(overnight-*.md) + 이월 큐(overnight-deferred.json) 디렉토리. */
+export function getAuditsDir(): string {
+  return join(/* turbopackIgnore: true */ resolveRepoRoot(), "docs", "audits")
+}
+
+/**
+ * yohan-studio(형제 레포) 블로그 콘텐츠 디렉토리.
+ * repo root 기준 `../yohan-studio/src/content/blog` — 레포가 없거나 경로가 다르면
+ * 호출측(fs 접근 시점)에서 ENOENT 로 자연 실패하므로 존재를 미리 강제하지 않는다
+ * (graceful degrade는 API route 쪽 책임).
+ */
+export function getStudioBlogDir(): string {
+  return join(/* turbopackIgnore: true */ resolveRepoRoot(), "..", "yohan-studio", "src", "content", "blog")
+}

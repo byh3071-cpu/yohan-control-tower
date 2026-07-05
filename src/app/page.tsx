@@ -12,6 +12,9 @@ import { ViewTabs, type ViewTab } from "@/components/view-tabs"
 import { SerendipityCard } from "@/components/serendipity-card"
 // MiniCharts removed from home — charts live in chart tab only
 import { BriefingCard } from "@/components/briefing-card"
+import { VectorStatusCard } from "@/components/vector-status-card"
+import { OvernightStatusCard } from "@/components/overnight-status-card"
+import { PublishStatusCard } from "@/components/publish-status-card"
 import { SotDraftPanel } from "@/components/sot-draft-panel"
 import { FullCharts } from "@/components/full-charts"
 import { TimelineView } from "@/components/timeline-view"
@@ -290,6 +293,12 @@ export default function DashboardPage() {
             <ScrollArea className="flex-1 min-h-0">
               <div className="mx-auto max-w-3xl space-y-1 p-3">
                 <BriefingCard />
+                <p className="px-1 pt-2 text-[10px] font-medium text-muted-foreground">생태계 현황</p>
+                <div className="rounded-xl border border-border overflow-hidden [&>div:last-child]:border-b-0">
+                  <VectorStatusCard />
+                  <OvernightStatusCard />
+                  <PublishStatusCard />
+                </div>
                 <SotDraftPanel onSaved={() => void loadDashboard(true)} />
               </div>
             </ScrollArea>
