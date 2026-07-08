@@ -160,12 +160,16 @@ export async function runIngest(
       if (failedRecordIds.has(record.id)) continue
       await deleteStaleChunks(cfg.collection, record.id, totals.get(record.id) ?? 0)
     }
-    await deleteOrphanPoints(
-      cfg.collection,
-      cfg.source,
-      records.map((r) => r.id),
-    )
-    log(`미러 정리: 잔존 청크·고아 포인트 삭제 완료`)
+    if (records.length > 0) {
+      await deleteOrphanPoints(
+        cfg.collection,
+        cfg.source,
+        records.map((r) => r.id),
+      )
+      log(`미러 정리: 잔존 청크·고아 포인트 삭제 완료`)
+    } else {
+      log(`미러 정리: 조회 0건 — 고아 포인트 삭제 건너뜀(일시 장애 방지)`)
+    }
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e)
     log(`  ⚠️ 미러 정리 실패(신규 저장분은 유지됨): ${message}`)

@@ -6,7 +6,7 @@
 import { QdrantClient } from '@qdrant/js-client-rest'
 import { createHash } from 'node:crypto'
 import { VECTOR_SIZE, DISTANCE, COLLECTION_NAMES } from './collections'
-import type { CollectionName, QdrantPoint, SearchHit, PointPayload } from './types'
+import type { CollectionName, QdrantPoint, SearchHit, PointPayload, SourceDb } from './types'
 
 const QDRANT_URL = process.env.QDRANT_URL ?? 'http://localhost:6333'
 
@@ -139,13 +139,15 @@ export async function deleteStaleChunks(
  * 고아 포인트 삭제 — 같은 source_db 인데 이번 인제스트에서 노션에 존재하지 않은 페이지.
  * 노션에서 레코드가 삭제되면 재인제스트가 그 페이지를 아예 순회하지 않으므로,
  * 소스 단위로 "살아있는 페이지 ID 목록" 밖의 포인트를 걷어내야 미러가 유지된다.
- * keepPageIds 가 비면(소스가 비었으면) 해당 source_db 포인트 전체 삭제 = 올바른 미러.
+ * keepPageIds 가 비면 no-op — Notion 조회 0건(일시 장애) 시 source_db 전량 삭제 방지.
+ * (0건 skip ≠ 부분 fetch 안전: keepPageIds 가 실제보다 짧으면 orphan 대량 삭제 위험은 남음.)
  */
 export async function deleteOrphanPoints(
   name: CollectionName,
-  sourceDb: string,
+  sourceDb: SourceDb,
   keepPageIds: string[],
 ): Promise<void> {
+  if (keepPageIds.length === 0) return
   await getQdrant().delete(name, {
     wait: true,
     filter: {
