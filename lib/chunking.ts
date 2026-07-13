@@ -64,9 +64,12 @@ export function chunkText(input: string, opts: ChunkOptions = {}): string[] {
       const prev = flush()
       chunks.push(prev)
       const tail = tailTokens(prev, overlapTokens)
-      if (tail) {
+      const tailTok = tail ? estimateTokens(tail) : 0
+      // 오버랩 꼬리는 다음 청크(꼬리+para)가 maxTokens 안에 들 때만 시드.
+      // 초과하면 오버랩을 생략해 512 스펙을 우선한다(오버랩은 보조 목적).
+      if (tail && tailTok + paraTokens <= maxTokens) {
         current.push(tail)
-        currentTokens = estimateTokens(tail)
+        currentTokens = tailTok
       }
     }
 
@@ -168,7 +171,10 @@ function tailTokens(text: string, overlapTokens: number): string {
   let tok = 0
   for (let i = sentences.length - 1; i >= 0; i--) {
     const st = estimateTokens(sentences[i])
-    if (tok + st > overlapTokens && acc.length) break
+    // 예산 초과면 항상 중단 — 마지막 문장 하나라도 overlapTokens 를 넘으면 오버랩을 비운다.
+    // acc.length 예외를 두면 긴 단일문장(표 행·URL·한 줄 문단)이 통째로 복제돼
+    // 청크가 스펙(512)의 ~2배로 부풀고 동일 벡터가 중복 저장된다.
+    if (tok + st > overlapTokens) break
     acc.unshift(sentences[i])
     tok += st
   }
