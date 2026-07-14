@@ -26,6 +26,7 @@ import { embed } from './ollama'
 import {
   ensureAllCollections,
   upsertPoints,
+  PartialUpsertError,
   pointId,
   deleteStaleChunks,
   deleteOrphanPoints,
@@ -111,13 +112,12 @@ export async function runIngest(
   let upserted = 0
   let recordsFailed = 0
   const errors: IngestError[] = []
-  // 실패한 레코드는 미러 정리(잔존 청크 삭제)에서 제외 → 마지막 성공 상태 보존(부분 실패 격리 유지).
+  // 완전 실패(1청크도 저장 못 함) 레코드만 미러 정리에서 제외 → 마지막 성공 상태 보존(부분 실패 격리).
   const failedRecordIds = new Set<string>()
 
   for (const group of byRecord.values()) {
     const title = group[0]?.record.title ?? '(unknown)'
     const recordId = group[0]?.record.id ?? ''
-    // 그룹은 한 레코드의 모든 청크 → upsert 실패 시 group.length 청크 전부 손실.
     const groupChunks = group.length
     try {
       const points: QdrantPoint[] = []
@@ -142,10 +142,22 @@ export async function runIngest(
       upserted += await upsertPoints(cfg.collection, points)
     } catch (e) {
       recordsFailed += 1
-      failedRecordIds.add(recordId)
+      // 배치 upsert 는 부분 성공 가능(앞 64개 배치는 커밋 후 뒤 배치가 throw). 실제 저장분을
+      // 그대로 가산하고 손실 청크는 그 차이로만 잡는다 — "그룹 전량 미저장" 가정이 오보의 원인이었다.
+      const savedInGroup = e instanceof PartialUpsertError ? e.upserted : 0
+      upserted += savedInGroup
+      const lost = groupChunks - savedInGroup
+      // 완전 실패(0 저장)만 stale 정리에서 제외해 마지막 성공 상태를 보존한다.
+      // 부분 저장은 이미 새 버전 청크가 미러에 섞여 들어갔으므로, 정리를 수행해
+      // 새 total 초과 옛 꼬리를 걷어내야 혼합 상태(신·구 버전 공존)를 최소화한다.
+      if (savedInGroup === 0) failedRecordIds.add(recordId)
       const message = e instanceof Error ? e.message : String(e)
-      errors.push({ page: title, message, chunksLost: groupChunks })
-      log(`  ⚠️ 실패: ${title} — ${message} (${groupChunks}청크 손실)`)
+      errors.push({ page: title, message, chunksLost: lost })
+      log(
+        `  ⚠️ 실패: ${title} — ${message} (${lost}청크 손실` +
+          (savedInGroup ? `, ${savedInGroup}청크 부분 저장` : '') +
+          `)`,
+      )
     }
   }
 
@@ -175,7 +187,7 @@ export async function runIngest(
     log(`  ⚠️ 미러 정리 실패(신규 저장분은 유지됨): ${message}`)
   }
 
-  // 청크 손실 규모 = 생성된 총 청크 − 저장 성공 청크(부분 upsert 없음: 그룹 실패 시 전량 미저장).
+  // 청크 손실 규모 = 생성된 총 청크 − 저장 성공 청크(부분 upsert 포함, upserted 가 실저장분).
   const chunksFailed = subs.length - upserted
 
   log(

@@ -94,11 +94,32 @@ export async function recreateCollection(name: CollectionName): Promise<void> {
   await qc.createCollection(name, { vectors: { size: VECTOR_SIZE, distance: DISTANCE } })
 }
 
-/** 포인트 배치 upsert(대량 시 64개 단위로 분할). */
+/**
+ * 배치 upsert 도중 한 배치가 실패했을 때 던지는 에러.
+ * Qdrant 배치는 wait:true 로 배치 단위 커밋 → 실패 직전까지 완료된 배치는 이미 영속이다.
+ * 그 영속분 개수(`upserted`)를 실어 호출부가 upserted/chunksLost 를 정확히 집계하도록 한다.
+ * (이 개수를 무시하고 "그룹 전량 미저장"으로 가정하면 관측 수치가 오보된다.)
+ */
+export class PartialUpsertError extends Error {
+  constructor(
+    message: string,
+    /** 실패 직전까지 성공적으로 영속된 포인트 수(완료된 배치의 누계). */
+    readonly upserted: number,
+  ) {
+    super(message)
+    this.name = 'PartialUpsertError'
+  }
+}
+
+/**
+ * 포인트 배치 upsert(대량 시 64개 단위로 분할). 반환값은 영속에 성공한 포인트 수.
+ * 배치 도중 실패하면 PartialUpsertError(완료 배치 누계)를 던진다 — 앞 배치는 이미 저장됨.
+ */
 export async function upsertPoints(name: CollectionName, points: QdrantPoint[]): Promise<number> {
   if (points.length === 0) return 0
   const qc = getQdrant()
   const BATCH = 64
+  let done = 0
   for (let i = 0; i < points.length; i += BATCH) {
     // Qdrant 클라이언트는 payload 를 Record<string, unknown> 로 기대 — 경계에서만 캐스트.
     // 송신 방향: p.payload 는 이미 PointPayload 로 정적 보장(QdrantPoint.payload) → 런타임
@@ -109,9 +130,16 @@ export async function upsertPoints(name: CollectionName, points: QdrantPoint[]):
       vector: p.vector,
       payload: p.payload as unknown as Record<string, unknown>,
     }))
-    await qc.upsert(name, { wait: true, points: batch })
+    try {
+      await qc.upsert(name, { wait: true, points: batch })
+    } catch (e) {
+      // 완료 배치(done)는 이미 커밋됨 → 부분 저장분을 실어 던진다(호출부가 손실 청크를 정확히 계산).
+      const message = e instanceof Error ? e.message : String(e)
+      throw new PartialUpsertError(message, done)
+    }
+    done += batch.length
   }
-  return points.length
+  return done
 }
 
 /**
