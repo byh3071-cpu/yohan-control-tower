@@ -19,6 +19,8 @@ const TIERS: Array<{ tier: 1 | 2 | 3; title: string }> = [
 
 export default function Dashboard() {
   const [status, setStatus] = useState<StatusResponse | null>(null)
+  const [statusStale, setStatusStale] = useState(false)
+  const [statusUpdatedAt, setStatusUpdatedAt] = useState<string | null>(null)
   const [logs, setLogs] = useState<string[]>([])
   const [running, setRunning] = useState<string | null>(null)
   const [queryResult, setQueryResult] = useState<QueryResponse | null>(null)
@@ -30,11 +32,16 @@ export default function Dashboard() {
   }, [])
 
   const refreshStatus = useCallback(async () => {
+    // 폴링 실패(fetch 거부·5xx)를 삼키지 않고 스테일로 표시한다.
+    // 삼키면 백엔드가 죽어도 마지막 녹색 상태가 무기한 남아 죽은 인프라를 정상으로 오판한다.
     try {
       const res = await fetch('/api/status', { cache: 'no-store' })
+      if (!res.ok) throw new Error(`status ${res.status}`)
       setStatus((await res.json()) as StatusResponse)
+      setStatusStale(false)
+      setStatusUpdatedAt(ts())
     } catch {
-      /* 상태 폴링 실패는 조용히 무시 */
+      setStatusStale(true)
     }
   }, [])
 
@@ -135,7 +142,7 @@ export default function Dashboard() {
 
       <section className="mb-6">
         <h2 className="mb-2 text-sm font-semibold text-zinc-300">📊 Qdrant 상태</h2>
-        <CollectionStatus status={status} />
+        <CollectionStatus status={status} stale={statusStale} updatedAt={statusUpdatedAt} />
       </section>
 
       {TIERS.map((g) => (
