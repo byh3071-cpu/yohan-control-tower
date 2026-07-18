@@ -78,7 +78,7 @@ export function chunkText(input: string, opts: ChunkOptions = {}): string[] {
   }
   if (current.length > 0) chunks.push(flush())
 
-  return mergeShort(chunks, minTokens)
+  return mergeShort(chunks, minTokens, maxTokens)
 }
 
 /** 청크 문자열 → Chunk 객체 배열(인덱스 부여). section 은 구조적 분할 라벨. */
@@ -181,21 +181,31 @@ function tailTokens(text: string, overlapTokens: number): string {
   return acc.join(' ')
 }
 
-/** 최소 토큰 미만 청크를 이웃 청크에 병합. */
-function mergeShort(chunks: string[], minTokens: number): string[] {
+/**
+ * 최소 토큰 미만 청크를 이웃 청크에 병합.
+ * 단, 병합 결과가 maxTokens(512 스펙 상한)를 넘으면 병합하지 않고 짧은 채로 독립 유지한다.
+ * hardCut/splitLongParagraph 가 지켜놓은 '청크 ≤ maxTokens' 불변식을 마지막 단계에서 되돌리지 않기 위함.
+ */
+function mergeShort(chunks: string[], minTokens: number, maxTokens: number): string[] {
   if (chunks.length <= 1) return chunks
   const out: string[] = []
   for (const c of chunks) {
     if (out.length > 0 && estimateTokens(c) < minTokens) {
-      out[out.length - 1] = `${out[out.length - 1]}\n\n${c}`
-    } else {
-      out.push(c)
+      const merged = `${out[out.length - 1]}\n\n${c}`
+      if (estimateTokens(merged) <= maxTokens) {
+        out[out.length - 1] = merged
+        continue
+      }
     }
+    out.push(c)
   }
-  // 첫 청크가 너무 짧으면 두 번째와 병합.
+  // 첫 청크가 너무 짧으면 두 번째와 병합(단, 상한 이내일 때만).
   if (out.length > 1 && estimateTokens(out[0]) < minTokens) {
-    out[1] = `${out[0]}\n\n${out[1]}`
-    out.shift()
+    const merged = `${out[0]}\n\n${out[1]}`
+    if (estimateTokens(merged) <= maxTokens) {
+      out[1] = merged
+      out.shift()
+    }
   }
   return out
 }
