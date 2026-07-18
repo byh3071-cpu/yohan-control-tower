@@ -46,7 +46,13 @@ export interface NotionRecord {
   url: string
   title: string
   createdTime: string
+  /** 표시용 날짜(YYYY-MM-DD). 기존 관례 — slice(0,10). */
   lastEditedTime: string
+  /**
+   * 증분 SoT용 full ISO(UTC Z). Notion page.last_edited_time 원본 그대로.
+   * payload.last_edited_time / sinceDate 비교에만 사용. slice·변환 금지.
+   */
+  lastEditedTimeFull: string
   props: Record<string, string>
   body: string
 }
@@ -130,7 +136,7 @@ export interface IngestSummary {
   logs: string[]
 }
 
-/** /api/status 응답: Qdrant 연결 + 컬렉션별 건수. */
+/** /api/status 응답: Qdrant 연결 + 컬렉션별 건수 + 소스별 최신 last_edited_time. */
 export interface StatusResponse {
   qdrant: {
     connected: boolean
@@ -146,6 +152,8 @@ export interface StatusResponse {
     configured: boolean
   }
   collections: Record<CollectionName, number>
+  /** 소스별 Qdrant max(payload.last_edited_time). 미인제스트면 null. */
+  sources: Record<SourceDb, string | null>
 }
 
 /** /api/query 응답. */

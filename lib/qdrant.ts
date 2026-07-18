@@ -195,6 +195,39 @@ export async function countPoints(name: CollectionName): Promise<number> {
   }
 }
 
+/** scroll 만 필요한 최소 클라이언트 표면(단위테스트 mock 주입용). */
+export type QdrantScroller = Pick<QdrantClient, 'scroll'>
+
+/**
+ * 해당 source_db 포인트 중 payload.last_edited_time 최댓값.
+ * Vercel serverless 에서 sinceDate SoT — 로컬 상태파일 대신 Qdrant 스크롤 집계.
+ * 포인트 0이면 null(호출부가 전체 인제스트로 폴백).
+ */
+export async function getMaxLastEditedTime(
+  collection: CollectionName,
+  source: SourceDb,
+  client: QdrantScroller = getQdrant(),
+): Promise<string | null> {
+  let offset: string | number | Record<string, unknown> | null | undefined = undefined
+  let max: string | null = null
+  do {
+    const res = await client.scroll(collection, {
+      filter: { must: [{ key: 'source_db', match: { value: source } }] },
+      with_payload: ['last_edited_time'],
+      with_vector: false,
+      limit: 100,
+      ...(offset !== undefined && offset !== null ? { offset } : {}),
+    })
+    for (const point of res.points) {
+      const raw = point.payload?.last_edited_time
+      if (typeof raw !== 'string' || raw.length === 0) continue
+      if (max === null || raw > max) max = raw
+    }
+    offset = res.next_page_offset ?? null
+  } while (offset !== null && offset !== undefined)
+  return max
+}
+
 /**
  * Qdrant 가 돌려준 payload(외부 경계, 정적 타입 미상)가 PointPayload 인지 런타임 검증.
  * 우리가 upsert 하는 코어 필드(문자열)만 확인 — 합치면 안전하게 narrow.

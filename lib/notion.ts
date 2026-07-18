@@ -205,6 +205,38 @@ function normalizeId(id: string): string {
 }
 
 /**
+ * last_edited_time timestamp 필터 (`on_or_after`).
+ * @notionhq/client TimestampLastEditedTimeFilter 스펙:
+ * `{ timestamp: "last_edited_time", last_edited_time: { on_or_after } }`
+ * — property 키 없이 timestamp 상수로 지정(공식 TimestampFilter).
+ */
+export function lastEditedOnOrAfterFilter(sinceISO: string) {
+  return {
+    timestamp: 'last_edited_time' as const,
+    last_edited_time: { on_or_after: sinceISO },
+  }
+}
+
+async function pageToRecord(
+  page: PageObjectResponse,
+  withBody: boolean,
+): Promise<NotionRecord> {
+  const props: Record<string, string> = {}
+  for (const [k, v] of Object.entries(page.properties)) props[k] = propToString(v)
+  return {
+    id: page.id,
+    url: page.url,
+    title: extractTitle(page.properties),
+    createdTime: page.created_time.slice(0, 10),
+    lastEditedTime: page.last_edited_time.slice(0, 10),
+    // 증분 SoT — Notion UTC Z 원본 그대로(slice/변환 금지).
+    lastEditedTimeFull: page.last_edited_time,
+    props,
+    body: withBody ? await pageBodyText(page.id) : '',
+  }
+}
+
+/**
  * 데이터베이스의 모든 행을 NotionRecord 로 로드.
  * withBody=true 면 각 페이지 본문 블록까지 직렬화(인제스트 기본값).
  */
@@ -225,18 +257,38 @@ export async function loadRecords(
     })
     for (const page of res.results) {
       if (!('properties' in page)) continue
-      const p = page as PageObjectResponse
-      const props: Record<string, string> = {}
-      for (const [k, v] of Object.entries(p.properties)) props[k] = propToString(v)
-      records.push({
-        id: p.id,
-        url: p.url,
-        title: extractTitle(p.properties),
-        createdTime: p.created_time.slice(0, 10),
-        lastEditedTime: p.last_edited_time.slice(0, 10),
-        props,
-        body: withBody ? await pageBodyText(p.id) : '',
-      })
+      records.push(await pageToRecord(page as PageObjectResponse, withBody))
+    }
+    cursor = res.has_more ? (res.next_cursor ?? undefined) : undefined
+  } while (cursor)
+  return records
+}
+
+/**
+ * sinceISO(ISO 8601) 이후(on_or_after) last_edited_time 인 행만 로드.
+ * loadRecords 와 동일 시그니처 계열(databaseId + opts) · 반환형 NotionRecord[].
+ */
+export async function loadRecordsSince(
+  databaseId: string,
+  sinceISO: string,
+  opts: { withBody?: boolean } = {},
+): Promise<NotionRecord[]> {
+  const withBody = opts.withBody ?? true
+  const notion = getNotion()
+  const dataSourceId = await resolveDataSourceId(normalizeId(databaseId))
+  const filter = lastEditedOnOrAfterFilter(sinceISO)
+  const records: NotionRecord[] = []
+  let cursor: string | undefined
+  do {
+    const res = await notion.dataSources.query({
+      data_source_id: dataSourceId,
+      filter,
+      start_cursor: cursor,
+      page_size: 100,
+    })
+    for (const page of res.results) {
+      if (!('properties' in page)) continue
+      records.push(await pageToRecord(page as PageObjectResponse, withBody))
     }
     cursor = res.has_more ? (res.next_cursor ?? undefined) : undefined
   } while (cursor)
@@ -251,14 +303,16 @@ export async function loadPage(pageId: string): Promise<NotionRecord> {
   let title = '(제목 없음)'
   let createdTime = ''
   let lastEditedTime = ''
+  let lastEditedTimeFull = ''
   let url = `https://www.notion.so/${id}`
   if ('properties' in page) {
     const p = page as PageObjectResponse
     title = extractTitle(p.properties)
     createdTime = p.created_time.slice(0, 10)
     lastEditedTime = p.last_edited_time.slice(0, 10)
+    lastEditedTimeFull = p.last_edited_time
     url = p.url
   }
   const body = await pageBodyText(id)
-  return { id, url, title, createdTime, lastEditedTime, props: {}, body }
+  return { id, url, title, createdTime, lastEditedTime, lastEditedTimeFull, props: {}, body }
 }

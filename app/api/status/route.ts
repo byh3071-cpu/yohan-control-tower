@@ -1,7 +1,7 @@
-/** GET /api/status — Qdrant 연결 + 컬렉션별 건수 + Ollama/Notion 가용성. */
-import type { StatusResponse, CollectionName } from '@/lib/types'
-import { ALL_COLLECTIONS } from '@/lib/sources'
-import { countPoints, qdrantVersion } from '@/lib/qdrant'
+/** GET /api/status — Qdrant 연결 + 컬렉션별 건수 + 소스별 last_edited_time + Ollama/Notion. */
+import type { StatusResponse, CollectionName, SourceDb } from '@/lib/types'
+import { ALL_COLLECTIONS, SOURCES } from '@/lib/sources'
+import { countPoints, qdrantVersion, getMaxLastEditedTime } from '@/lib/qdrant'
 import { ollamaStatus } from '@/lib/ollama'
 import { notionConfigured } from '@/lib/notion'
 
@@ -13,10 +13,18 @@ export async function GET(): Promise<Response> {
     ALL_COLLECTIONS.map((c) => [c, 0]),
   ) as Record<CollectionName, number>
 
+  const sources = Object.fromEntries(SOURCES.map((s) => [s.source, null])) as Record<
+    SourceDb,
+    string | null
+  >
+
   let qdrant: StatusResponse['qdrant']
   try {
     const version = await qdrantVersion()
     for (const c of ALL_COLLECTIONS) collections[c] = await countPoints(c)
+    for (const s of SOURCES) {
+      sources[s.source] = await getMaxLastEditedTime(s.collection, s.source)
+    }
     qdrant = { connected: true, version }
   } catch (e) {
     qdrant = { connected: false, error: e instanceof Error ? e.message : String(e) }
@@ -29,6 +37,7 @@ export async function GET(): Promise<Response> {
     ollama,
     notion: { configured: notionConfigured() },
     collections,
+    sources,
   }
   return Response.json(body)
 }
