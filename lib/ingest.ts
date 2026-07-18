@@ -91,8 +91,8 @@ export async function runIngest(
     const notionId = resolveNotionId(cfg)
     if (cfg.kind === 'page') {
       const page = await loadPage(notionId)
-      // 날짜 문자열 비교(YYYY-MM-DD) — on_or_after 와 동일하게 >= since 만 포함.
-      records = page.lastEditedTime >= since ? [page] : []
+      // full ISO 문자열 비교 — on_or_after 와 동일하게 >= since 만 포함.
+      records = page.lastEditedTimeFull >= since ? [page] : []
     } else {
       records = await loadRecordsSince(notionId, since)
     }
@@ -157,7 +157,8 @@ export async function runIngest(
           chunk_index: s.index,
           total_chunks: s.total,
           created_time: s.record.createdTime,
-          last_edited_time: s.record.lastEditedTime,
+          // 증분 SoT — full ISO(UTC Z). 표시용 date-only(lastEditedTime)와 분리.
+          last_edited_time: s.record.lastEditedTimeFull,
           ...(s.section ? { section: s.section } : {}),
           ...s.payload,
         }

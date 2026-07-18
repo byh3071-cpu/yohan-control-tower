@@ -46,7 +46,13 @@ export interface NotionRecord {
   url: string
   title: string
   createdTime: string
+  /** 표시용 날짜(YYYY-MM-DD). 기존 관례 — slice(0,10). */
   lastEditedTime: string
+  /**
+   * 증분 SoT용 full ISO(UTC Z). Notion page.last_edited_time 원본 그대로.
+   * payload.last_edited_time / sinceDate 비교에만 사용. slice·변환 금지.
+   */
+  lastEditedTimeFull: string
   props: Record<string, string>
   body: string
 }

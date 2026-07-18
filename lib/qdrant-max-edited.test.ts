@@ -51,6 +51,22 @@ describe('getMaxLastEditedTime', () => {
     assert.equal(max, '2026-07-15')
   })
 
+  it('returns full ISO max among same-day timestamps (time-unit)', async () => {
+    const client = mockScroller([
+      {
+        points: [
+          { payload: { last_edited_time: '2026-07-18T10:00:00.000Z' } },
+          { payload: { last_edited_time: '2026-07-18T15:30:00.000Z' } },
+          { payload: { last_edited_time: '2026-07-18T12:00:00.000Z' } },
+        ],
+        next_page_offset: null,
+      },
+    ])
+    const max = await getMaxLastEditedTime('knowledge_base', 'ai_dictionary', client)
+    assert.equal(max, '2026-07-18T15:30:00.000Z')
+    assert.match(max!, /T\d{2}:\d{2}:\d{2}\.\d{3}Z$/)
+  })
+
   it('filters by source via scroll filter must source_db', async () => {
     const calls: unknown[] = []
     const client: QdrantScroller = {

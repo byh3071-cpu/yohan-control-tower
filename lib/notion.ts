@@ -229,6 +229,8 @@ async function pageToRecord(
     title: extractTitle(page.properties),
     createdTime: page.created_time.slice(0, 10),
     lastEditedTime: page.last_edited_time.slice(0, 10),
+    // 증분 SoT — Notion UTC Z 원본 그대로(slice/변환 금지).
+    lastEditedTimeFull: page.last_edited_time,
     props,
     body: withBody ? await pageBodyText(page.id) : '',
   }
@@ -301,14 +303,16 @@ export async function loadPage(pageId: string): Promise<NotionRecord> {
   let title = '(제목 없음)'
   let createdTime = ''
   let lastEditedTime = ''
+  let lastEditedTimeFull = ''
   let url = `https://www.notion.so/${id}`
   if ('properties' in page) {
     const p = page as PageObjectResponse
     title = extractTitle(p.properties)
     createdTime = p.created_time.slice(0, 10)
     lastEditedTime = p.last_edited_time.slice(0, 10)
+    lastEditedTimeFull = p.last_edited_time
     url = p.url
   }
   const body = await pageBodyText(id)
-  return { id, url, title, createdTime, lastEditedTime, props: {}, body }
+  return { id, url, title, createdTime, lastEditedTime, lastEditedTimeFull, props: {}, body }
 }
