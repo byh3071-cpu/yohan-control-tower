@@ -157,6 +157,7 @@ export default function Dashboard() {
                 expected={s.expected}
                 running={running === s.slug}
                 disabled={busy}
+                lastEditedTime={status?.sources?.[s.source] ?? null}
                 onRun={() => void runIngest(s.slug, s.label)}
               />
             ))}

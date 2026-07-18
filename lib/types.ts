@@ -130,7 +130,7 @@ export interface IngestSummary {
   logs: string[]
 }
 
-/** /api/status 응답: Qdrant 연결 + 컬렉션별 건수. */
+/** /api/status 응답: Qdrant 연결 + 컬렉션별 건수 + 소스별 최신 last_edited_time. */
 export interface StatusResponse {
   qdrant: {
     connected: boolean
@@ -146,6 +146,8 @@ export interface StatusResponse {
     configured: boolean
   }
   collections: Record<CollectionName, number>
+  /** 소스별 Qdrant max(payload.last_edited_time). 미인제스트면 null. */
+  sources: Record<SourceDb, string | null>
 }
 
 /** /api/query 응답. */

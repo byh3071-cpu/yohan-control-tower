@@ -6,6 +6,7 @@
  * - 레코드 단위로 묶어 처리: 한 페이지가 실패해도 전체 중단 없이 계속(검증 #10).
  * - 포인트 ID는 결정적 → 재인제스트 멱등.
  * - 노션 SoT 미러: upsert 후 잔존 청크(축소분)·고아 포인트(노션에서 삭제된 레코드)를 정리.
+ * - 증분 모드: Qdrant max(last_edited_time) 이후 변경분만 upsert. 삭제(고아) 감지는 비범위.
  */
 import type {
   NotionRecord,
@@ -18,9 +19,10 @@ import {
   getSource,
   resolveNotionId,
   sourcesByTier,
+  SOURCES,
   type SourceConfig,
 } from './sources'
-import { loadRecords, loadPage } from './notion'
+import { loadRecords, loadRecordsSince, loadPage } from './notion'
 import { chunkText } from './chunking'
 import { embed } from './ollama'
 import {
@@ -30,6 +32,7 @@ import {
   pointId,
   deleteStaleChunks,
   deleteOrphanPoints,
+  getMaxLastEditedTime,
 } from './qdrant'
 import { getProducer } from './producers'
 
@@ -51,12 +54,16 @@ interface SubChunk {
   payload: IngestUnit['payload']
 }
 
-/** 단일 소스 인제스트 실행. */
+export type IngestMode = 'full' | 'incremental'
+
+/** 단일 소스 인제스트 실행. mode=incremental 이면 sinceDate 를 Qdrant 에서 유도. */
 export async function runIngest(
   cfg: SourceConfig,
   producer: Producer,
   onLog: (line: string) => void = () => {},
+  opts: { mode?: IngestMode } = {},
 ): Promise<IngestSummary> {
+  const mode = opts.mode ?? 'full'
   const start = Date.now()
   const logs: string[] = []
   const log = (line: string): void => {
@@ -70,12 +77,29 @@ export async function runIngest(
   if (recreated.length > 0) {
     log(`  ⚠️ 컬렉션 재생성(기존 벡터 삭제됨): ${recreated.join(', ')}`)
   }
-  log(`${cfg.label} 인제스트 시작...`)
+  log(`${cfg.label} 인제스트 시작${mode === 'incremental' ? ' (증분)' : ''}...`)
 
-  // 1) 노션 조회 (page=loadPage, database=loadRecords)
-  const notionId = resolveNotionId(cfg)
-  const records: NotionRecord[] =
-    cfg.kind === 'page' ? [await loadPage(notionId)] : await loadRecords(notionId)
+  // 1) 노션 조회
+  let records: NotionRecord[]
+  if (mode === 'incremental') {
+    const since = await getMaxLastEditedTime(cfg.collection, cfg.source)
+    if (!since) {
+      log(`포인트 0 — 전체 인제스트 폴백`)
+      return runIngest(cfg, producer, onLog, { mode: 'full' })
+    }
+    log(`증분 since=${since} (Qdrant max last_edited_time)`)
+    const notionId = resolveNotionId(cfg)
+    if (cfg.kind === 'page') {
+      const page = await loadPage(notionId)
+      // 날짜 문자열 비교(YYYY-MM-DD) — on_or_after 와 동일하게 >= since 만 포함.
+      records = page.lastEditedTime >= since ? [page] : []
+    } else {
+      records = await loadRecordsSince(notionId, since)
+    }
+  } else {
+    const notionId = resolveNotionId(cfg)
+    records = cfg.kind === 'page' ? [await loadPage(notionId)] : await loadRecords(notionId)
+  }
   log(`Notion: ${records.length}건 조회 완료`)
 
   // 2) 생성기 → 단위 → 청킹(512토큰/50오버랩)
@@ -161,10 +185,9 @@ export async function runIngest(
     }
   }
 
-  // 4) SoT 미러 정리 — upsert-only 는 축소·삭제를 반영 못 하므로(결정적 ID 잔존) 잔재를 걷어낸다.
-  //    a) 청크 수 축소(5→3): 새 total 이상 index 의 옛 꼬리 삭제 (성공 레코드만 — 실패 격리 유지)
-  //    b) 노션에서 삭제된 레코드: 이번 조회에 없는 page_id 의 포인트 전부 삭제(고아 제거)
-  //    정리 실패는 경고로만 남긴다(이미 저장된 신규 데이터를 실패로 되돌리지 않음).
+  // 4) SoT 미러 정리
+  //    a) 청크 수 축소: 잔존 꼬리 삭제(성공 레코드만) — 전체·증분 공통
+  //    b) 고아 포인트 삭제 — 전체 모드만(증분은 삭제 감지 비범위; 부분 조회 keep 목록이 불완전)
   try {
     const totals = new Map<string, number>()
     for (const s of subs) totals.set(s.record.id, s.total)
@@ -172,15 +195,19 @@ export async function runIngest(
       if (failedRecordIds.has(record.id)) continue
       await deleteStaleChunks(cfg.collection, record.id, totals.get(record.id) ?? 0)
     }
-    if (records.length > 0) {
-      await deleteOrphanPoints(
-        cfg.collection,
-        cfg.source,
-        records.map((r) => r.id),
-      )
-      log(`미러 정리: 잔존 청크·고아 포인트 삭제 완료`)
-    } else {
-      log(`미러 정리: 조회 0건 — 고아 포인트 삭제 건너뜀(일시 장애 방지)`)
+    if (mode === 'full') {
+      if (records.length > 0) {
+        await deleteOrphanPoints(
+          cfg.collection,
+          cfg.source,
+          records.map((r) => r.id),
+        )
+        log(`미러 정리: 잔존 청크·고아 포인트 삭제 완료`)
+      } else {
+        log(`미러 정리: 조회 0건 — 고아 포인트 삭제 건너뜀(일시 장애 방지)`)
+      }
+    } else if (records.length > 0) {
+      log(`미러 정리: 잔존 청크 삭제 완료(증분 — 고아 감지 생략)`)
     }
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e)
@@ -210,6 +237,15 @@ export async function runIngest(
   }
 }
 
+/** 단일 소스 증분 인제스트(Qdrant max last_edited_time 기준). */
+export async function runIncrementalIngest(
+  cfg: SourceConfig,
+  producer: Producer,
+  onLog: (line: string) => void = () => {},
+): Promise<IngestSummary> {
+  return runIngest(cfg, producer, onLog, { mode: 'incremental' })
+}
+
 /** slug → 인제스트 실행(생성기 자동 선택). */
 export async function ingestBySlug(
   slug: string,
@@ -218,6 +254,33 @@ export async function ingestBySlug(
   const cfg = getSource(slug)
   if (!cfg) throw new Error(`알 수 없는 소스 slug: ${slug}`)
   return runIngest(cfg, getProducer(cfg), onLog)
+}
+
+/** 전 소스 증분 인제스트(순차). */
+export async function ingestAllIncremental(
+  onLog?: (line: string) => void,
+): Promise<IngestSummary[]> {
+  const results: IngestSummary[] = []
+  for (const cfg of SOURCES) {
+    try {
+      results.push(await runIncrementalIngest(cfg, getProducer(cfg), onLog))
+    } catch (e) {
+      const message = e instanceof Error ? e.message : String(e)
+      results.push({
+        source_db: cfg.source,
+        collection: cfg.collection,
+        pages: 0,
+        chunks: 0,
+        upserted: 0,
+        recordsFailed: 1,
+        chunksFailed: 0,
+        errors: [{ page: cfg.label, message, chunksLost: 0 }],
+        durationMs: 0,
+        logs: [`${cfg.label} 증분 실패: ${message}`],
+      })
+    }
+  }
+  return results
 }
 
 /** 라우트 핸들러 팩토리: POST → 단일 소스 인제스트. */

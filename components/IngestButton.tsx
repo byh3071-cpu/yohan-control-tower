@@ -5,6 +5,8 @@ interface Props {
   running: boolean
   disabled: boolean
   onRun: () => void
+  /** Qdrant max(last_edited_time) — 마지막 인제스트 시각 프록시. */
+  lastEditedTime?: string | null
 }
 
 const COLLECTION_COLOR: Record<string, string> = {
@@ -14,13 +16,24 @@ const COLLECTION_COLOR: Record<string, string> = {
   execution_history: 'text-emerald-400',
 }
 
-export default function IngestButton({ label, collection, expected, running, disabled, onRun }: Props) {
+export default function IngestButton({
+  label,
+  collection,
+  expected,
+  running,
+  disabled,
+  onRun,
+  lastEditedTime = null,
+}: Props) {
   return (
     <div className="flex flex-col justify-between rounded-md border border-zinc-800 bg-zinc-900/60 p-3">
       <div>
         <div className="text-sm font-semibold text-zinc-100">{label}</div>
         <div className="mt-0.5 text-[11px] text-zinc-500">{expected}건 예상</div>
         <div className={`mt-0.5 text-[10px] ${COLLECTION_COLOR[collection] ?? 'text-zinc-400'}`}>{collection}</div>
+        <div className="mt-0.5 text-[10px] text-zinc-600">
+          마지막 인제스트: {lastEditedTime ?? '—'}
+        </div>
       </div>
       <button
         type="button"
