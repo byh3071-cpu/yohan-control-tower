@@ -1,17 +1,7 @@
-<!-- BEGIN:nextjs-agent-rules -->
-# This is NOT the Next.js you know
-
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
-<!-- END:nextjs-agent-rules -->
-
-## Ecosystem (cross-repo)
-
-> Contract SoT: yohan-brain `memory/core/ecosystem-contract.yaml` (obey when status=active).
-> Roster: yohan-brain `memory/core/agent-roster.yaml` (CLI·모델·effort; obey when active).
-> Tier: yohan-brain `memory/core/inheritance-registry.yaml`.
-
-- 같은 레포·같은 브랜치에 에이전트 2명 금지 → worktree만.
-- 배포·시크릿·npm publish = 사람 Gate. 교리 본문 복제 금지(포인터만).
+---
+description: ?곸떆 吏?섏옄 ?쇱슦??(yohan roster SoT)
+alwaysApply: true
+---
 
 <!-- YOHAN-ROSTER-CARD:BEGIN (managed by yohan-brain ops/propagation ??SoT瑜?怨좎퀜?? 吏곸젒?섏젙 湲덉?) -->
 ## 상시 지휘자 — 라우팅 카드 (yohan ecosystem)
@@ -29,3 +19,4 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - Antigravity(agy) = 보조·초안 전용(메인 지휘 금지) — 산출물은 상위 티어 검증 필수.
 - 배포·시크릿·npm publish·main 직push = 사람 게이트(불변).
 <!-- YOHAN-ROSTER-CARD:END -->
+
