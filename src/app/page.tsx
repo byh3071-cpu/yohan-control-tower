@@ -20,6 +20,7 @@ import { FullCharts } from "@/components/full-charts"
 import { TimelineView } from "@/components/timeline-view"
 import { TableView } from "@/components/table-view"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { countByScope } from "@/lib/doc-scope"
 import { cn } from "@/lib/utils"
 import type { DocMeta, DocCategory, Stats, ChartData, SerendipityDoc, GitCommit, DecisionEntry, SessionLog } from "@/lib/types"
 import {
@@ -188,6 +189,9 @@ export default function DashboardPage() {
     return docs.filter((d) => d.category === activeCategory)
   }, [docs, activeCategory])
 
+  /** 관리 대상 status 구멍 — 홈 첫 화면에서 바로 보이게 (표 탭의 구멍 프리셋과 같은 기준) */
+  const scopeCounts = useMemo(() => countByScope(docs), [docs])
+
   useEffect(() => {
     if (!selectedDoc) return
     if (!filtered.some((d) => d.relPath === selectedDoc)) setSelectedDoc(null)
@@ -253,6 +257,7 @@ export default function DashboardPage() {
       <Header onOpenSearch={() => setCmdOpen(true)} onOpenMobileNav={() => setMobileNavOpen(true)} />
       <StatCards
         stats={stats}
+        gaps={scopeCounts.gaps}
         collapsed={statsCollapsed || !!selectedDoc}
         onToggle={() => setStatsCollapsed((c) => !c)}
       />
