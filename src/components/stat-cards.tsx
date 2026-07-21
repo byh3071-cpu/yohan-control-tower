@@ -1,23 +1,21 @@
 "use client"
 
-import { FileText, Scale, ArrowDownToLine, Activity, ChevronDown, ChevronUp } from "lucide-react"
+import { FileText, Scale, ArrowDownToLine, Activity, AlertTriangle, ChevronDown, ChevronUp } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { Stats } from "@/lib/types"
 
 interface StatCardsProps {
   stats: Stats
+  /** 관리 대상인데 status가 빈 문서 수. 0이면 카드를 띄우지 않는다 */
+  gaps?: number
   collapsed?: boolean
   onToggle?: () => void
 }
 
-const CARD_THEMES = [
-  { iconBg: "bg-foreground/5 dark:bg-foreground/10", iconColor: "text-foreground/70" },
-  { iconBg: "bg-foreground/5 dark:bg-foreground/10", iconColor: "text-foreground/70" },
-  { iconBg: "bg-foreground/5 dark:bg-foreground/10", iconColor: "text-foreground/70" },
-  { iconBg: "bg-foreground/5 dark:bg-foreground/10", iconColor: "text-foreground/70" },
-] as const
+const NEUTRAL = { iconBg: "bg-foreground/5 dark:bg-foreground/10", iconColor: "text-foreground/70" } as const
+const CARD_THEMES = [NEUTRAL, NEUTRAL, NEUTRAL, NEUTRAL, NEUTRAL] as const
 
-export function StatCards({ stats, collapsed = false, onToggle }: StatCardsProps) {
+export function StatCards({ stats, gaps = 0, collapsed = false, onToggle }: StatCardsProps) {
   const batchOk = stats.batchStatus === "ok"
   const cards = [
     { label: "문서", value: `${stats.totalDocs}건`, icon: <FileText size={18} />, sub: null },
@@ -29,6 +27,15 @@ export function StatCards({ stats, collapsed = false, onToggle }: StatCardsProps
       icon: <Activity size={18} />,
       sub: stats.batchLastRun ? `마지막: ${stats.batchLastRun}` : null,
     },
+    // status 구멍 — 관리 대상 문서의 미기입분. 채워지면 칸반(T2)이 성립한다
+    ...(gaps > 0
+      ? [{
+          label: "status 구멍",
+          value: `${gaps}건`,
+          icon: <AlertTriangle size={18} />,
+          sub: "관리 문서 status 미기입",
+        }]
+      : []),
   ]
 
   if (collapsed) {
@@ -54,7 +61,7 @@ export function StatCards({ stats, collapsed = false, onToggle }: StatCardsProps
 
   return (
     <div className="shrink-0 border-b border-border/60">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-3">
+      <div className={cn("grid grid-cols-2 gap-3 p-3", cards.length > 4 ? "md:grid-cols-5" : "md:grid-cols-4")}>
         {cards.map((c, i) => {
           const theme = CARD_THEMES[i]!
           const iconColor = i === 3 ? (batchOk ? "text-emerald-600 dark:text-emerald-400" : "text-red-500 dark:text-red-400") : theme.iconColor
