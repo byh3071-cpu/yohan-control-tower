@@ -24,6 +24,27 @@ export interface DocMeta {
   sourceName: string | null
 }
 
+/** 레포 전역 `- [ ]` 중 경로·헤딩 필터를 통과한 1회성 할일 */
+export interface TodoItem {
+  /** `relPath#line` */
+  id: string
+  text: string
+  relPath: string
+  line: number
+  /** 이 할일이 속한 의도 헤딩 (예: "다음 액션") */
+  heading: string
+}
+
+export interface TodosResponse {
+  ok: boolean
+  todos: TodoItem[]
+  total: number
+  /** 스캔 디렉토리별 수집 개수 */
+  bySource: Record<string, number>
+  scanned: string[]
+  generatedAt: string
+}
+
 export interface DocFull extends DocMeta {
   content: string
   frontmatter: Record<string, unknown>
