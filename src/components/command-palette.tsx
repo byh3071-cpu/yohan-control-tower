@@ -15,13 +15,12 @@ import type { DocMeta } from "@/lib/types"
 import type { ViewTab } from "@/components/view-tabs"
 
 const VIEW_LABEL: Record<ViewTab, string> = {
-  home: "홈",
-  table: "표",
+  docs: "문서",
   todo: "할일",
-  charts: "차트",
-  timeline: "타임라인",
+  charts: "통계",
+  timeline: "기록",
   workroom: "작업실",
-  constellation: "별자리",
+  constellation: "관계",
 }
 
 interface CommandPaletteProps {

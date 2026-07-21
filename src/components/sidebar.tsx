@@ -6,25 +6,43 @@ import {
   Zap, Globe, RefreshCw, BarChart3, Search,
   Bot, Play, Wrench, ArrowDownToLine, ArrowUpFromLine, GitBranch,
   ChevronsLeft, ChevronsRight,
-  Library, GraduationCap, FolderKanban,
+  Library, GraduationCap, FolderKanban, PenLine, Inbox,
 } from "lucide-react"
 import { Separator } from "@/components/ui/separator"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
+import { SCOPE_GROUPS, type DocFilter, type DocScope } from "@/lib/doc-scope"
 import type { DocCategory } from "@/lib/types"
 
-const CATEGORIES: { id: DocCategory | "all"; label: string; icon: React.ReactNode }[] = [
-  { id: "all", label: "전체", icon: <BookCheck size={16} /> },
-  { id: "insights", label: "인사이트", icon: <Lightbulb size={16} /> },
-  { id: "rss", label: "RSS", icon: <Rss size={16} /> },
-  { id: "url", label: "URL", icon: <Link2 size={16} /> },
-  { id: "wiki", label: "위키", icon: <Library size={16} /> },
-  { id: "curriculum", label: "교재", icon: <GraduationCap size={16} /> },
-  { id: "projects", label: "프로젝트", icon: <FolderKanban size={16} /> },
-  { id: "decisions", label: "결정로그", icon: <Scale size={16} /> },
-  { id: "rules", label: "규칙", icon: <Wrench size={16} /> },
-  { id: "templates", label: "템플릿", icon: <FileText size={16} /> },
+const CAT_META: Record<DocCategory, { label: string; icon: React.ReactNode }> = {
+  insights: { label: "인사이트", icon: <Lightbulb size={16} /> },
+  rss: { label: "RSS", icon: <Rss size={16} /> },
+  url: { label: "URL", icon: <Link2 size={16} /> },
+  wiki: { label: "위키", icon: <Library size={16} /> },
+  curriculum: { label: "교재", icon: <GraduationCap size={16} /> },
+  projects: { label: "프로젝트", icon: <FolderKanban size={16} /> },
+  decisions: { label: "결정로그", icon: <Scale size={16} /> },
+  rules: { label: "규칙", icon: <Wrench size={16} /> },
+  templates: { label: "템플릿", icon: <FileText size={16} /> },
+}
+
+const SCOPE_META: Record<DocScope, { label: string; icon: React.ReactNode }> = {
+  managed: { label: "작성", icon: <PenLine size={16} /> },
+  collected: { label: "수집", icon: <Inbox size={16} /> },
+}
+
+/** 전체 → [작성 그룹] → [수집 그룹]. 그룹 헤더 자체가 성격 필터다 */
+type Row =
+  | { kind: "item"; id: DocFilter; label: string; icon: React.ReactNode }
+  | { kind: "group"; id: DocScope; label: string; icon: React.ReactNode }
+
+const ROWS: Row[] = [
+  { kind: "item", id: "all", label: "전체", icon: <BookCheck size={16} /> },
+  ...SCOPE_GROUPS.flatMap((g): Row[] => [
+    { kind: "group", id: g.id, ...SCOPE_META[g.id] },
+    ...g.categories.map((c): Row => ({ kind: "item", id: c, ...CAT_META[c] })),
+  ]),
 ]
 
 interface QuickAction {
@@ -48,8 +66,9 @@ const QUICK_ACTIONS: QuickAction[] = [
 ]
 
 interface SidebarProps {
-  activeCategory: DocCategory | "all"
-  onCategoryChange: (cat: DocCategory | "all") => void
+  activeCategory: DocFilter
+  onCategoryChange: (cat: DocFilter) => void
+  /** `all` · 성격(`managed`/`collected`) · 분류별 문서 수 */
   counts: Record<string, number>
   onQuickAction: (action: string) => void
   /** 모바일 드로어: 탭/액션 후 닫기 */
@@ -83,12 +102,15 @@ export function Sidebar({ activeCategory, onCategoryChange, counts, onQuickActio
             <p className="text-xs font-medium text-muted-foreground mb-2 px-2">카테고리</p>
           )}
           <nav className={cn("space-y-0.5", collapsed && "flex flex-col items-center gap-0.5")}>
-            {CATEGORIES.map((c) => {
-              const count = c.id === "all" ? counts.all ?? 0 : counts[c.id] ?? 0
+            {ROWS.map((c) => {
+              const count = counts[c.id] ?? 0
               const active = activeCategory === c.id
+              const isGroup = c.kind === "group"
               const baseStyle = active
                 ? "bg-accent text-foreground font-medium border-l-2 border-foreground"
-                : "text-sidebar-foreground/60 hover:bg-accent/50 hover:text-accent-foreground border-l-2 border-transparent"
+                : isGroup
+                  ? "text-sidebar-foreground/80 hover:bg-accent/50 hover:text-accent-foreground border-l-2 border-transparent"
+                  : "text-sidebar-foreground/60 hover:bg-accent/50 hover:text-accent-foreground border-l-2 border-transparent"
 
               if (collapsed) {
                 const cellClass = cn(
@@ -126,6 +148,9 @@ export function Sidebar({ activeCategory, onCategoryChange, counts, onQuickActio
                   onClick={() => { onCategoryChange(c.id); onNavigate?.() }}
                   className={cn(
                     "w-full flex items-center gap-2 rounded-r-lg text-sm px-2 py-1.5 transition-all outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
+                    // 그룹 헤더는 위 여백 + 굵게 — 하위 분류와 층위를 구분한다
+                    isGroup && "mt-2 font-medium",
+                    !isGroup && "pl-4",
                     baseStyle
                   )}
                 >

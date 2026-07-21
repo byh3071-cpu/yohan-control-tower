@@ -3,8 +3,8 @@
 import { useMemo, useState } from "react"
 import { AlertTriangle, ArrowDown, ArrowUp, Search, X } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { countByScope, docScope, isGap, SCOPE_LABEL, type DocScope } from "@/lib/doc-scope"
-import type { DocMeta, DocCategory } from "@/lib/types"
+import { isGap } from "@/lib/doc-scope"
+import type { DocMeta } from "@/lib/types"
 
 interface TableViewProps {
   docs: DocMeta[]
@@ -43,43 +43,28 @@ type SortKey = "date" | "title" | "status"
 
 export function TableView({ docs, onSelectDoc }: TableViewProps) {
   const [q, setQ] = useState("")
-  /** 기본 = 관리 대상. 수집물 443개가 관리 113개를 파묻지 않도록 (2026-07-21 실측) */
-  const [scope, setScope] = useState<DocScope | "all">("managed")
   const [gapOnly, setGapOnly] = useState(false)
   const [statusFilter, setStatusFilter] = useState<StatusKey | null>(null)
-  const [catFilter, setCatFilter] = useState<DocCategory | null>(null)
   const [sortKey, setSortKey] = useState<SortKey>("date")
   const [sortAsc, setSortAsc] = useState(false)
 
-  const scopeCounts = useMemo(() => countByScope(docs), [docs])
-
-  /** 범위 안에서만 집계 — 칩 숫자와 실제 행 수가 어긋나지 않게 */
-  const inScope = useMemo(
-    () => (scope === "all" ? docs : docs.filter((d) => docScope(d.category) === scope)),
-    [docs, scope]
-  )
+  // 범위(작성/수집)·분류 필터는 사이드바가 소유한다 — 여기 오는 docs 는 이미 걸러진 것
+  const gapCount = useMemo(() => docs.filter(isGap).length, [docs])
 
   const statusCounts = useMemo(() => {
     const m = new Map<StatusKey, number>()
-    for (const d of inScope) {
+    for (const d of docs) {
       const k = normalizeStatus(d.status)
       m.set(k, (m.get(k) ?? 0) + 1)
     }
     return m
-  }, [inScope])
-
-  const categories = useMemo(() => {
-    const m = new Map<DocCategory, number>()
-    for (const d of inScope) m.set(d.category, (m.get(d.category) ?? 0) + 1)
-    return [...m.entries()].sort((a, b) => b[1] - a[1])
-  }, [inScope])
+  }, [docs])
 
   const rows = useMemo(() => {
     const needle = q.trim().toLowerCase()
-    const out = inScope.filter((d) => {
+    const out = docs.filter((d) => {
       if (gapOnly && !isGap(d)) return false
       if (statusFilter && normalizeStatus(d.status) !== statusFilter) return false
-      if (catFilter && d.category !== catFilter) return false
       if (!needle) return true
       return (
         d.title.toLowerCase().includes(needle) ||
@@ -94,54 +79,35 @@ export function TableView({ docs, onSelectDoc }: TableViewProps) {
         return (STATUS_ORDER.indexOf(normalizeStatus(a.status)) - STATUS_ORDER.indexOf(normalizeStatus(b.status))) * dir
       return ((a.date ?? "").localeCompare(b.date ?? "")) * dir
     })
-  }, [inScope, q, gapOnly, statusFilter, catFilter, sortKey, sortAsc])
+  }, [docs, q, gapOnly, statusFilter, sortKey, sortAsc])
 
   const toggleSort = (k: SortKey) => {
     if (sortKey === k) setSortAsc((v) => !v)
     else { setSortKey(k); setSortAsc(k === "title") }
   }
 
-  const hasFilter = Boolean(q || statusFilter || catFilter || gapOnly || scope !== "managed")
+  const hasFilter = Boolean(q || statusFilter || gapOnly)
 
   return (
     <div className="space-y-3">
-      {/* 범위 스위치 — 관리 대상이 기본. 수집물이 관리 문서를 파묻지 않게 */}
-      <div className="flex flex-wrap items-center gap-2 border-l-2 border-foreground/30 pl-2.5">
-        <div className="flex rounded-md border border-border p-0.5">
-          {(["managed", "collected", "all"] as const).map((s) => (
-            <button
-              key={s}
-              onClick={() => setScope(s)}
-              aria-pressed={scope === s}
-              className={cn(
-                "rounded px-2 py-1 text-[11px] font-medium transition-colors focus-visible:ring-2 focus-visible:ring-ring",
-                scope === s ? "bg-foreground/10 text-foreground" : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              {SCOPE_LABEL[s]}{" "}
-              <span className="tabular-nums">
-                {s === "managed" ? scopeCounts.managed : s === "collected" ? scopeCounts.collected : scopeCounts.all}
-              </span>
-            </button>
-          ))}
-        </div>
-
-        {scopeCounts.gaps > 0 && (
+      {/* 상태 없음 프리셋 — 범위·분류는 사이드바가 소유하므로 여기엔 상태 축만 둔다 */}
+      {gapCount > 0 && (
+        <div className="flex flex-wrap items-center gap-2 border-l-2 border-foreground/30 pl-2.5">
           <button
-            onClick={() => { setGapOnly((v) => !v); setScope("managed") }}
+            onClick={() => setGapOnly((v) => !v)}
             aria-pressed={gapOnly}
             className={cn(
               "flex items-center gap-1 rounded-md border px-2 py-1 text-[11px] font-medium transition-colors focus-visible:ring-2 focus-visible:ring-ring",
               "bg-amber-100 text-amber-700 border-amber-300 dark:bg-amber-500/25 dark:text-amber-300 dark:border-amber-500/40",
               !gapOnly && "opacity-60"
             )}
-            title="관리 대상인데 status가 비어 있는 문서 — 채워지면 칸반이 가능해진다"
+            title="status가 비어 있는 문서 — 채워지면 칸반이 가능해진다"
           >
             <AlertTriangle size={11} />
-            구멍 <span className="tabular-nums">{scopeCounts.gaps}</span>
+            상태 없음 <span className="tabular-nums">{gapCount}</span>
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* 필터 바 */}
       <div className="space-y-2">
@@ -174,23 +140,9 @@ export function TableView({ docs, onSelectDoc }: TableViewProps) {
         </div>
 
         <div className="flex flex-wrap gap-1">
-          {categories.map(([c, n]) => (
-            <button
-              key={c}
-              onClick={() => setCatFilter((v) => (v === c ? null : c))}
-              aria-pressed={catFilter === c}
-              className={cn(
-                "rounded-md border px-2 py-1 text-[11px] font-medium transition-colors focus-visible:ring-2 focus-visible:ring-ring",
-                "border-border text-muted-foreground hover:text-foreground",
-                catFilter === c && "bg-foreground/10 text-foreground"
-              )}
-            >
-              {c} {n}
-            </button>
-          ))}
           {hasFilter && (
             <button
-              onClick={() => { setQ(""); setStatusFilter(null); setCatFilter(null); setGapOnly(false); setScope("managed") }}
+              onClick={() => { setQ(""); setStatusFilter(null); setGapOnly(false) }}
               className="flex items-center gap-1 rounded-md border border-border px-2 py-1 text-[11px] font-medium text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
             >
               <X size={11} /> 초기화
@@ -260,8 +212,7 @@ export function TableView({ docs, onSelectDoc }: TableViewProps) {
       </div>
 
       <p className="px-2 text-[11px] text-muted-foreground">
-        {rows.length}개 표시 · {SCOPE_LABEL[scope]} {scope === "managed" ? scopeCounts.managed : scope === "collected" ? scopeCounts.collected : scopeCounts.all}개 · 전체 {docs.length}개
-      </p>
+        {rows.length}개 표시 · 전체 {docs.length}개</p>
     </div>
   )
 }

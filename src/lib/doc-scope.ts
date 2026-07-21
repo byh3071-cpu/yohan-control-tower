@@ -13,6 +13,25 @@ import type { DocCategory, DocMeta } from "./types"
  */
 export type DocScope = "managed" | "collected"
 
+/**
+ * 문서 필터 축 — 사이드바 하나로 통일된 단일 축.
+ * `all`(전체) · 성격(`managed`/`collected`) · 개별 분류(DocCategory).
+ * 표에 있던 범위 스위치·분류 칩은 이 축으로 흡수됐다(2026-07-22, 뷰 통합).
+ */
+export type DocFilter = DocCategory | DocScope | "all"
+
+/** 사이드바 그룹 순서 — 문서 수가 많은 순(실측 2026-07-22) */
+export const SCOPE_GROUPS: { id: DocScope; categories: DocCategory[] }[] = [
+  { id: "managed", categories: ["decisions", "rules", "projects", "templates"] },
+  { id: "collected", categories: ["rss", "curriculum", "insights", "wiki", "url"] },
+]
+
+export function matchesFilter(doc: Pick<DocMeta, "category">, f: DocFilter): boolean {
+  if (f === "all") return true
+  if (f === "managed" || f === "collected") return docScope(doc.category) === f
+  return doc.category === f
+}
+
 const MANAGED: ReadonlySet<DocCategory> = new Set<DocCategory>([
   "decisions", // 결정 로그 — status 50%
   "rules", // 규칙 — status 100%

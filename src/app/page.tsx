@@ -21,7 +21,7 @@ import { TimelineView } from "@/components/timeline-view"
 import { TableView } from "@/components/table-view"
 import { TodoView } from "@/components/todo-view"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { countByScope } from "@/lib/doc-scope"
+import { countByScope, docScope, matchesFilter, type DocFilter } from "@/lib/doc-scope"
 import { cn } from "@/lib/utils"
 import type { DocMeta, DocCategory, Stats, ChartData, SerendipityDoc, GitCommit, DecisionEntry, SessionLog } from "@/lib/types"
 import {
@@ -58,6 +58,8 @@ const GraphView2DCanvas = dynamic(
 
 const CAT_LABEL: Record<string, string> = {
   all: "전체",
+  managed: "작성",
+  collected: "수집",
   insights: "인사이트",
   rss: "RSS",
   url: "URL",
@@ -93,9 +95,11 @@ export default function DashboardPage() {
   const [changelog, setChangelog] = useState<GitCommit[]>([])
   const [decisionEntries, setDecisionEntries] = useState<DecisionEntry[]>([])
   const [sessionLogs, setSessionLogs] = useState<SessionLog[]>([])
-  const [activeCategory, setActiveCategory] = useState<DocCategory | "all">("all")
+  const [activeCategory, setActiveCategory] = useState<DocFilter>("all")
   const [selectedDoc, setSelectedDoc] = useState<string | null>(null)
-  const [activeView, setActiveView] = useState<ViewTab>("home")
+  const [activeView, setActiveView] = useState<ViewTab>("docs")
+  /** 문서 탭의 레이아웃 — 같은 데이터를 카드/표로 전환 (탭 분리 대신 토글) */
+  const [docsLayout, setDocsLayout] = useState<"card" | "table">("card")
   const [cmdOpen, setCmdOpen] = useState(false)
   const [statsCollapsed, setStatsCollapsed] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -177,20 +181,19 @@ export default function DashboardPage() {
     }
   }, [activeView, constellationViewData, selectedDoc])
 
+  /** 사이드바 단일 축 — 전체 · 성격(작성/수집) · 개별 분류를 한 map 으로 */
   const counts = useMemo(() => {
-    const map: Record<string, number> = { all: docs.length }
+    const map: Record<string, number> = { all: docs.length, managed: 0, collected: 0 }
     for (const d of docs) {
       map[d.category] = (map[d.category] ?? 0) + 1
+      map[docScope(d.category)] += 1
     }
     return map
   }, [docs])
 
-  const filtered = useMemo(() => {
-    if (activeCategory === "all") return docs
-    return docs.filter((d) => d.category === activeCategory)
-  }, [docs, activeCategory])
+  const filtered = useMemo(() => docs.filter((d) => matchesFilter(d, activeCategory)), [docs, activeCategory])
 
-  /** 관리 대상 status 구멍 — 홈 첫 화면에서 바로 보이게 (표 탭의 구멍 프리셋과 같은 기준) */
+  /** status 미기입 — 상단 카드에서 바로 보이게 (문서 탭 프리셋과 같은 기준) */
   const scopeCounts = useMemo(() => countByScope(docs), [docs])
 
   useEffect(() => {
@@ -291,9 +294,30 @@ export default function DashboardPage() {
         </div>
 
         <div className="flex-1 flex flex-col overflow-hidden min-h-0">
-          {activeView === "home" && !selectedDoc && (
-            <div className="shrink-0 px-3 pt-3 pb-2 border-b border-border/60">
+          {activeView === "docs" && !selectedDoc && (
+            <div className="shrink-0 space-y-2 border-b border-border/60 px-3 pt-3 pb-2">
               <SerendipityCard doc={serendipity} onSelect={(p) => { setSelectedDoc(p); setMobileNavOpen(false) }} />
+              {/* 레이아웃 토글 — 같은 문서를 카드/표로. 탭을 나누지 않는다 */}
+              <div className="flex items-center gap-2">
+                <div className="flex rounded-md border border-border p-0.5">
+                  {([["card", "카드"], ["table", "표"]] as const).map(([id, label]) => (
+                    <button
+                      key={id}
+                      onClick={() => setDocsLayout(id)}
+                      aria-pressed={docsLayout === id}
+                      className={cn(
+                        "rounded px-2.5 py-1 text-[11px] font-medium transition-colors focus-visible:ring-2 focus-visible:ring-ring",
+                        docsLayout === id ? "bg-foreground/10 text-foreground" : "text-muted-foreground hover:text-foreground"
+                      )}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+                <span className="text-[11px] text-muted-foreground">
+                  {CAT_LABEL[activeCategory] ?? activeCategory} · {filtered.length}건
+                </span>
+              </div>
             </div>
           )}
           {activeView === "workroom" && (
@@ -311,22 +335,12 @@ export default function DashboardPage() {
             </ScrollArea>
           )}
 
-          {activeView === "table" && (
-            <ScrollArea className="flex-1 min-h-0">
-              <div className="p-4">
-                <TableView
-                  docs={docs}
-                  onSelectDoc={(p) => { setSelectedDoc(p); setActiveView("home"); setMobileNavOpen(false) }}
-                />
-              </div>
-            </ScrollArea>
-          )}
 
           {activeView === "todo" && (
             <ScrollArea className="flex-1 min-h-0">
               <div className="p-4">
                 <TodoView
-                  onSelectDoc={(p) => { setSelectedDoc(p); setActiveView("home"); setMobileNavOpen(false) }}
+                  onSelectDoc={(p) => { setSelectedDoc(p); setActiveView("docs"); setMobileNavOpen(false) }}
                 />
               </div>
             </ScrollArea>
@@ -347,7 +361,7 @@ export default function DashboardPage() {
                   changelog={changelog}
                   decisions={decisionEntries}
                   sessions={sessionLogs}
-                  onSelectDoc={(p) => { setSelectedDoc(p); setActiveView("home"); setMobileNavOpen(false) }}
+                  onSelectDoc={(p) => { setSelectedDoc(p); setActiveView("docs"); setMobileNavOpen(false) }}
                 />
               </div>
             </ScrollArea>
@@ -438,7 +452,7 @@ export default function DashboardPage() {
                     constellationMode === "2d" ? (
                       <GraphView2DCanvas
                         data={constellationViewData}
-                        filterCategory={activeCategory}
+                        filterCategory={activeCategory === "managed" || activeCategory === "collected" ? "all" : activeCategory}
                         selectedRelPath={selectedDoc}
                         onSelectDoc={(p) => { setSelectedDoc(p); setMobileNavOpen(false) }}
                         className="h-full min-h-[320px] w-full"
@@ -446,7 +460,7 @@ export default function DashboardPage() {
                     ) : (
                     <ConstellationCanvas
                       data={constellationViewData}
-                      filterCategory={activeCategory}
+                      filterCategory={activeCategory === "managed" || activeCategory === "collected" ? "all" : activeCategory}
                       selectedRelPath={selectedDoc}
                       onSelectDoc={(p) => { setSelectedDoc(p); setMobileNavOpen(false) }}
                       asOfYmd={constellationAsOfYmd}
@@ -470,31 +484,41 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {activeView === "home" && (
+          {activeView === "docs" && (
             <div className="flex min-h-0 flex-1 flex-col overflow-hidden md:flex-row">
-              <ScrollArea className="h-full min-h-0 w-full shrink-0 border-border md:w-80 md:border-r">
-                <div className="p-3 space-y-2">
-                  <div className="flex items-center justify-between px-1 mb-1">
-                    <p className="text-xs font-medium text-muted-foreground">
-                      {CAT_LABEL[activeCategory] ?? activeCategory} · {filtered.length}건
-                    </p>
+              <ScrollArea
+                className={cn(
+                  "h-full min-h-0 w-full shrink-0 border-border md:border-r",
+                  // 표는 열이 많아 넓게, 카드는 좁은 마스터 컬럼
+                  docsLayout === "table" ? "md:flex-1" : "md:w-80"
+                )}
+              >
+                {docsLayout === "table" ? (
+                  <div className="p-4">
+                    <TableView
+                      docs={filtered}
+                      onSelectDoc={(p) => { setSelectedDoc(p); setMobileNavOpen(false) }}
+                    />
                   </div>
-                  {filtered.length === 0 ? (
-                    <p className="text-sm text-muted-foreground text-center py-8">문서가 없습니다</p>
-                  ) : (
-                    filtered.map((d) => (
-                      <DocCard
-                        key={d.relPath}
-                        doc={d}
-                        isActive={selectedDoc === d.relPath}
-                        onClick={() => {
-                          setSelectedDoc(d.relPath)
-                          setMobileNavOpen(false)
-                        }}
-                      />
-                    ))
-                  )}
-                </div>
+                ) : (
+                  <div className="p-3 space-y-2">
+                    {filtered.length === 0 ? (
+                      <p className="text-sm text-muted-foreground text-center py-8">문서가 없습니다</p>
+                    ) : (
+                      filtered.map((d) => (
+                        <DocCard
+                          key={d.relPath}
+                          doc={d}
+                          isActive={selectedDoc === d.relPath}
+                          onClick={() => {
+                            setSelectedDoc(d.relPath)
+                            setMobileNavOpen(false)
+                          }}
+                        />
+                      ))
+                    )}
+                  </div>
+                )}
               </ScrollArea>
               <DocPreview
                 relPath={selectedDoc}
