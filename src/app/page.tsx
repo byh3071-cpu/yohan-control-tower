@@ -18,6 +18,7 @@ import { PublishStatusCard } from "@/components/publish-status-card"
 import { SotDraftPanel } from "@/components/sot-draft-panel"
 import { FullCharts } from "@/components/full-charts"
 import { TimelineView } from "@/components/timeline-view"
+import { TableView } from "@/components/table-view"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
 import type { DocMeta, DocCategory, Stats, ChartData, SerendipityDoc, GitCommit, DecisionEntry, SessionLog } from "@/lib/types"
@@ -300,6 +301,17 @@ export default function DashboardPage() {
                   <PublishStatusCard />
                 </div>
                 <SotDraftPanel onSaved={() => void loadDashboard(true)} />
+              </div>
+            </ScrollArea>
+          )}
+
+          {activeView === "table" && (
+            <ScrollArea className="flex-1 min-h-0">
+              <div className="p-4">
+                <TableView
+                  docs={docs}
+                  onSelectDoc={(p) => { setSelectedDoc(p); setActiveView("home"); setMobileNavOpen(false) }}
+                />
               </div>
             </ScrollArea>
           )}

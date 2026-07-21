@@ -16,6 +16,7 @@ import type { ViewTab } from "@/components/view-tabs"
 
 const VIEW_LABEL: Record<ViewTab, string> = {
   home: "홈",
+  table: "표",
   charts: "차트",
   timeline: "타임라인",
   workroom: "작업실",

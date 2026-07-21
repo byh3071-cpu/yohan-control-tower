@@ -1,12 +1,13 @@
 "use client"
 
-import { Home, BarChart3, Clock, NotebookPen, Sparkles } from "lucide-react"
+import { Home, BarChart3, Clock, NotebookPen, Sparkles, Table2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-export type ViewTab = "home" | "charts" | "timeline" | "workroom" | "constellation"
+export type ViewTab = "home" | "table" | "charts" | "timeline" | "workroom" | "constellation"
 
 const TABS: { id: ViewTab; label: string; icon: React.ReactNode }[] = [
   { id: "home", label: "홈", icon: <Home size={14} /> },
+  { id: "table", label: "표", icon: <Table2 size={14} /> },
   { id: "charts", label: "차트", icon: <BarChart3 size={14} /> },
   { id: "timeline", label: "타임라인", icon: <Clock size={14} /> },
   { id: "workroom", label: "작업실", icon: <NotebookPen size={14} /> },

@@ -17,6 +17,8 @@ export interface DocMeta {
   /** Frontmatter `related` ids (kebab or note id) */
   related: string[]
   category: DocCategory
+  /** Frontmatter `status` 원시값 — 정규화는 뷰 레이어에서 (값 손실 방지) */
+  status: string | null
   relPath: string
   excerpt: string
   sourceName: string | null
