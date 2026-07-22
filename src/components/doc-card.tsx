@@ -87,7 +87,7 @@ export function DocCard({ doc, isActive, onClick }: DocCardProps) {
       </h3>
       {/* 날짜·태그 한 줄 — 세로 2줄을 회수한다. 태그 좌(최대 3+N) · 날짜 우 */}
       {(doc.tags.length > 0 || doc.date) && (
-        <div className="flex items-center gap-2 mb-1.5">
+        <div className="flex items-start gap-2 mb-1.5">
           {doc.tags.length > 0 && (
             <div className="flex min-w-0 flex-wrap gap-1">
               {doc.tags.slice(0, 3).map((t) => (

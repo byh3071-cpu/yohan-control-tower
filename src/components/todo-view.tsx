@@ -158,6 +158,16 @@ export function TodoView({ onSelectDoc }: TodoViewProps) {
         </p>
       )}
 
+      {/* 필터로 좁혔는데 해당 군이 비면 — 빈 화면 대신 안내(칩은 0 도 눌린다) */}
+      {data.total > 0 && filter !== "all" && groups.length === 0 && (
+        <p className="px-2 py-8 text-center text-xs text-muted-foreground">
+          이 필터에 해당하는 할일이 없다.{" "}
+          <button onClick={() => setFilter("all")} className="underline underline-offset-2 hover:text-foreground">
+            전체 보기
+          </button>
+        </p>
+      )}
+
       {/* 3군 그룹 */}
       <div className="space-y-5">
         {groups.map((g) => (
@@ -191,7 +201,8 @@ export function TodoView({ onSelectDoc }: TodoViewProps) {
   )
 }
 
-/** 출처 배지 — goal 이면 `goal N`(+미분류 표시), doc 이면 카테고리. 클릭 시 원문 열기 */
+/** 출처 배지 — goal 이면 `goal N`(+미분류 표시), doc 이면 카테고리.
+ *  뷰어로 열 수 있을 때(origin.openPath)만 버튼(클릭 → 원문). 코퍼스 밖이면 클릭 불가 라벨. */
 function OriginBadge({ item, onSelectDoc }: { item: TodoItem; onSelectDoc: (p: string) => void }) {
   const { origin, relPath } = item
   const isGoal = origin.kind === "goal"
@@ -201,20 +212,42 @@ function OriginBadge({ item, onSelectDoc }: { item: TodoItem; onSelectDoc: (p: s
       : "goal"
     : docBadge(relPath)
   const unknown = isGoal && origin.goalStatus === "unknown"
+  const openable = !!origin.openPath
+
+  const inner = (
+    <>
+      {label}
+      {unknown && <span className="ml-1 text-amber-600 dark:text-amber-400">· 미분류</span>}
+    </>
+  )
+
+  const base = cn(
+    "shrink-0 rounded-md border px-1.5 py-0.5 text-[10px] font-medium",
+    isGoal
+      ? "border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-500/40 dark:bg-emerald-500/15 dark:text-emerald-300"
+      : "border-border text-muted-foreground"
+  )
+
+  // 열람 불가(goals/·docs/) → 죽은 버튼 대신 정보성 라벨. 클릭해도 빈 뷰로 튕기지 않는다.
+  if (!openable) {
+    return (
+      <span className={base} title={`${relPath} (뷰어 미지원)`}>
+        {inner}
+      </span>
+    )
+  }
 
   return (
     <button
-      onClick={() => onSelectDoc(relPath)}
+      onClick={() => onSelectDoc(origin.openPath!)}
       title={relPath}
       className={cn(
-        "shrink-0 rounded-md border px-1.5 py-0.5 text-[10px] font-medium transition-colors focus-visible:ring-2 focus-visible:ring-ring",
-        isGoal
-          ? "border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:border-emerald-500/40 dark:bg-emerald-500/15 dark:text-emerald-300"
-          : "border-border text-muted-foreground hover:bg-foreground/5 hover:text-foreground"
+        base,
+        "transition-colors focus-visible:ring-2 focus-visible:ring-ring",
+        isGoal ? "hover:bg-emerald-100 dark:hover:bg-emerald-500/25" : "hover:bg-foreground/5 hover:text-foreground"
       )}
     >
-      {label}
-      {unknown && <span className="ml-1 text-amber-600 dark:text-amber-400">· 미분류</span>}
+      {inner}
     </button>
   )
 }

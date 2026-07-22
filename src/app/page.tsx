@@ -342,7 +342,14 @@ export default function DashboardPage() {
             <ScrollArea className="flex-1 min-h-0">
               <div className="p-4 pb-16">
                 <TodoView
-                  onSelectDoc={(p) => { setSelectedDoc(p); setActiveView("docs"); setMobileNavOpen(false) }}
+                  onSelectDoc={(p) => {
+                    // 카테고리 필터가 그 문서를 배제하면 page 의 리셋 이펙트가 selectedDoc 을
+                    // 되돌려 빈 뷰로 튕긴다 → "전체"로 풀어 확실히 열리게 한다.
+                    setActiveCategory("all")
+                    setSelectedDoc(p)
+                    setActiveView("docs")
+                    setMobileNavOpen(false)
+                  }}
                 />
               </div>
             </ScrollArea>

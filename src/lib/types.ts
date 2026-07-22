@@ -35,6 +35,9 @@ export interface TodoOrigin {
   goalStatus?: string
   /** allowlist 통과값 또는 부재 시 "P2" */
   priority?: "P0" | "P1" | "P2"
+  /** 출처 문서를 `/api/docs` 뷰어로 열 수 있을 때의 코퍼스 상대경로.
+   *  코퍼스 밖(goals/·docs/) 이면 undefined → UI 는 클릭 불가 라벨로 표시(죽은 버튼 방지) */
+  openPath?: string
 }
 
 /** 레포 전역 `- [ ]` 중 경로·헤딩 필터를 통과한 1회성 할일 */

@@ -3,6 +3,7 @@ import { createHash } from "node:crypto"
 import { readdir, readFile } from "node:fs/promises"
 import { join, relative } from "node:path"
 import { resolveRepoRoot } from "@/lib/paths"
+import { isDocPathAllowed } from "@/lib/memory"
 import type { TodoItem, TodoOrigin, TodosResponse } from "@/lib/types"
 
 export const dynamic = "force-dynamic"
@@ -57,6 +58,22 @@ async function collectMd(dir: string, missing?: string[]): Promise<string[]> {
  *  그 경우는 사람 눈에도 같은 항목이라 실질 피해가 없다. */
 function todoHash(text: string): string {
   return createHash("sha1").update(text).digest("hex").slice(0, 8)
+}
+
+/**
+ * 이 할일의 출처 문서를 대시보드 뷰어(`/api/docs`)로 열 수 있으면 그 **코퍼스 상대경로**를,
+ * 없으면 undefined 를 준다.
+ *
+ * todos 는 레포루트 기준 relPath(`memory/decisions/…`·`goals/…`·`docs/…`)를 쓰는데,
+ * 뷰어 코퍼스는 memory/ 기준(`decisions/…`)이라 기준이 다르다. 접두 `memory/` 를 떼고
+ * allowlist(`isDocPathAllowed`)로 대조해 실제 열람 가능한 것만 링크한다.
+ * goals/·docs/ 는 코퍼스 밖이라 undefined → UI 에서 클릭 불가 라벨로 표시(죽은 버튼 금지).
+ */
+function deriveOpenPath(relPath: string): string | undefined {
+  const MEM = "memory/"
+  if (!relPath.startsWith(MEM)) return undefined
+  const corpusRel = relPath.slice(MEM.length)
+  return isDocPathAllowed(corpusRel) ? corpusRel : undefined
 }
 
 function parseTodos(text: string, relPath: string, origin: TodoOrigin): TodoItem[] {
@@ -153,6 +170,7 @@ async function collectGoals(goalsDir: string, root: string, missing?: string[]):
       goalTitle,
       goalStatus: status,
       priority: normPriority(fm.priority),
+      openPath: deriveOpenPath(rel), // goals/ 는 코퍼스 밖 → 항상 undefined (클릭 불가 라벨)
     }
     // 의도 헤딩 아래 체크박스 우선, 없으면 goal 제목 1건
     const scoped = parseTodos(text, rel, origin)
@@ -182,16 +200,14 @@ export async function GET() {
   for (const dir of SCAN_DIRS) {
     const abs = join(/* turbopackIgnore: true */ root, dir)
 
-    // goals 는 frontmatter·status 규칙이 달라 전용 수집기로 분기
+    // goals 는 frontmatter·status 규칙이 달라 전용 수집기로 분기.
+    // (collectGoals 가 경로 부재 시 missingDirs 에 "goals" 를 직접 기록한다)
     if (dir === "goals") {
-      const before = missingDirs.length
       const found = await collectGoals(abs, root, missingDirs)
       if (found.length) {
         todos.push(...found)
         bySource[dir] = found.length
       }
-      // collectGoals 가 "goals" 를 push 했으면 중복 방지 (아래 doc 경로와 형식 통일)
-      if (missingDirs.length > before) { /* 이미 기록됨 */ }
       continue
     }
 
@@ -200,7 +216,10 @@ export async function GET() {
       const rel = relative(root, file).replace(/\\/g, "/")
       if (EXCLUDE.test(rel)) continue
       try {
-        const found = parseTodos(await readFile(file, "utf8"), rel, { kind: "doc" })
+        const found = parseTodos(await readFile(file, "utf8"), rel, {
+          kind: "doc",
+          openPath: deriveOpenPath(rel),
+        })
         if (found.length) {
           todos.push(...found)
           bySource[dir] = (bySource[dir] ?? 0) + found.length
