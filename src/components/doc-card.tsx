@@ -76,7 +76,7 @@ export function DocCard({ doc, isActive, onClick }: DocCardProps) {
   return (
     <button
       onClick={onClick}
-      className={`w-full text-left p-3 rounded-lg border transition-colors ${
+      className={`w-full text-left p-2.5 rounded-lg border transition-colors ${
         isActive
           ? "border-foreground/20 bg-accent"
           : "border-border hover:bg-accent/50"
@@ -85,22 +85,27 @@ export function DocCard({ doc, isActive, onClick }: DocCardProps) {
       <h3 className="text-sm font-medium leading-snug line-clamp-2 mb-1.5">
         {doc.title}
       </h3>
-      {doc.date && (
-        <p className="text-[11px] text-muted-foreground mb-2">{doc.date}</p>
-      )}
-      {doc.tags.length > 0 && (
-        <div className="flex flex-wrap gap-1 mb-2">
-          {doc.tags.slice(0, 4).map((t) => (
-            <Badge
-              key={t}
-              variant="outline"
-              className={`text-[10px] font-medium px-1.5 py-0 h-5 leading-tight ${tagColor(t)}`}
-            >
-              {t}
-            </Badge>
-          ))}
-          {doc.tags.length > 4 && (
-            <span className="text-[10px] text-muted-foreground">+{doc.tags.length - 4}</span>
+      {/* 날짜·태그 한 줄 — 세로 2줄을 회수한다. 태그 좌(최대 3+N) · 날짜 우 */}
+      {(doc.tags.length > 0 || doc.date) && (
+        <div className="flex items-center gap-2 mb-1.5">
+          {doc.tags.length > 0 && (
+            <div className="flex min-w-0 flex-wrap gap-1">
+              {doc.tags.slice(0, 3).map((t) => (
+                <Badge
+                  key={t}
+                  variant="outline"
+                  className={`text-[10px] font-medium px-1.5 py-0 h-5 leading-tight ${tagColor(t)}`}
+                >
+                  {t}
+                </Badge>
+              ))}
+              {doc.tags.length > 3 && (
+                <span className="self-center text-[10px] text-muted-foreground">+{doc.tags.length - 3}</span>
+              )}
+            </div>
+          )}
+          {doc.date && (
+            <span className="ml-auto shrink-0 text-[11px] text-muted-foreground">{doc.date}</span>
           )}
         </div>
       )}
