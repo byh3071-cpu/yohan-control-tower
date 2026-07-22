@@ -23,7 +23,7 @@ import { TodoView } from "@/components/todo-view"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { countByScope, docScope, matchesFilter, type DocFilter } from "@/lib/doc-scope"
 import { cn } from "@/lib/utils"
-import type { DocMeta, DocCategory, Stats, ChartData, SerendipityDoc, GitCommit, DecisionEntry, SessionLog } from "@/lib/types"
+import type { DocMeta, Stats, ChartData, SerendipityDoc, GitCommit, DecisionEntry, SessionLog } from "@/lib/types"
 import {
   type ConstellationData,
   filterConstellationAtDate,
