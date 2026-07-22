@@ -24,6 +24,19 @@ export interface DocMeta {
   sourceName: string | null
 }
 
+/** 할일이 어디에 매달려 있는가 — 정렬·그룹의 1차 축.
+ *  goal 이면 status·priority 로 "진행 중 / 대기"를 가른다. doc 이면 그냥 문서 액션. */
+export interface TodoOrigin {
+  kind: "goal" | "doc"
+  /** goal 일 때만 */
+  goalId?: number
+  goalTitle?: string
+  /** allowlist 통과값 또는 "unknown" (미지 status 를 조용히 버리지 않는다) */
+  goalStatus?: string
+  /** allowlist 통과값 또는 부재 시 "P2" */
+  priority?: "P0" | "P1" | "P2"
+}
+
 /** 레포 전역 `- [ ]` 중 경로·헤딩 필터를 통과한 1회성 할일 */
 export interface TodoItem {
   /**
@@ -37,6 +50,8 @@ export interface TodoItem {
   line: number
   /** 이 할일이 속한 의도 헤딩 (예: "다음 액션") */
   heading: string
+  /** 출처 종류·귀속. 그룹·정렬의 1차 축 */
+  origin: TodoOrigin
 }
 
 export interface TodosResponse {

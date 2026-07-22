@@ -3,7 +3,7 @@ import { createHash } from "node:crypto"
 import { readdir, readFile } from "node:fs/promises"
 import { join, relative } from "node:path"
 import { resolveRepoRoot } from "@/lib/paths"
-import type { TodoItem, TodosResponse } from "@/lib/types"
+import type { TodoItem, TodoOrigin, TodosResponse } from "@/lib/types"
 
 export const dynamic = "force-dynamic"
 
@@ -59,7 +59,7 @@ function todoHash(text: string): string {
   return createHash("sha1").update(text).digest("hex").slice(0, 8)
 }
 
-function parseTodos(text: string, relPath: string): TodoItem[] {
+function parseTodos(text: string, relPath: string, origin: TodoOrigin): TodoItem[] {
   const items: TodoItem[] = []
   let inIntent = false
   let heading = ""
@@ -83,7 +83,91 @@ function parseTodos(text: string, relPath: string): TodoItem[] {
       relPath,
       line: i + 1,
       heading,
+      origin,
     })
+  }
+  return items
+}
+
+/* ── goal 수집 ─────────────────────────────────────────────────────────────
+ * goal 파일은 일반 문서와 파싱 규칙이 다르다.
+ *   ① `type: goal` frontmatter 를 가진 `goals/*.md` (`_meta.md` 제외)
+ *   ② `status: DONE` 은 제외 — 완료 목표의 잔여 체크박스가 할일로 새는 걸 막는다
+ *   ③ 의도 헤딩(다음 액션·할일…) 아래 체크박스가 있으면 그걸 항목으로,
+ *      없으면 goal 제목 자체를 1건으로 (실측: goal 10개 중 의도 헤딩 보유 0건 →
+ *      면제하면 "성공 정의" 같은 완료조건이 새고, 제목 fallback 이 정답).
+ * status/priority 는 닫힌집합이라 allowlist 대조(PAT-001). 미지값은 버리지 말고
+ * "unknown"/"P2" 로 통과시켜 UI 에 드러낸다(조용한 부재 회피). */
+const GOAL_STATUS = new Set(["ACTIVE", "IN_PROGRESS", "NOT_STARTED", "BACKLOG", "BLOCKED", "DONE"])
+const GOAL_PRIORITY = new Set(["P0", "P1", "P2"])
+
+function normStatus(raw: string | undefined): string {
+  const v = (raw ?? "").trim().toUpperCase()
+  return GOAL_STATUS.has(v) ? v : "unknown"
+}
+function normPriority(raw: string | undefined): "P0" | "P1" | "P2" {
+  const v = (raw ?? "").trim().toUpperCase()
+  return (GOAL_PRIORITY.has(v) ? v : "P2") as "P0" | "P1" | "P2"
+}
+
+/** frontmatter 최상위 key: value 만 얕게 파싱 (goal 스키마는 평면이라 충분) */
+function parseFrontmatter(text: string): Record<string, string> {
+  const m = text.match(/^﻿?---\r?\n([\s\S]*?)\r?\n---/)
+  if (!m) return {}
+  const fm: Record<string, string> = {}
+  for (const line of m[1].split(/\r?\n/)) {
+    const mm = line.match(/^([A-Za-z_][\w-]*):\s*(.*)$/)
+    if (mm) fm[mm[1]] = mm[2].trim().replace(/^["']|["']$/g, "")
+  }
+  return fm
+}
+
+async function collectGoals(goalsDir: string, root: string, missing?: string[]): Promise<TodoItem[]> {
+  const items: TodoItem[] = []
+  let entries
+  try {
+    entries = await readdir(/* turbopackIgnore: true */ goalsDir, { withFileTypes: true })
+  } catch {
+    missing?.push("goals")
+    return items
+  }
+  for (const e of entries) {
+    if (!e.isFile() || !e.name.endsWith(".md") || e.name === "_meta.md") continue
+    const abs = join(/* turbopackIgnore: true */ goalsDir, e.name)
+    const rel = relative(root, abs).replace(/\\/g, "/")
+    let text: string
+    try {
+      text = await readFile(abs, "utf8")
+    } catch {
+      continue
+    }
+    const fm = parseFrontmatter(text)
+    if (fm.type !== "goal") continue
+    const status = normStatus(fm.status)
+    if (status === "DONE") continue // 죽은 체크박스 차단
+    const goalId = Number(fm.id)
+    const goalTitle = fm.title || rel.split("/").pop()!.replace(/\.md$/, "")
+    const origin: TodoOrigin = {
+      kind: "goal",
+      goalId: Number.isFinite(goalId) ? goalId : undefined,
+      goalTitle,
+      goalStatus: status,
+      priority: normPriority(fm.priority),
+    }
+    // 의도 헤딩 아래 체크박스 우선, 없으면 goal 제목 1건
+    const scoped = parseTodos(text, rel, origin)
+    if (scoped.length) {
+      items.push(...scoped)
+    } else {
+      items.push({
+        id: `${rel}#goal`,
+        text: goalTitle,
+        relPath: rel,
+        line: 1,
+        heading: "goal",
+        origin,
+      })
+    }
   }
   return items
 }
@@ -97,12 +181,26 @@ export async function GET() {
 
   for (const dir of SCAN_DIRS) {
     const abs = join(/* turbopackIgnore: true */ root, dir)
+
+    // goals 는 frontmatter·status 규칙이 달라 전용 수집기로 분기
+    if (dir === "goals") {
+      const before = missingDirs.length
+      const found = await collectGoals(abs, root, missingDirs)
+      if (found.length) {
+        todos.push(...found)
+        bySource[dir] = found.length
+      }
+      // collectGoals 가 "goals" 를 push 했으면 중복 방지 (아래 doc 경로와 형식 통일)
+      if (missingDirs.length > before) { /* 이미 기록됨 */ }
+      continue
+    }
+
     const missedHere: string[] = []
     for (const file of await collectMd(abs, missedHere)) {
       const rel = relative(root, file).replace(/\\/g, "/")
       if (EXCLUDE.test(rel)) continue
       try {
-        const found = parseTodos(await readFile(file, "utf8"), rel)
+        const found = parseTodos(await readFile(file, "utf8"), rel, { kind: "doc" })
         if (found.length) {
           todos.push(...found)
           bySource[dir] = (bySource[dir] ?? 0) + found.length
