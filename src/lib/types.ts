@@ -26,7 +26,11 @@ export interface DocMeta {
 
 /** 레포 전역 `- [ ]` 중 경로·헤딩 필터를 통과한 1회성 할일 */
 export interface TodoItem {
-  /** `relPath#line` */
+  /**
+   * `relPath#<텍스트 해시 8자>` — 줄번호를 쓰면 문서 위에 한 줄만 추가돼도 그 아래
+   * 모든 할일의 id 가 밀린다. 나중에 항목별 상태(분류·숨김)를 캐시에 붙일 때
+   * 엉뚱한 항목에 달라붙는 사고가 나므로 내용 기준으로 잡는다.
+   */
   id: string
   text: string
   relPath: string
@@ -42,6 +46,8 @@ export interface TodosResponse {
   /** 스캔 디렉토리별 수집 개수 */
   bySource: Record<string, number>
   scanned: string[]
+  /** 존재하지 않는 스캔 경로 — 오타가 "0건"으로 위장하지 않게 표면화한다 */
+  missingDirs: string[]
   generatedAt: string
 }
 
