@@ -489,8 +489,10 @@ export default function DashboardPage() {
               <ScrollArea
                 className={cn(
                   "h-full min-h-0 w-full shrink-0 border-border md:border-r",
-                  // 표는 열이 많아 넓게, 카드는 좁은 마스터 컬럼
-                  docsLayout === "table" ? "md:flex-1" : "md:w-80"
+                  // 표는 열이 많아 항상 넓게. 카드는 **문서를 고른 뒤에만** 좁은 마스터
+                  // 컬럼으로 접는다 — 고르기 전까지 320px 만 쓰면 1440px 화면에서 카드가
+                  // 1열로 서고 나머지 1,100px 가 빈 채로 남는다.
+                  docsLayout === "table" || !selectedDoc ? "md:flex-1" : "md:w-80"
                 )}
               >
                 {docsLayout === "table" ? (
@@ -501,9 +503,17 @@ export default function DashboardPage() {
                     />
                   </div>
                 ) : (
-                  <div className="p-3 space-y-2">
+                  <div
+                    className={cn(
+                      "p-3",
+                      // 마스터 컬럼으로 접혔을 때만 세로 스택. 넓을 땐 폭에 맞춰 다열로 펼친다.
+                      selectedDoc
+                        ? "space-y-2"
+                        : "grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
+                    )}
+                  >
                     {filtered.length === 0 ? (
-                      <p className="text-sm text-muted-foreground text-center py-8">문서가 없습니다</p>
+                      <p className="col-span-full py-8 text-center text-sm text-muted-foreground">문서가 없습니다</p>
                     ) : (
                       filtered.map((d) => (
                         <DocCard
