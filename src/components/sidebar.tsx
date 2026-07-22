@@ -165,7 +165,8 @@ export function Sidebar({ activeCategory, onCategoryChange, counts, onQuickActio
 
         <Separator className="my-2" />
 
-        <div className={cn("p-2 pb-4", collapsed && "flex flex-col items-center px-0 py-1 pb-4")}>
+        {/* pb-16 — 마지막 항목이 창 하단(작업표시줄)에 맞닿지 않게 */}
+        <div className={cn("p-2 pb-16", collapsed && "flex flex-col items-center px-0 py-1 pb-16")}>
           {!collapsed && (
             <p className="text-[11px] font-medium text-muted-foreground mb-2 px-2 flex items-center gap-1">
               <Zap size={12} /> 빠른 실행

@@ -335,7 +335,7 @@ export default function DashboardPage() {
 
           {activeView === "todo" && (
             <ScrollArea className="flex-1 min-h-0">
-              <div className="p-4">
+              <div className="p-4 pb-16">
                 <TodoView
                   onSelectDoc={(p) => { setSelectedDoc(p); setActiveView("docs"); setMobileNavOpen(false) }}
                 />
@@ -345,7 +345,7 @@ export default function DashboardPage() {
 
           {activeView === "charts" && (
             <ScrollArea className="flex-1 min-h-0">
-              <div className="p-4">
+              <div className="p-4 pb-16">
                 <FullCharts data={charts} />
               </div>
             </ScrollArea>
@@ -353,7 +353,7 @@ export default function DashboardPage() {
 
           {activeView === "timeline" && (
             <ScrollArea className="flex-1 min-h-0">
-              <div className="p-4">
+              <div className="p-4 pb-16">
                 <TimelineView
                   changelog={changelog}
                   decisions={decisionEntries}
@@ -493,7 +493,7 @@ export default function DashboardPage() {
                 )}
               >
                 {docsLayout === "table" ? (
-                  <div className="p-4">
+                  <div className="p-4 pb-16">
                     <TableView
                       docs={filtered}
                       onSelectDoc={(p) => { setSelectedDoc(p); setMobileNavOpen(false) }}
@@ -502,7 +502,8 @@ export default function DashboardPage() {
                 ) : (
                   <div
                     className={cn(
-                      "p-3",
+                      // pb-16 — 스크롤 끝에서 마지막 카드가 창 하단(작업표시줄)에 맞닿지 않게
+                      "p-3 pb-16",
                       // 마스터 컬럼으로 접혔을 때만 세로 스택. 넓을 땐 폭에 맞춰 다열로 펼친다.
                       selectedDoc
                         ? "space-y-2"

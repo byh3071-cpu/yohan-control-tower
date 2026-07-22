@@ -138,7 +138,8 @@ function LoadedDocPreview({
       )}
 
       <ScrollArea className="flex-1 min-h-0">
-        <article className="prose prose-sm dark:prose-invert max-w-none px-5 py-4 prose-headings:scroll-mt-4 prose-pre:bg-muted prose-pre:text-muted-foreground prose-code:text-foreground">
+        {/* pb-16 — 스크롤 끝에서 마지막 줄이 창 하단(작업표시줄)에 맞닿아 읽기 힘든 걸 막는 여백 */}
+        <article className="prose prose-sm dark:prose-invert max-w-none px-5 pt-4 pb-16 prose-headings:scroll-mt-4 prose-pre:bg-muted prose-pre:text-muted-foreground prose-code:text-foreground">
           <ReactMarkdown remarkPlugins={[remarkGfm]}>
             {doc.content}
           </ReactMarkdown>
