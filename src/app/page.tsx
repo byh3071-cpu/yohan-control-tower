@@ -4,7 +4,6 @@ import dynamic from "next/dynamic"
 import { useEffect, useState, useMemo, useCallback, useDeferredValue } from "react"
 import { Header } from "@/components/header"
 import { Sidebar } from "@/components/sidebar"
-import { StatCards } from "@/components/stat-cards"
 import { DocCard } from "@/components/doc-card"
 import { DocPreview } from "@/components/doc-preview"
 import { CommandPalette } from "@/components/command-palette"
@@ -101,7 +100,6 @@ export default function DashboardPage() {
   /** 문서 탭의 레이아웃 — 같은 데이터를 카드/표로 전환 (탭 분리 대신 토글) */
   const [docsLayout, setDocsLayout] = useState<"card" | "table">("card")
   const [cmdOpen, setCmdOpen] = useState(false)
-  const [statsCollapsed, setStatsCollapsed] = useState(false)
   const [loading, setLoading] = useState(true)
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [constellationData, setConstellationData] = useState<ConstellationData | null>(null)
@@ -258,12 +256,11 @@ export default function DashboardPage() {
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">
-      <Header onOpenSearch={() => setCmdOpen(true)} onOpenMobileNav={() => setMobileNavOpen(true)} />
-      <StatCards
+      <Header
+        onOpenSearch={() => setCmdOpen(true)}
+        onOpenMobileNav={() => setMobileNavOpen(true)}
         stats={stats}
         gaps={scopeCounts.gaps}
-        collapsed={statsCollapsed || !!selectedDoc}
-        onToggle={() => setStatsCollapsed((c) => !c)}
       />
       <ViewTabs active={activeView} onChange={setActiveView} />
 

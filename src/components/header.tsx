@@ -3,14 +3,27 @@
 import { Moon, Sun, Command, Search, PanelLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useTheme } from "@/components/theme-provider"
+import { cn } from "@/lib/utils"
+import type { Stats } from "@/lib/types"
 
 interface HeaderProps {
   onOpenSearch: () => void
   onOpenMobileNav?: () => void
+  stats: Stats
+  /** 관리 대상인데 status가 빈 문서 수. 0이면 표시하지 않는다 */
+  gaps?: number
 }
 
-export function Header({ onOpenSearch, onOpenMobileNav }: HeaderProps) {
+export function Header({ onOpenSearch, onOpenMobileNav, stats, gaps = 0 }: HeaderProps) {
   const { theme, toggle } = useTheme()
+
+  // 헤더 한 줄에 상주하는 지표. 카드 5장을 한 줄로 접었다 — 문서 목록에 세로 공간을 준다.
+  // 배치 상태는 뺐다(상시 감시 대상이 아니라 이상할 때만 보면 되는 값).
+  const metrics = [
+    { label: "문서", value: stats.totalDocs },
+    { label: "결정", value: stats.decisions },
+    { label: "인제스트", value: stats.ingests },
+  ]
 
   return (
     <header className="h-12 shrink-0 border-b border-border bg-background/80 backdrop-blur-sm flex items-center px-3 sm:px-4 gap-2 sm:gap-3 z-50">
@@ -45,6 +58,26 @@ export function Header({ onOpenSearch, onOpenMobileNav }: HeaderProps) {
       </button>
 
       <div className="ml-auto flex items-center gap-1">
+        <div className="mr-1 hidden items-center gap-4 text-xs md:flex lg:gap-5">
+          {metrics.map((m) => (
+            <span key={m.label} className="flex items-baseline gap-1.5 whitespace-nowrap">
+              <span className="text-muted-foreground">{m.label}</span>
+              <span className="font-semibold tabular-nums tracking-tight">{m.value}</span>
+            </span>
+          ))}
+          {gaps > 0 && (
+            <span
+              className={cn(
+                "flex items-baseline gap-1.5 whitespace-nowrap",
+                "text-amber-600 dark:text-amber-400"
+              )}
+              title="관리 문서 status 미기입"
+            >
+              <span>status 구멍</span>
+              <span className="font-semibold tabular-nums tracking-tight">{gaps}</span>
+            </span>
+          )}
+        </div>
         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={toggle}>
           {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
         </Button>
