@@ -7,7 +7,6 @@ import { X, ExternalLink, Copy, Check } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { cn } from "@/lib/utils"
 import type { DocFull } from "@/lib/types"
 
 interface DocPreviewProps {
@@ -151,16 +150,9 @@ function LoadedDocPreview({
 
 export function DocPreview({ relPath, onClose, fullscreenMobile }: DocPreviewProps) {
   if (!relPath) {
-    // fullscreenMobile 은 '모바일에서 미리보기를 전면으로 띄운다'는 뜻이라, 미선택일 때
-    // 숨겨야 할 대상도 모바일뿐이다. 뷰포트 구분 없이 null 을 반환하면 데스크톱에서도
-    // 이 칸이 통째로 사라져 1440px 화면에서 1,100px 가 빈 검은 공간이 됐다.
+    if (fullscreenMobile) return null
     return (
-      <div
-        className={cn(
-          "flex-1 items-center justify-center px-4 text-sm text-muted-foreground",
-          fullscreenMobile ? "hidden md:flex" : "flex"
-        )}
-      >
+      <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm px-4">
         <p className="text-center">문서를 선택하면 여기에 미리보기가 표시됩니다</p>
       </div>
     )
