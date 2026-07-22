@@ -265,12 +265,16 @@ export default function DashboardPage() {
       <ViewTabs active={activeView} onChange={setActiveView} />
 
       <div className="relative flex flex-1 overflow-hidden">
+        {/* 사이드바 = 문서 카테고리축(작성/수집/분류). 할일 탭과는 교집합이 없어
+            288px 를 상시 점유할 이유가 없다 → 할일 탭에선 접는다.
+            언마운트 대신 hidden 으로 — Sidebar 내부 collapsed 상태를 탭 전환 사이에 보존한다. */}
         <button
           type="button"
           aria-label="메뉴 닫기"
           className={cn(
             "fixed left-0 right-0 top-12 bottom-0 z-[35] bg-black/40 transition-opacity md:hidden",
-            mobileNavOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+            mobileNavOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none",
+            activeView === "todo" && "hidden"
           )}
           onClick={() => setMobileNavOpen(false)}
         />
@@ -278,7 +282,8 @@ export default function DashboardPage() {
           className={cn(
             "z-[40] flex h-full shrink-0 transition-transform duration-200 ease-out max-md:shadow-2xl",
             "fixed left-0 top-12 bottom-0 md:relative md:top-auto md:bottom-auto md:shadow-none md:transition-none",
-            mobileNavOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+            mobileNavOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0",
+            activeView === "todo" && "hidden"
           )}
         >
           <Sidebar

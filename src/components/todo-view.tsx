@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { CheckSquare, RefreshCw } from "lucide-react"
+import { AlertTriangle, CheckSquare, RefreshCw } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { TodoItem, TodoOrigin, TodosResponse } from "@/lib/types"
 
@@ -50,10 +50,13 @@ function sortItems(items: TodoItem[]): TodoItem[] {
   })
 }
 
+type FilterKey = "all" | "active" | "doc" | "wait"
+
 export function TodoView({ onSelectDoc }: TodoViewProps) {
   const [data, setData] = useState<TodosResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [filter, setFilter] = useState<FilterKey>("all")
 
   /** 실제 fetch — 효과/핸들러가 공유. 효과 본문에서 동기 setState 를 하지 않도록
    *  선(先) setLoading 은 새로고침 핸들러에만 두고, 최초 로드는 초기 state(loading=true)에 맡긴다 */
@@ -75,33 +78,75 @@ export function TodoView({ onSelectDoc }: TodoViewProps) {
     fetchTodos()
   }, [fetchTodos])
 
-  /** 3군으로 나누고 각 군 내부 정렬. 빈 군은 버린다 */
-  const groups = useMemo(() => {
+  /** 3군으로 나누고 각 군 내부 정렬. (빈 군 포함 — 칩 카운트에 쓴다) */
+  const allGroups = useMemo(() => {
     if (!data) return []
     return GROUPS.map((g) => ({
       ...g,
       items: sortItems(data.todos.filter((t) => g.match(t.origin))),
-    })).filter((g) => g.items.length > 0)
+    }))
   }, [data])
+
+  /** 칩 카운트 — 군별 크기 + 전체 */
+  const counts = useMemo(() => {
+    const c: Record<FilterKey, number> = { all: data?.total ?? 0, active: 0, doc: 0, wait: 0 }
+    for (const g of allGroups) c[g.key as FilterKey] = g.items.length
+    return c
+  }, [allGroups, data])
+
+  /** 실제 표시 — 필터 적용 + 빈 군 제거 */
+  const groups = useMemo(
+    () => allGroups.filter((g) => g.items.length > 0 && (filter === "all" || g.key === filter)),
+    [allGroups, filter]
+  )
 
   if (loading) return <p className="p-2 text-xs text-muted-foreground">할일 수집 중…</p>
   if (error) return <p className="p-2 text-xs text-rose-600 dark:text-rose-400">수집 실패: {error}</p>
   if (!data) return null
 
+  const CHIPS: { key: FilterKey; label: string }[] = [
+    { key: "all", label: "전체" },
+    { key: "active", label: "진행" },
+    { key: "doc", label: "문서" },
+    { key: "wait", label: "대기" },
+  ]
+
   return (
-    <div className="space-y-5">
-      {/* 요약 — kimi-final 어휘: 좌측 세로바 + 큰 숫자 */}
-      <div className="flex items-end gap-4 border-l-2 border-foreground/30 pl-3">
-        <div>
-          <p className="text-[11px] text-muted-foreground">남은 할일</p>
-          <p className="text-3xl font-semibold tabular-nums leading-none">{data.total}</p>
+    <div className="space-y-4">
+      {/* 스캔 경로 부재 경고 — 오타는 "0건"이 아니라 여기서 드러나야 한다 */}
+      {data.missingDirs.length > 0 && (
+        <div className="flex items-start gap-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-[11px] text-amber-700 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-300">
+          <AlertTriangle size={13} className="mt-0.5 shrink-0" aria-hidden />
+          <span>
+            <b>스캔 경로 {data.missingDirs.length}개 없음:</b> {data.missingDirs.join(" · ")} — 경로 오타면 여기서 잡힌다.
+          </span>
         </div>
-        <p className="pb-0.5 text-[11px] text-muted-foreground">
-          진행 중 goal · 문서 &ldquo;다음 액션&rdquo; · 대기 goal 을 한 곳에
-        </p>
+      )}
+
+      {/* 필터 칩 — 읽기 전용 숫자 대신 눌러서 군을 좁힌다 */}
+      <div className="flex flex-wrap items-center gap-1.5">
+        {CHIPS.map((chip) => {
+          const active = filter === chip.key
+          return (
+            <button
+              key={chip.key}
+              onClick={() => setFilter((f) => (f === chip.key ? "all" : chip.key))}
+              aria-pressed={active}
+              className={cn(
+                "flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-medium transition-colors focus-visible:ring-2 focus-visible:ring-ring",
+                active
+                  ? "border-foreground/30 bg-foreground/10 text-foreground"
+                  : "border-border text-muted-foreground hover:text-foreground"
+              )}
+            >
+              {chip.label}
+              <span className="tabular-nums font-semibold">{counts[chip.key]}</span>
+            </button>
+          )
+        })}
         <button
           onClick={reload}
-          className="mb-0.5 ml-auto flex items-center gap-1 rounded-md border border-border px-2 py-1 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+          className="ml-auto flex items-center gap-1 rounded-md border border-border px-2 py-1 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
         >
           <RefreshCw size={11} /> 새로고침
         </button>
