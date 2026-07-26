@@ -13,7 +13,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - 같은 레포·같은 브랜치에 에이전트 2명 금지 → worktree만.
 - 배포·시크릿·npm publish = 사람 Gate. 교리 본문 복제 금지(포인터만).
 
-<!-- YOHAN-ROSTER-CARD:BEGIN (managed by yohan-brain ops/propagation ??SoT瑜?怨좎퀜?? 吏곸젒?섏젙 湲덉?) -->
+<!-- YOHAN-ROSTER-CARD:BEGIN (managed by yohan-brain ops/propagation — SoT를 고쳐라, 직접수정 금지) -->
 ## 상시 지휘자 — 라우팅 카드 (yohan ecosystem)
 
 > SoT: yohan-brain `memory/core/agent-roster.yaml` `conductor_always_on` (v0.4+, status=active면 obey).
