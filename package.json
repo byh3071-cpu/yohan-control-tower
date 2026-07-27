@@ -3,6 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "save": "vhk save",
+    "check": "vhk check",
+    "scan": "vhk secure scan",
+    "recap": "vhk recap",
+    "ship": "vhk ship",
+    "doctor": "vhk doctor",
     "dev": "next dev -p 3001",
     "build": "next build",
     "start": "next start -p 3001",

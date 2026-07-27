@@ -1,26 +1,10 @@
-@AGENTS.md
+# yohan-control-tower — GitHub Copilot Instructions
 
-<!-- YOHAN-ROSTER-CARD:BEGIN (managed by yohan-brain ops/propagation — SoT를 고쳐라, 직접수정 금지) -->
+> 코딩/디자인 전용. 기록/운영 → CLAUDE.md 참조.
+> ⚡ 이 파일은 RULES.md에서 자동 생성됨 (vhk sync). 직접 수정 금지.
 
-## 상시 지휘자 — 라우팅 카드 (yohan ecosystem)
-
-> SoT: yohan-brain `memory/core/agent-roster.yaml` `conductor_always_on` (v0.4+, status=active면 obey).
-> 이 레포 자체 규칙(RULES/CLAUDE LIVE)이 있으면 그게 우선(precedence).
-
-- 모든 태스크: 해법 구상 **전에** 크기 판정 → `라우팅: S|M|L — 계획 1줄 (근거: 파일수/신규설계/리스크)` 선언 후 진행. 키워드("풀개발") 불필요, 항상.
-- **판정법(감 금지)**: ①하드 트리거 먼저 → 해당 시 즉시 확정 · ②없으면 예상 수정 파일 수를 먼저 세고 구간 매핑(≤2=S·3~6=M·≥7/다레포=L). LLM 자유분류는 불안정(실측 33~56%) — 파일수 결정론이 정답.
-- **S**(≤2파일·신규설계 없음·≤15분): 지휘자 단독. 서브에이전트·orca 금지(오버헤드).
-- **M**(3~6파일·부분 신규): 서브에이전트 티어링 — 탐색 haiku → 계획 opus(승인) → 구현 sonnet → 적대검증 opus/fable 루프.
-- **L**(≥7파일·신규 모듈·다레포·릴리즈급): /goal orca 풀파이프라인 — Scout→Plan승인★→worktree fanout→타벤더 적대검증→머지게이트★. "풀개발"=L 강제.
-- 하드 트리거(분류 생략): 스키마 마이그레이션·인증/결제/보안·크로스레포·릴리즈 = 무조건 **L** · 오타·문서/주석만 = **S**.
-- 애매하면 작은 쪽 시작 → 검증 실패(테스트/tsc/critic) 시 **재선언 후 승급**(몰래 계속 금지).
-- 동시 작업 = worktree만. 같은 레포·같은 브랜치 2에이전트 금지.
-- Antigravity(agy) = 보조·초안 전용(메인 지휘 금지) — 산출물은 상위 티어 검증 필수.
-- 배포·시크릿·npm publish·main 직push = 사람 게이트(불변).
-<!-- YOHAN-ROSTER-CARD:END -->
-
-<!-- vhk:rules:start -->
-> ⚡ 아래 규칙 섹션은 RULES.md에서 자동 생성됨 (vhk sync). 직접 수정 금지.
+## 필수 참조
+- docs/PRD.md · docs/ARCHITECTURE.md · CLAUDE.md · RULES.md
 
 ## 기술 스택
 - Next.js 16 · React 19 · TypeScript (strict)
@@ -66,12 +50,3 @@
 <!-- BEGIN:nextjs-agent-rules -->
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
 <!-- END:nextjs-agent-rules -->
-
-## 기록 규칙
-- 세션 종료 시 `docs/log/YYYY-MM-DD-{작업명}.md` 생성
-- 기술 선택 시 `docs/adr/ADR-{번호}-{제목}.md` 생성
-- 범용 패턴 발견 시 `docs/patterns/PAT-NNN-{영문명}.md`
-- 기능 완성 / 에러 해결 / ADR / 세션 종료 시 Notion "바이브코딩 Dev Log" DB에 1행 적재
-- 태그는 기존 옵션만 사용, 같은 작업 중복 적재 금지 (SoT Key)
-
-<!-- vhk:rules:end -->
