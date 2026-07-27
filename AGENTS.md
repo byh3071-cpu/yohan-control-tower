@@ -26,7 +26,7 @@
 ## 프로젝트 정체성 · 아키텍처 불변식
 - 한 줄 설명: 요한 생태계 **통합 관제탑** — brain(SoT)을 읽어 미션·프로젝트·Task·문서·벡터를 한 화면에서 관제하는 **로컬 전용** 대시보드
 - 포트: **3001**
-- **brain = SoT.** 관제탑은 읽기 자유 + **신규 파일 생성만** 허용. 기존 brain 파일 수정은 금지 (계약 `must_not: modify_existing_brain_files`).
+- **brain = SoT.** 관제탑은 읽기 자유 + **신규 파일 생성만** 허용. 기존 brain 파일 수정은 금지. — **이 레포 자체 규칙이다. 아직 계약 조항이 아니다.** 현행 `ecosystem-contract.yaml` 의 `control_tower.must_not` 은 `read_brain_memory_as_ingest_source` 하나뿐이고, `modify_existing_brain_files` 신설은 **계약 개정(사람 승인 커밋) 대상**이다.
 - **로컬 전용.** localhost 서비스(Qdrant 6333 · Ollama 11434)와 로컬 파일시스템에 의존한다. 클라우드 배포 대상이 아니다.
 - brain 경로는 `YOHAN_OS_ROOT` env 로 해석한다. 절대경로 하드코딩 금지.
 - 노션은 **사람용 뷰·모바일 인박스**. 정본이 아니다 (ADR-009).
@@ -39,7 +39,7 @@
 - AI 는 분류·상태변경을 **제안**만 한다. 승인은 사람.
 
 ## 코딩 규칙
-- TypeScript strict — `any` 금지. 공용 타입은 `lib/types.ts` 가 SoT.
+- TypeScript strict — `any` 금지. 타입 SoT 2축: 공용 = `src/lib/types.ts`, 벡터 = `src/lib/vector/types.ts` (벡터 모듈 7개 + 테스트가 `./types` 상대 import 라 같은 디렉토리 유지).
 - try-catch 필수, 빈 catch 금지
 - `console.log` 프로덕션 제거
 - 파일명 kebab-case
