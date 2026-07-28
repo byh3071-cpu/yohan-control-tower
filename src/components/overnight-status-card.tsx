@@ -52,7 +52,12 @@ export function OvernightStatusCard() {
     }
   }, [])
 
-  useEffect(() => { fetchStatus() }, [fetchStatus])
+  // setState 는 타이머 콜백 안에서만 — effect 본문 동기 호출은 cascading render 로 잡힌다
+  // (react-hooks/set-state-in-effect).
+  useEffect(() => {
+    const t = setTimeout(() => void fetchStatus(), 0)
+    return () => clearTimeout(t)
+  }, [fetchStatus])
 
   const latest = data?.summaries[0]
   const summary = !data

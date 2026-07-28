@@ -28,7 +28,7 @@
 | F006 | v1.1 | 정합성 lint 엔진 | 미션 미배정 프로젝트 / `projects.yaml` 미등재 레포 / goal frontmatter 위반. **워크트리·변형 디렉토리(`vhk-privacy-v3`·`vhk-wt-drift` 등) 제외** | 프로젝트 (결함 수 배지는 홈) |
 
 - **AI 규칙(F009·F005·F006)**: AI 는 분류·상태변경·초안을 **제안**만. 반영·승인은 사람.
-- **F010 오너 승인항**: `git:sync`(= `git pull && git push`)와 `sync:notion:push` 는 RULES.md "main 직 push·발송은 사람 게이트"와 정면으로 만난다 → **두 명령의 UI 노출 여부는 착수 전 오너가 결정**.
+- **F010 오너 승인항 — 판정 완료(2026-07-28, 비노출)**: `git:sync`(= `git pull && git push`)와 `sync:notion:push` 는 RULES.md "main 직 push·발송은 사람 게이트"와 정면으로 만난다 → **둘 다 UI 비노출 + 서버 403**. `api/run` 의 `humanGate` 플래그가 거부하고, `sidebar.tsx`·`command-palette.tsx` 목록에서도 뺐다(누르면 실패할 버튼을 띄우지 않는다). 여는 방법은 플래그 1줄 제거 — 오너 판정 사항.
 - **goal status 정책**: 스키마 정본 = VHK 템플릿 4값(`NOT_STARTED|IN_PROGRESS|DONE|BLOCKED`). 단 **실측상 vhk 9건·brain 4건이 확장 어휘**를 쓴다(`DEFERRED·OBSERVING·CANCELED·PR_OPEN·ACTIVE·BACKLOG`). → F006 lint 는 4값을 하드코딩하지 말고, **템플릿 4값 = 정본 / 그 밖은 `warn`(에러 아님) + 레포별 확장 허용 목록을 설정으로 수용**한다.
 
 ## 4. 데이터/상태 모델

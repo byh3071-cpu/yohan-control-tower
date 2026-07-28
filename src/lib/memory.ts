@@ -511,37 +511,6 @@ export async function getSessionLogs(): Promise<SessionLog[]> {
   return logs.sort((a, b) => b.date.localeCompare(a.date))
 }
 
-/** 날짜 문자열(YYYY-MM-DD) → 결정적 32bit 해시. 같은 날이면 같은 값. */
-function dayHash(ymd: string): number {
-  let h = 2166136261
-  for (let i = 0; i < ymd.length; i++) {
-    h ^= ymd.charCodeAt(i)
-    h = Math.imul(h, 16777619)
-  }
-  return h >>> 0
-}
-
-/**
- * "오늘의 재발견" — 하루 동안 고정된 문서 하나.
- *
- * 예전엔 Math.random() 이라 새로고침할 때마다 바뀌었다. 재발견해놓고 딴 일 하다 돌아오면
- * 사라지니 "오늘의"라는 이름이 거짓이었고, 다시 찾을 방법도 없었다. 날짜를 시드로 써서
- * 하루 고정한다.
- *
- * 풀에 작성 문서(결정로그·규칙·프로젝트·템플릿)도 넣는다 — 정작 다시 만나야 할 건
- * 잊고 있던 내 결정인데 수집물만 뽑고 있었다.
- */
-export function pickSerendipity(docs: DocMeta[], today = new Date()): DocMeta | null {
-  const pool = docs.filter((d) => d.excerpt.length > 20)
-  if (pool.length === 0) return null
-  const ymd = [
-    today.getFullYear(),
-    String(today.getMonth() + 1).padStart(2, "0"),
-    String(today.getDate()).padStart(2, "0"),
-  ].join("-")
-  return pool[dayHash(ymd) % pool.length]
-}
-
 export async function getStats(docs: DocMeta[]): Promise<Stats> {
   const decisions = docs.filter((d) => d.category === "decisions").length
   const ingests = docs.filter((d) =>

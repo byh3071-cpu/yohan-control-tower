@@ -4,7 +4,7 @@ import { useState } from "react"
 import {
   Lightbulb, Rss, Link2, BookCheck, Scale, FileText,
   Zap, Globe, RefreshCw, BarChart3, Search,
-  Bot, Play, Wrench, ArrowDownToLine, ArrowUpFromLine, GitBranch,
+  Bot, Play, Wrench, ArrowDownToLine,
   ChevronsLeft, ChevronsRight,
   Library, GraduationCap, FolderKanban, PenLine, Inbox,
 } from "lucide-react"
@@ -51,10 +51,13 @@ interface QuickAction {
   action: string
 }
 
+/**
+ * `/api/run` allowlist 의 부분집합 — 사람 게이트 2건(`sync:notion:push`·`git:sync`)은 뺐다.
+ * 서버가 403 으로 거부하므로 띄워도 누르면 실패한다(PRD F010: 위험 명령 비노출).
+ */
 const QUICK_ACTIONS: QuickAction[] = [
   { label: "URL 인제스트", icon: <Globe size={16} />, action: "ingest:url" },
   { label: "RSS 수집", icon: <Rss size={16} />, action: "ingest:all" },
-  { label: "노션 푸시", icon: <ArrowUpFromLine size={16} />, action: "sync:notion:push" },
   { label: "노션 풀", icon: <ArrowDownToLine size={16} />, action: "sync:notion:pull" },
   { label: "주간 리포트", icon: <BarChart3 size={16} />, action: "report:weekly" },
   { label: "드리프트 점검", icon: <Search size={16} />, action: "check:drift" },
@@ -62,7 +65,6 @@ const QUICK_ACTIONS: QuickAction[] = [
   { label: "봇 상태", icon: <Bot size={16} />, action: "bot:status" },
   { label: "배치 실행", icon: <Play size={16} />, action: "automation:batch" },
   { label: "MCP 빌드", icon: <RefreshCw size={16} />, action: "build" },
-  { label: "Git 동기화", icon: <GitBranch size={16} />, action: "git:sync" },
 ]
 
 interface SidebarProps {

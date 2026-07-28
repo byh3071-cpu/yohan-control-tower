@@ -15,6 +15,7 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "test": "tsx --test src/lib/**/*.test.ts",
+    "verify:docs": "tsx scripts/verify-doc-paths.ts",
     "init:collections": "tsx scripts/vector/init-collections.ts"
   },
   "dependencies": {

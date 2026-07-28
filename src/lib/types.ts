@@ -158,15 +158,6 @@ export interface ChartData {
   evaluatorRollup: EvaluatorRollup | null
 }
 
-export interface SerendipityDoc {
-  title: string
-  excerpt: string
-  relPath: string
-  category: DocCategory
-  date: string | null
-  tags: string[]
-}
-
 export interface GitCommit {
   hash: string
   date: string

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { getStats, buildChartData, parseBatchHistory, pickSerendipity, getGitLog, extractDecisions, getSessionLogs, getEvaluatorRollup } from "@/lib/memory"
+import { getStats, buildChartData, parseBatchHistory, getGitLog, extractDecisions, getSessionLogs, getEvaluatorRollup } from "@/lib/memory"
 import { getDocsCached, getDocsCacheMeta, clearDocsCache } from "@/lib/docs-cache"
 import { createTtlCache } from "@/lib/server-cache"
 import { withNoStoreJson } from "@/lib/http-cache"
@@ -15,11 +15,10 @@ async function buildPayload() {
   const batchHistory = await parseBatchHistory()
   const baseCharts = buildChartData(docs, batchHistory)
   const charts = { ...baseCharts, evaluatorRollup: await getEvaluatorRollup() }
-  const serendipity = pickSerendipity(docs)
   const changelog = await getGitLog(30)
   const decisions = extractDecisions(docs)
   const sessions = await getSessionLogs()
-  return { docs, stats, charts, serendipity, changelog, decisions, sessions }
+  return { docs, stats, charts, changelog, decisions, sessions }
 }
 
 export async function GET(req: Request) {

@@ -14,8 +14,15 @@
 import { existsSync } from "node:fs"
 import { join } from "node:path"
 
+import { loadEnvConfig } from "@next/env"
+
 import { isDocPathAllowed, DOC_SCAN_PREFIXES, DOC_SOURCES } from "../src/lib/memory"
 import { getMemoryDir, resolveRepoRoot } from "../src/lib/paths"
+
+// tsx 직접 실행에는 Next 의 env 로딩이 없다 — 붙이지 않으면 `.env.local` 에
+// YOHAN_OS_ROOT 를 넣어도 이 스크립트만 못 읽어 앱과 판정이 갈린다.
+// paths.ts 는 함수 호출 시점에 env 를 읽으므로 import 이후 로드로 충분하다.
+loadEnvConfig(process.cwd())
 
 let ok = true
 

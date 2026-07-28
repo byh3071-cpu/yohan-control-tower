@@ -39,7 +39,12 @@ export function PublishStatusCard() {
     }
   }, [])
 
-  useEffect(() => { fetchStatus() }, [fetchStatus])
+  // setState 는 타이머 콜백 안에서만 — effect 본문 동기 호출은 cascading render 로 잡힌다
+  // (react-hooks/set-state-in-effect).
+  useEffect(() => {
+    const t = setTimeout(() => void fetchStatus(), 0)
+    return () => clearTimeout(t)
+  }, [fetchStatus])
 
   // "읽지 못함"과 "글 0편"을 절대 같은 문구로 보여주지 않는다 — 그 둘이 섞이면
   // 레포가 사라진 것도 정상으로 읽힌다(§6-⑤).

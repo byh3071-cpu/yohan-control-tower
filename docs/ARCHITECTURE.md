@@ -20,9 +20,9 @@
 
 | 모듈 | 경로 | 책임 | 기능ID |
 |---|---|---|---|
-| 탭 셸 | `src/app/page.tsx`, `layout.tsx`, `globals.css`, `components/view-tabs.tsx` (이관) | 탭 전환 + App Router 루트. **명령 실행 UI 배선**: `runServerAction`(`page.tsx:205-228`)이 `/api/run` 유일 호출처 → `CommandPalette` prop(`page.tsx:553`). 결과 표시는 기록 탭 | F008, F010 |
+| 탭 셸 | `src/app/page.tsx`, `layout.tsx`, `globals.css`, `components/view-tabs.tsx` (이관) | 탭 전환 + App Router 루트. **명령 실행 UI 배선**: `runServerAction`(`page.tsx:216`)이 `/api/run` 유일 호출처 → `Sidebar`·`CommandPalette` prop(`page.tsx:555`). 결과 표시는 기록 탭 | F008, F010 |
 | UI 프리미티브 | `src/components/ui/*`, `header.tsx`, `sidebar.tsx`, `theme-provider.tsx`, `src/lib/utils.ts`(`cn`) (이관) | shadcn 껍데기 — `utils.ts` 는 `ui/*`·`view-tabs`·`graph-view-2d` 전부가 import, 누락 시 컴파일 불가 | F008 |
-| 전역 검색 | `src/components/command-palette.tsx` (이관·**개조**) + `src/app/api/search/route.ts` (이관) | 팔레트 → 문서 검색. **현행 팔레트의 유일한 fetch 는 `/api/nlp-command`(`:119`)이고 `/api/search` 소비자는 0건** → `/api/search` 로 재배선. `nlp-command` 의 `open_view` 5종 중 4종은 탭 지위 상실, `home` 은 v1.1 신탭으로 의미 변경 — 어느 쪽이든 재배선 필요 | F008, F001 |
+| 전역 검색 | `src/components/command-palette.tsx` (이관·**개조 완료**) + `src/app/api/search/route.ts` (이관) | 팔레트 → 문서 검색·명령 실행. **`/api/search` 로 재배선 완료**(구 `/api/nlp-command` 삭제). 자연어 의도 파싱은 되살리지 않는다 — `open_view` 5종 중 4종이 탭 지위를 잃었고, 자연어 명령 실행은 오분류 1회가 곧 실행이라 F010 사람 게이트와 충돌 | F008, F001 |
 | 미션 집계 | `src/lib/missions.ts` (신규) | `projects.yaml` + 레포 `goals/` 스캔 → 미션별 롤업 | F004, F005 |
 | 미션 API | `src/app/api/missions/route.ts` (신규) | 롤업 JSON | F004 |
 | 프로젝트 드릴다운 | `src/app/api/projects/[slug]/route.ts` (신규) | 레포 1개의 Task·이벤트 상세 | F005 |
@@ -31,23 +31,24 @@
 | lint API | `src/app/api/lint/route.ts` (신규) | 결함 목록 + 홈 배지 건수 | F006 |
 | 문서 인덱스 | `src/lib/memory.ts`, `doc-scope.ts` (이관) | brain 문서 556건 목록·본문·통계, managed(113)/collected(443) 축 | F001 |
 | 문서 API·뷰 | `src/app/api/docs/route.ts`, `docs/[...path]/route.ts` + `components/{table-view,doc-card,doc-preview}.tsx` (이관) | 목록·본문·표 | F001 |
-| 문서 관계 뷰 | `src/lib/{constellation,constellation-gravity,force-sim-2d,domains}.ts` + `api/constellation/route.ts` + `components/{constellation-view,graph-view-2d}.tsx` (이관) | 문서 그래프 — **문서 탭 안의 뷰 모드**(탭 아님). 라우트는 `page.tsx:155` 가 fetch 중 | F001 |
+| 문서 관계 뷰 | `src/lib/{constellation,constellation-gravity,force-sim-2d,domains}.ts` + `api/constellation/route.ts` + `components/{constellation-view,graph-view-2d}.tsx` (이관) | 문서 그래프 — **문서 탭 안의 뷰 모드**(탭 아님). 라우트는 `page.tsx:160` 이 fetch 중 | F001 |
 | **인박스** | `src/app/api/sot-draft/route.ts`, `sot-draft/generate/route.ts` + `components/sot-draft-panel.tsx` (이관·**개조**) | brain 에 **신규** md 생성 — 유일한 쓰기 통로. 존재 검사 추가(§6-①) | **F009** |
 | 타임라인·차트 | `src/components/{timeline-view,full-charts}.tsx` (이관) | 기록 탭 시간축 뷰 | F002 |
 | 밤루프 감사 | `src/lib/audits.ts` + `api/overnight-status/route.ts` + `components/overnight-status-card.tsx` (이관) | overnight 요약·이월 큐 | F002 |
 | 발행 상태 | `src/lib/publish.ts` + `api/publish-status/route.ts` + `components/publish-status-card.tsx` (이관·**개조**) | studio mdx 집계 — silent fallback 제거(§5) | F002 |
 | 평가 이력 | `src/app/api/evaluations/route.ts` (이관) | 평가 상세 목록 | F002 |
-| **명령 실행** | `src/app/api/run/route.ts` (이관·**개조**) | allowlist **11종** 실행, cwd 명시(§6-③). `git:sync`·`sync:notion:push` 노출은 오너 판정 대기(PRD §3) | **F010** |
+| **명령 실행** | `src/app/api/run/route.ts` (이관·**개조**) | allowlist **11종** 실행, cwd 명시(§6-③). `git:sync`·`sync:notion:push` 는 `humanGate` 로 **서버 403**, UI(`sidebar.tsx`·`command-palette.tsx`) 목록에서도 제외 — 이중 차단 | **F010** |
 | 벡터 인프라 | `src/lib/vector/{qdrant,ollama,notion,ingest,chunking,collections,producers,sources,types}.ts` (이동) | 컬렉션 보장·임베딩(bge-m3 1024d)·청킹·멱등 upsert | F003 |
 | 벡터 API | `src/app/api/vector/{status,query,reset}/route.ts` + `vector/ingest/*/route.ts` 14종 (이동) | 상태·질의·인제스트 | F003 |
-| 벡터 패널 | `src/components/vector/{CollectionStatus,IngestButton,LogViewer,QueryTester}.tsx` (이동) | 벡터 탭 UI | F003 |
+| 벡터 패널 | `src/components/vector/{VectorPanel,CollectionStatus,IngestButton,LogViewer,QueryTester}.tsx` (이동 + `VectorPanel` **신규 추출**) | 벡터 탭 UI. `VectorPanel` 은 탭 셸의 벡터 탭과 독립 주소 `src/app/vector/page.tsx` 가 **같은 화면을 공유**하게 하는 단일 소유자 — 어느 한쪽에만 두면 다른 쪽이 빈 껍데기가 된다 | F003 |
 | 벡터 스크립트·테스트 | `scripts/vector/{init-collections,incremental-cron}.ts` + `src/lib/vector/{notion-since,qdrant-max-edited,qdrant-orphan}.test.ts` (이동) | 컬렉션 초기화·증분 cron·회귀 3건. `init-collections.ts:8-9` 의 `../lib/qdrant` → `../../src/lib/vector/qdrant` 재작성 | F003 |
 | 경로 해석 | `src/lib/paths.ts` (이관·**개조**) | `YOHAN_OS_ROOT`·`YOHAN_REPOS_ROOT` 해석 (§6-②) | 전역 |
 | 뷰 캐시 | `src/lib/{server-cache,docs-cache,http-cache}.ts` (이관·**개조**) | TTL + inflight dedupe + 스탬프 무효화(§3) | 전역 |
 | 타입 SoT | `src/lib/types.ts` (이관) | dashboard 공용 타입 SoT. **벡터 타입은 `src/lib/vector/types.ts` 로 분리 유지** — 벡터 모듈 7개(`chunking·collections·ingest·notion·producers·qdrant·sources`) + `notion-since.test.ts:4` 가 `./types` 를 상대 import 한다. 병합하면 8곳이 깨진다 | 전역 |
 
-**이관 제외(삭제)** — 어떤 기능ID에도 안 붙음: `api/briefing`+`briefing-card.tsx` · `api/nlp-command` · `serendipity-card.tsx` · `mini-charts.tsx`(이미 미사용) · `api/vector-status`+`vector-status-card.tsx`(이 레포 `api/vector/status` 와 **중복 소유**).
-**탭 재편(F008)**: **v1.0 4탭** = 프로젝트(←todo) · 문서(←docs+관계뷰+인박스) · 기록(←timeline+charts+run 결과) · 벡터(흡수). **v1.1** 에 홈 1개만 추가 → 5에서 동결. 기존 6탭에 신규 2를 더해 8탭이 되는 경로를 차단한다.
+**이관 제외(삭제 완료)** — 어떤 기능ID에도 안 붙던 7파일: `api/briefing`+`briefing-card.tsx` · `api/nlp-command` · `serendipity-card.tsx` · `mini-charts.tsx`(이미 미사용) · `api/vector-status`+`vector-status-card.tsx`(이 레포 `api/vector/status` 와 **중복 소유**).
+카드를 지우면 그 백엔드가 죽은 코드로 남는다 — `serendipity` 는 UI 를 지운 뒤 소비자 0인 채 `memory.ts`(`pickSerendipity`+`dayHash`)·`types.ts`(`SerendipityDoc`)·`api/docs` 응답 필드에 남아 있어 **함께 제거**했다.
+**탭 재편(F008) — v1.0 완료**: **4탭** = 프로젝트(←todo) · 문서(←docs+관계뷰+인박스) · 기록(←timeline+charts+run 결과) · 벡터(흡수). **v1.1** 에 홈 1개만 추가 → 5에서 동결. 기존 6탭에 신규 2를 더해 8탭이 되는 경로를 차단한다.
 **동시 갱신**: `package.json` — `test` glob `lib/**/*.test.ts` → `src/lib/**/*.test.ts`, `init:collections` → `scripts/vector/init-collections.ts`. `RULES.md` — `:42` 의 `/api/reset` → `/api/vector/reset`, **타입 SoT 문장을 2축**(공용 `src/lib/types.ts` + 벡터 `src/lib/vector/types.ts`)으로.
 
 ## 3. 데이터 소유권 (SoT)
