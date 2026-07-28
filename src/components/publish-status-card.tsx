@@ -13,10 +13,12 @@ interface PublishItem {
 
 interface PublishStatusData {
   ok: boolean
-  total: number
-  published: number
-  draft: number
-  latest: PublishItem[]
+  /** false = 읽지 못함(레포 부재 등). true 인데 total 0 = 진짜 글 0편. 둘을 구별한다. */
+  available: boolean
+  total?: number
+  published?: number
+  draft?: number
+  latest?: PublishItem[]
   error?: string
 }
 
@@ -31,7 +33,7 @@ export function PublishStatusCard() {
       const res = await fetch("/api/publish-status", { cache: "no-store" })
       setData(await res.json())
     } catch {
-      setData({ ok: false, total: 0, published: 0, draft: 0, latest: [], error: "네트워크 오류" })
+      setData({ ok: false, available: false, error: "네트워크 오류" })
     } finally {
       setLoading(false)
     }
@@ -39,13 +41,15 @@ export function PublishStatusCard() {
 
   useEffect(() => { fetchStatus() }, [fetchStatus])
 
+  // "읽지 못함"과 "글 0편"을 절대 같은 문구로 보여주지 않는다 — 그 둘이 섞이면
+  // 레포가 사라진 것도 정상으로 읽힌다(§6-⑤).
   const summary = !data
     ? ""
-    : data.ok
-      ? data.total > 0
+    : !data.available
+      ? `읽지 못함${data.error ? ` — ${data.error}` : ""}`
+      : (data.total ?? 0) > 0
         ? `${data.total}건 · 발행 ${data.published} · 초안 ${data.draft}`
-        : "글 없음(형제 레포 미접근 가능)"
-      : `읽기 실패${data.error ? ` — ${data.error}` : ""}`
+        : "글 0편"
 
   return (
     <div className="shrink-0 border-b border-border">
@@ -85,9 +89,9 @@ export function PublishStatusCard() {
       {expanded && data && (
         <div className="px-4 pb-3">
           <div className="rounded-lg bg-card border border-border p-3 text-xs">
-            {data.ok && data.latest.length > 0 ? (
+            {data.available && (data.latest?.length ?? 0) > 0 ? (
               <ul className="space-y-1">
-                {data.latest.map((item) => (
+                {data.latest?.map((item) => (
                   <li key={item.slug} className="flex items-center justify-between gap-2">
                     <span className="truncate">{item.title}</span>
                     <span

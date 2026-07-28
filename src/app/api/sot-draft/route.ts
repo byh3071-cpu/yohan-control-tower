@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import { existsSync } from "node:fs"
 import { mkdir, writeFile } from "node:fs/promises"
 import { join } from "node:path"
 import { clearDocsCache } from "@/lib/docs-cache"
@@ -6,7 +7,8 @@ import { getMemoryDir } from "@/lib/paths"
 
 export const dynamic = "force-dynamic"
 
-const MEMORY_ROOT = getMemoryDir()
+// lazy — getMemoryDir() 는 YOHAN_OS_ROOT 미설정 시 throw 한다(paths.ts).
+// 모듈 로드 시점에 부르면 이 라우트가 로드조차 안 된다.
 
 const TARGET_PREFIX: Record<string, string> = {
   insights: "ingest/insights",
@@ -171,8 +173,26 @@ export async function POST(req: Request) {
       : `${ymd}-${hm}-sot-${slug}`
   const fileName = `${id}.md`
   const relPath = `${prefix}/${fileName}`
-  const dir = join(/* turbopackIgnore: true */ MEMORY_ROOT, prefix)
+  let memoryRoot: string
+  try {
+    memoryRoot = getMemoryDir()
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e)
+    return NextResponse.json({ error: "brain 경로 해석 실패", detail: msg }, { status: 500 })
+  }
+
+  const dir = join(/* turbopackIgnore: true */ memoryRoot, prefix)
   const absPath = join(/* turbopackIgnore: true */ dir, fileName)
+
+  // 계약 불변식: brain 에는 **신규 파일만** 만든다(ADR-012, contract control_tower.must_not:
+  // modify_existing_brain_files). 파일명이 분 단위라 같은 분·같은 제목이면 충돌하는데,
+  // 존재 검사 없이 writeFile 하면 기존 초안을 덮어써 계약을 위반한다.
+  if (existsSync(absPath)) {
+    return NextResponse.json(
+      { error: "이미 존재하는 경로입니다 — brain 기존 파일은 수정하지 않습니다", relPath },
+      { status: 409 }
+    )
+  }
 
   const fm = buildFrontMatter(target, draftKind, id, ymd, title, tags, target === "insights" ? domain : undefined)
   const out = `${fm}${bodyMarkdown.trim()}\n`

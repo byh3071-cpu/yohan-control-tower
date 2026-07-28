@@ -60,7 +60,13 @@ export function isDocPathAllowed(relPath: string): boolean {
   return DOC_SCAN_PREFIXES.some((p) => norm === p || norm.startsWith(`${p}/`))
 }
 
-const MEMORY_ROOT = getMemoryDir()
+// lazy + memoize — getMemoryDir() 는 YOHAN_OS_ROOT 미설정 시 throw 한다(paths.ts).
+// 모듈 로드 시점에 부르면 이 모듈에 의존하는 라우트가 전부 로드 실패한다.
+let _memoryRoot: string | null = null
+function memoryRoot(): string {
+  if (_memoryRoot === null) _memoryRoot = getMemoryDir()
+  return _memoryRoot
+}
 
 function categorize(relPath: string): DocCategory {
   const norm = relPath.replace(/\\/g, "/")
@@ -151,7 +157,7 @@ function extractExcerpt(content: string, max = 120): string {
 export async function listDocs(): Promise<DocMeta[]> {
   const allFiles: string[] = []
   for (const d of DOC_SCAN_PREFIXES) {
-    allFiles.push(...(await collectMdFiles(join(MEMORY_ROOT, d), MEMORY_ROOT)))
+    allFiles.push(...(await collectMdFiles(join(memoryRoot(), d), memoryRoot())))
   }
 
   const docs: DocMeta[] = []
@@ -160,7 +166,7 @@ export async function listDocs(): Promise<DocMeta[]> {
     try {
       const raw = await readFile(filePath, "utf8")
       const { data, content } = matter(raw)
-      const relPath = relative(MEMORY_ROOT, filePath).replace(/\\/g, "/")
+      const relPath = relative(memoryRoot(), filePath).replace(/\\/g, "/")
       const fileName = filePath.split(/[\\/]/).pop() ?? ""
 
       const cat = categorize(relPath)
@@ -192,8 +198,8 @@ export async function getDoc(relPath: string): Promise<DocFull | null> {
   const norm = relPath.replace(/\\/g, "/")
   if (!isDocPathAllowed(norm)) return null
 
-  const absRoot = resolve(MEMORY_ROOT)
-  const filePath = resolve(join(MEMORY_ROOT, norm))
+  const absRoot = resolve(memoryRoot())
+  const filePath = resolve(join(memoryRoot(), norm))
   const relToRoot = relative(absRoot, filePath)
   if (relToRoot.startsWith("..") || relToRoot.includes(`..${sep}`)) return null
 
@@ -224,7 +230,7 @@ export async function getDoc(relPath: string): Promise<DocFull | null> {
   export async function parseBatchHistory(): Promise<BatchDay[]> {
   const days: Record<string, { ok: number; fail: number }> = {}
   try {
-    const log = await readFile(join(MEMORY_ROOT, "logs", "automation-batch.log"), "utf8")
+    const log = await readFile(join(memoryRoot(), "logs", "automation-batch.log"), "utf8")
     let currentDate = ""
     for (const line of log.split("\n")) {
       const dm = line.match(/^\[(\d{4}-\d{2}-\d{2})/)
@@ -363,7 +369,7 @@ export function buildChartData(docs: DocMeta[], batchHistory: BatchDay[]): Chart
 }
 
 export async function getEvaluatorRollup(): Promise<EvaluatorRollup | null> {
-  const dir = join(MEMORY_ROOT, "metrics", "evaluations")
+  const dir = join(memoryRoot(), "metrics", "evaluations")
   try {
     const names = (await readdir(dir)).filter((n) => n.startsWith("eval-") && n.endsWith(".md"))
     if (names.length === 0) return null
@@ -412,7 +418,7 @@ export interface EvaluationListItem {
 }
 
 export async function listEvaluationDetails(limit = 24): Promise<EvaluationListItem[]> {
-  const dir = join(MEMORY_ROOT, "metrics", "evaluations")
+  const dir = join(memoryRoot(), "metrics", "evaluations")
   const out: EvaluationListItem[] = []
   try {
     const names = (await readdir(dir)).filter((n) => n.startsWith("eval-") && n.endsWith(".md"))
@@ -452,7 +458,7 @@ export async function listEvaluationDetails(limit = 24): Promise<EvaluationListI
 
 export async function getGitLog(limit = 30): Promise<GitCommit[]> {
   try {
-    const cwd = join(MEMORY_ROOT, "..")
+    const cwd = join(memoryRoot(), "..")
     const raw = execFileSync(
       "git",
       ["log", `-${limit}`, "--format=%h||%ad||%s", "--date=short"],
@@ -480,7 +486,7 @@ export function extractDecisions(docs: DocMeta[]): DecisionEntry[] {
 }
 
 export async function getSessionLogs(): Promise<SessionLog[]> {
-  const dir = join(MEMORY_ROOT, "logs", "sessions")
+  const dir = join(memoryRoot(), "logs", "sessions")
   const logs: SessionLog[] = []
   try {
     const entries = await readdir(dir)
@@ -546,7 +552,7 @@ export async function getStats(docs: DocMeta[]): Promise<Stats> {
   let batchLastRun: string | null = null
 
   try {
-    const logPath = join(MEMORY_ROOT, "logs", "automation-batch.log")
+    const logPath = join(memoryRoot(), "logs", "automation-batch.log")
     const log = await readFile(logPath, "utf8")
     const lines = log.trim().split("\n")
     for (let i = lines.length - 1; i >= 0; i--) {
