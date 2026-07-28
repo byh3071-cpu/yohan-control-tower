@@ -39,7 +39,7 @@
 
 - 시크릿 평문 금지 → `.env.local` + `.gitignore`
 - 멀티벤더 설정(`~/.claude.json` · `~/.codex/` · `~/.cursor/` · `~/.gemini/`)을 읽을 때 **토큰·credential 값은 마스킹**한다. `.credentials.json` · `auth.json` · `oauth_creds.json` · `_env_backup/` 은 열지 않는다.
-- 파괴적 라우트(`/api/reset` 등)는 same-origin 검사 필수
+- 파괴적 라우트(`/api/vector/reset` 등)는 same-origin 검사 필수
 - 로컬 명령 실행(`/api/run`)은 allowlist + **cwd 명시**. 암묵 폴백 금지.
 - LLM 이 뱉는 닫힌집합 값(select·enum)은 코드에서 allowlist 대조 (PAT-001)
 - 고위험 작업(배포·삭제·publish·main 직 push)은 사람 승인 후에만
