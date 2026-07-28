@@ -2,6 +2,40 @@
 
 > v1 OUT 기능은 여기에 기록. 범위 수비 필수.
 
-## v1.1 후보
+## v1.1 (PRD 확정 범위)
 
-- 
+- **F004 미션 롤업 + 홈 탭** — 5탭에서 동결. 6번째 금지
+- **F005 프로젝트 드릴다운** — 미션 → 레포 → Task. `<repo>/goals/*.md` 다레포 스캔
+- **F006 정합성 lint 엔진** — goal-schema · freshness · superseded · orphan 4규칙
+- **선행 게이트**: brain `projects.yaml` 의 미션 **미배속 21건** 배속 확정 (요한 판정)
+
+## 코드 부채 (v1.0 이관이 드러낸 것)
+
+`vhk check` 위반 11건 중 **진짜 7건**:
+
+| 항목 | 위치 | 성격 |
+|---|---|---|
+| `any` 2건 | `src/lib/vector/ollama.ts:26` · `qdrant.ts:183` | RULES "TypeScript strict — any 금지" 위반. 이관 전부터 있던 벡터 코드 부채 |
+| PascalCase 파일명 5건 | `src/components/vector/{CollectionStatus,IngestButton,LogViewer,QueryTester,VectorPanel}.tsx` | RULES "파일명 kebab-case". 다른 컴포넌트(`doc-card`·`todo-view`)는 kebab 이라 **벡터 폴더만 규칙이 갈렸다** |
+
+rename 은 import 수정을 동반하므로 7파일 이상 — 별도 작업으로 잡을 것.
+
+## VHK 도구 결함 (이슈 등록 후보)
+
+`vhk check` 오탐 2종:
+
+- **env 이름을 시크릿으로 오판** — `paths.ts:18` 의 `YOHAN_OS_ROOT` 는 **에러 메시지 문자열 안의 변수 이름**이지 값이 아니다. 이름 노출은 시크릿 유출이 아니다
+- **`.test.ts` 를 kebab-case 위반으로 오판** — `notion-since.test.ts` 는 kebab 인데 `.test` 접미사 때문에 걸린다
+
+기존 등록분: vhk #543 #544 #545 #546
+
+## 2차 (범위 밖 — 인터뷰에서 나온 것)
+
+- **자동 갱신 배선** — 전역 Stop hook(4벤더) · GitHub Actions on push · 작업스케줄러. always-on 은 Actions 뿐
+- **멀티벤더 스택 관리축** — 스킬 드리프트 실측(claude 25 / codex 23 / cursor 21 / gemini 19 / agy 9) · 훅 이벤트명·MCP 스키마가 4벤더 전부 상이
+- **일정·캘린더축** — 노션 일정/할일 337행 → 파일 마이그레이션. L2-5 삶·기반의 주 뷰
+- **모바일 A** — brain→노션 자동 publish 복구 (`automation:batch` 정지 상태)
+- **모바일 B** — Tailscale + PWA. MagicDNS → `tailscale cert` → `tailscale serve`. **Vercel 0개**
+- **재무축 2차** — 노션 가계부 연결 · 투자봇 계측 · 프로젝트별 투입시간
+- **`api/search` silent fallback** — LLM 파싱 실패가 `catch { indices = [] }` 로 "결과 없음"과 합쳐진다. 팔레트의 유일한 검색 경로라 중요도 상승
+- **`api/run` args 필터** — 블록리스트(`route.ts:89` TODO)를 allowlist 로 좁힐 것
