@@ -1,11 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import { listDocs } from "@/lib/memory"
-import { resolve } from "node:path"
-import { config } from "dotenv"
+import { loadBrainEnv } from "@/lib/paths"
 
 export const dynamic = "force-dynamic"
-
-config({ path: resolve(/* turbopackIgnore: true */ process.cwd(), "..", ".env") })
 
 export async function POST(req: NextRequest) {
   const { query } = await req.json()
@@ -14,6 +11,9 @@ export async function POST(req: NextRequest) {
   }
 
   const docs = await listDocs()
+  // brain `.env` 의 키를 요청 시점에 로드한다. 모듈 레벨이면 resolveRepoRoot() 의
+  // throw 가 라우트 로드를 막는다.
+  loadBrainEnv()
   const key = process.env.OPENAI_API_KEY?.trim()
 
   if (!key) {

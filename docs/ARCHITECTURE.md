@@ -125,8 +125,10 @@ flowchart LR
 2. **`resolveRepoRoot()` 는 env 없으면 무조건 throw.** 현행 `paths.ts:11-21` 폴백 4단계 중 **2·3·4 전부 제거**. 3·4(`cwd/..`)만 지우면 폴백 2(`cwd/memory` 있으면 cwd)가 남아, 이 레포에 `memory/` 가 생기는 순간 자기를 brain 으로 조용히 해석한다.
 3. **F010 의 모든 액션은 `root: "brain"` 필수 필드를 갖는다** — 옵셔널·기본값·암묵 폴백 금지. 현행 `ROOT = resolve(process.cwd(), "..")`(`run/route.ts:7`)는 `brain/dashboard` 안이라서만 맞았고, 이관하면 `..`=`yohan-ecosystem/` 이라 **11개 액션 전부 엉뚱한 디렉토리에서 실행**된다. `"self"` 리터럴은 만들지 않는다(11종 전부 brain 명령 = 사용처 0).
 4. **탭 상한 5.** `ViewTab` union(`view-tabs.tsx`)이 SoT — **v1.0 은 4 리터럴, v1.1 에 `home` 1개만 추가해 5에서 동결. 6번째 금지.**
+   - 기본 진입 탭은 `page.tsx:103` 의 `useState<ViewTab>` 초기값 하나가 정한다. v1.0 = `docs`(PRD §6 오너 판정), v1.1 = `home`.
 5. **외부 의존 실패는 `ok:false`+`error` 또는 `setupRequired` 로 표면화한다.** 빈 배열·0·마지막 성공값을 정상값처럼 반환 금지(§5 studio 행이 이 위반의 실례).
 6. **fs 스캔은 전부 `server-cache` 를 거친다.** 라우트가 `listDocs()`·레포 워크를 직접 호출하지 않는다.
+7. **brain 절대경로는 `resolveRepoRoot()` 로만 얻는다 — `process.cwd()` 기준 상대 이동 금지.** ③이 `api/run` 만 지목했지만 **같은 결함이 2곳 더 있었다**: `api/search:8`·`api/sot-draft/generate:7` 의 `config({ path: resolve(cwd, "..", ".env") })`. 이관 후 `yohan-ecosystem/.env` 를 가리켜 아무것도 안 읽었고(dev 로그 `injected env (0)`), brain `.env` 의 `OPENAI_API_KEY` 가 유실됐다. 시스템 env 에 같은 키가 있어 **우연히 동작 중**이라 정적 게이트 4종이 전부 통과했다 — 실기동에서만 드러났다. 해결: `lib/paths.ts` 의 `loadBrainEnv()`(lazy + 1회) 를 요청 처리 중에 호출.
 
 ## 7. 기술 스택
 

@@ -1,6 +1,8 @@
 import { existsSync } from "node:fs"
 import { join, resolve } from "node:path"
 
+import { config as loadDotenv } from "dotenv"
+
 /**
  * brain(요한 브레인) 레포 루트 — 모든 SoT 의 출발점.
  *
@@ -40,6 +42,32 @@ export function resolveReposRoot(): string {
     )
   }
   return resolve(/* turbopackIgnore: true */ env)
+}
+
+/**
+ * brain 루트의 `.env` 를 프로세스 env 에 병합한다 (`OPENAI_API_KEY` 등).
+ *
+ * 이관 전에는 라우트마다 모듈 로드 시점에 `resolve(cwd, "..", ".env")` 를 읽었다.
+ * dashboard 가 `brain/dashboard` 안에 있을 때만 `..` 이 brain 이었고, 옮겨오면
+ * `yohan-ecosystem/` 을 가리켜 **아무것도 안 읽는다** — dev 로그의 `injected env (0)`
+ * 가 그 실측이다. `api/run` 의 F1 과 같은 결함이었다(ARCHITECTURE §6-③).
+ *
+ * lazy 인 이유는 `resolveRepoRoot()` 가 throw 하기 때문이다. 모듈 레벨에서 부르면
+ * 라우트가 로드조차 안 된다. 로드 실패는 여기서 흡수하되 **키 부재로 표면화된다** —
+ * 호출부가 그 사실을 응답에 드러내야 한다(`/api/search` 는 `method:"keyword"`).
+ */
+let brainEnvLoaded = false
+export function loadBrainEnv(): void {
+  if (brainEnvLoaded) return
+  brainEnvLoaded = true
+  try {
+    loadDotenv({ path: join(/* turbopackIgnore: true */ resolveRepoRoot(), ".env") })
+  } catch (e) {
+    console.warn(
+      "[paths] brain .env 로드 실패 — 키가 필요한 기능은 대체 모드로 동작합니다:",
+      e instanceof Error ? e.message : e
+    )
+  }
 }
 
 export function getMemoryDir(): string {

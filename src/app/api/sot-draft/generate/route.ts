@@ -1,10 +1,8 @@
 import { NextResponse } from "next/server"
-import { resolve } from "node:path"
-import { config } from "dotenv"
+
+import { loadBrainEnv } from "@/lib/paths"
 
 export const dynamic = "force-dynamic"
-
-config({ path: resolve(/* turbopackIgnore: true */ process.cwd(), "..", ".env") })
 
 /** POST 본문 필드 (고정 스키마 — §10.11) */
 export type SotDraftGenerateBody = {
@@ -40,6 +38,9 @@ async function callOpenAIDraft(
   context: string,
   template: NonNullable<SotDraftGenerateBody["template"]>
 ): Promise<{ text: string; ok: true } | { error: string; ok: false }> {
+  // brain `.env` 의 키를 요청 시점에 로드한다. 모듈 레벨이면 resolveRepoRoot() 의
+  // throw 가 라우트 로드를 막는다.
+  loadBrainEnv()
   const key = process.env.OPENAI_API_KEY?.trim()
   if (!key) return { ok: false, error: "NO_API_KEY" }
 
