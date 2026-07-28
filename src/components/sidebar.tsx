@@ -1,0 +1,220 @@
+"use client"
+
+import { useState } from "react"
+import {
+  Lightbulb, Rss, Link2, BookCheck, Scale, FileText,
+  Zap, Globe, RefreshCw, BarChart3, Search,
+  Bot, Play, Wrench, ArrowDownToLine,
+  ChevronsLeft, ChevronsRight,
+  Library, GraduationCap, FolderKanban, PenLine, Inbox,
+} from "lucide-react"
+import { Separator } from "@/components/ui/separator"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { cn } from "@/lib/utils"
+import { SCOPE_GROUPS, type DocFilter, type DocScope } from "@/lib/doc-scope"
+import type { DocCategory } from "@/lib/types"
+
+const CAT_META: Record<DocCategory, { label: string; icon: React.ReactNode }> = {
+  insights: { label: "인사이트", icon: <Lightbulb size={16} /> },
+  rss: { label: "RSS", icon: <Rss size={16} /> },
+  url: { label: "URL", icon: <Link2 size={16} /> },
+  wiki: { label: "위키", icon: <Library size={16} /> },
+  curriculum: { label: "교재", icon: <GraduationCap size={16} /> },
+  projects: { label: "프로젝트", icon: <FolderKanban size={16} /> },
+  decisions: { label: "결정로그", icon: <Scale size={16} /> },
+  rules: { label: "규칙", icon: <Wrench size={16} /> },
+  templates: { label: "템플릿", icon: <FileText size={16} /> },
+}
+
+const SCOPE_META: Record<DocScope, { label: string; icon: React.ReactNode }> = {
+  managed: { label: "작성", icon: <PenLine size={16} /> },
+  collected: { label: "수집", icon: <Inbox size={16} /> },
+}
+
+/** 전체 → [작성 그룹] → [수집 그룹]. 그룹 헤더 자체가 성격 필터다 */
+type Row =
+  | { kind: "item"; id: DocFilter; label: string; icon: React.ReactNode }
+  | { kind: "group"; id: DocScope; label: string; icon: React.ReactNode }
+
+const ROWS: Row[] = [
+  { kind: "item", id: "all", label: "전체", icon: <BookCheck size={16} /> },
+  ...SCOPE_GROUPS.flatMap((g): Row[] => [
+    { kind: "group", id: g.id, ...SCOPE_META[g.id] },
+    ...g.categories.map((c): Row => ({ kind: "item", id: c, ...CAT_META[c] })),
+  ]),
+]
+
+interface QuickAction {
+  label: string
+  icon: React.ReactNode
+  action: string
+}
+
+/**
+ * `/api/run` allowlist 의 부분집합 — 사람 게이트 2건(`sync:notion:push`·`git:sync`)은 뺐다.
+ * 서버가 403 으로 거부하므로 띄워도 누르면 실패한다(PRD F010: 위험 명령 비노출).
+ */
+const QUICK_ACTIONS: QuickAction[] = [
+  { label: "URL 인제스트", icon: <Globe size={16} />, action: "ingest:url" },
+  { label: "RSS 수집", icon: <Rss size={16} />, action: "ingest:all" },
+  { label: "노션 풀", icon: <ArrowDownToLine size={16} />, action: "sync:notion:pull" },
+  { label: "주간 리포트", icon: <BarChart3 size={16} />, action: "report:weekly" },
+  { label: "드리프트 점검", icon: <Search size={16} />, action: "check:drift" },
+  { label: "메모리 검색", icon: <Search size={16} />, action: "search:memory" },
+  { label: "봇 상태", icon: <Bot size={16} />, action: "bot:status" },
+  { label: "배치 실행", icon: <Play size={16} />, action: "automation:batch" },
+  { label: "MCP 빌드", icon: <RefreshCw size={16} />, action: "build" },
+]
+
+interface SidebarProps {
+  activeCategory: DocFilter
+  onCategoryChange: (cat: DocFilter) => void
+  /** `all` · 성격(`managed`/`collected`) · 분류별 문서 수 */
+  counts: Record<string, number>
+  onQuickAction: (action: string) => void
+  /** 모바일 드로어: 탭/액션 후 닫기 */
+  onNavigate?: () => void
+}
+
+export function Sidebar({ activeCategory, onCategoryChange, counts, onQuickAction, onNavigate }: SidebarProps) {
+  const [collapsed, setCollapsed] = useState(false)
+
+  return (
+    <aside
+      className={cn(
+        "shrink-0 border-r border-border bg-sidebar flex flex-col h-full transition-[width] duration-200",
+        collapsed ? "w-[3.25rem]" : "w-72"
+      )}
+    >
+      <div className={cn("flex items-center border-b border-border px-1 py-1", collapsed ? "justify-center" : "justify-end")}>
+        <button
+          type="button"
+          className="size-9 flex items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+          onClick={() => setCollapsed((c) => !c)}
+          aria-label={collapsed ? "사이드바 펼치기" : "사이드바 접기"}
+        >
+          {collapsed ? <ChevronsRight size={16} /> : <ChevronsLeft size={16} />}
+        </button>
+      </div>
+
+      <ScrollArea className="flex-1 min-h-0">
+        <div className={cn("p-2", collapsed && "flex flex-col items-center px-0 py-1")}>
+          {!collapsed && (
+            <p className="text-xs font-medium text-muted-foreground mb-2 px-2">카테고리</p>
+          )}
+          <nav className={cn("space-y-0.5", collapsed && "flex flex-col items-center gap-0.5")}>
+            {ROWS.map((c) => {
+              const count = counts[c.id] ?? 0
+              const active = activeCategory === c.id
+              const isGroup = c.kind === "group"
+              const baseStyle = active
+                ? "bg-accent text-foreground font-medium border-l-2 border-foreground"
+                : isGroup
+                  ? "text-sidebar-foreground/80 hover:bg-accent/50 hover:text-accent-foreground border-l-2 border-transparent"
+                  : "text-sidebar-foreground/60 hover:bg-accent/50 hover:text-accent-foreground border-l-2 border-transparent"
+
+              if (collapsed) {
+                const cellClass = cn(
+                  "size-9 flex items-center justify-center rounded-lg transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
+                  active
+                    ? "bg-accent text-foreground"
+                    : "text-sidebar-foreground/60 hover:bg-accent/50 hover:text-accent-foreground"
+                )
+                return (
+                  <Tooltip key={c.id}>
+                    <TooltipTrigger
+                      delay={0}
+                      render={(props) => (
+                        <button
+                          type="button"
+                          {...props}
+                          className={cn(props.className, cellClass)}
+                          onClick={(e) => { props.onClick?.(e); onCategoryChange(c.id); onNavigate?.() }}
+                        >
+                          {c.icon}
+                        </button>
+                      )}
+                    />
+                    <TooltipContent side="right" sideOffset={6}>
+                      {c.label} · {count}
+                    </TooltipContent>
+                  </Tooltip>
+                )
+              }
+
+              return (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => { onCategoryChange(c.id); onNavigate?.() }}
+                  className={cn(
+                    "w-full flex items-center gap-2 rounded-r-lg text-sm px-2 py-1.5 transition-all outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
+                    // 그룹 헤더는 위 여백 + 굵게 — 하위 분류와 층위를 구분한다
+                    isGroup && "mt-2 font-medium",
+                    !isGroup && "pl-4",
+                    baseStyle
+                  )}
+                >
+                  {c.icon}
+                  <span className="flex-1 text-left min-w-0">{c.label}</span>
+                  <span className="text-xs text-muted-foreground tabular-nums shrink-0">{count}</span>
+                </button>
+              )
+            })}
+          </nav>
+        </div>
+
+        <Separator className="my-2" />
+
+        {/* pb-16 — 마지막 항목이 창 하단(작업표시줄)에 맞닿지 않게 */}
+        <div className={cn("p-2 pb-16", collapsed && "flex flex-col items-center px-0 py-1 pb-16")}>
+          {!collapsed && (
+            <p className="text-[11px] font-medium text-muted-foreground mb-2 px-2 flex items-center gap-1">
+              <Zap size={12} /> 빠른 실행
+            </p>
+          )}
+          <div className={cn("flex flex-col gap-0.5", collapsed && "items-center")}>
+            {QUICK_ACTIONS.map((a) => {
+              if (collapsed) {
+                const cellClass = "size-9 flex items-center justify-center rounded-lg text-sidebar-foreground/50 transition-all outline-none select-none hover:bg-accent/60 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/50"
+                return (
+                  <Tooltip key={a.action}>
+                    <TooltipTrigger
+                      delay={0}
+                      render={(props) => (
+                        <button
+                          type="button"
+                          {...props}
+                          className={cn(props.className, cellClass)}
+                          onClick={(e) => { props.onClick?.(e); onQuickAction(a.action); onNavigate?.() }}
+                        >
+                          {a.icon}
+                        </button>
+                      )}
+                    />
+                    <TooltipContent side="right" sideOffset={6}>
+                      {a.label}
+                    </TooltipContent>
+                  </Tooltip>
+                )
+              }
+
+              return (
+                <button
+                  key={a.action}
+                  type="button"
+                  className="flex w-full items-center gap-2 rounded-lg border border-transparent px-2 py-1.5 text-left text-xs text-sidebar-foreground/55 transition-all outline-none select-none hover:bg-accent/50 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/50"
+                  onClick={() => { onQuickAction(a.action); onNavigate?.() }}
+                >
+                  <span className="shrink-0 [&_svg]:pointer-events-none [&_svg]:shrink-0">{a.icon}</span>
+                  <span className="min-w-0 flex-1 truncate">{a.label}</span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      </ScrollArea>
+    </aside>
+  )
+}
