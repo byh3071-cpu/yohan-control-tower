@@ -22,6 +22,7 @@
 | 컬렉션 4개 | 🟢 생성됨 | — |
 | Node / 빌드 / 타입 / 린트 | 🟢 통과 | — |
 | **Ollama** | 🔴 **이 PC 미설치** | **아래 1번** 설치 + 모델 pull 필요 |
+| **YOHAN_OS_ROOT / YOHAN_REPOS_ROOT** | 🔴 PC별 설정 필요 | **아래 2번** `.env.local` 에 절대경로 입력 |
 | **NOTION_TOKEN** | 🔴 미설정 | **아래 2번** `.env.local` 채우기 |
 
 > 인제스트(버튼 실행)는 **Ollama 와 NOTION_TOKEN 이 모두 준비된 뒤** 동작한다.
@@ -42,11 +43,12 @@ ollama list                        # bge-m3 보이면 OK
 
 Ollama 설치 후 서버는 자동으로 `localhost:11434` 에서 뜬다.
 
-### 2. 노션 토큰 + DB 공유
+### 2. 로컬 경로 + 노션 토큰
 
-1. https://www.notion.so/my-integrations 에서 **내부 통합(Internal Integration)** 토큰 발급
-2. `.env.local` 의 `NOTION_TOKEN=` 에 붙여넣기
-3. **인제스트 대상 12개 DB/페이지를 그 통합과 공유** (각 DB 우상단 ··· → 연결 추가 → 통합 선택)
+1. `.env.example` 을 `.env.local` 로 복사하고 `YOHAN_OS_ROOT` 에 yohan-brain 절대경로, `YOHAN_REPOS_ROOT` 에 레포 모음 절대경로 입력
+2. https://www.notion.so/my-integrations 에서 **내부 통합(Internal Integration)** 토큰 발급
+3. `.env.local` 의 `NOTION_TOKEN=` 에 붙여넣기
+4. **인제스트 대상 12개 DB/페이지를 그 통합과 공유** (각 DB 우상단 ··· → 연결 추가 → 통합 선택)
    - 대상 목록·ID 는 `lib/sources.ts` 참고 (AI 사전·PROTOCOL·RULEBOOK·SUMMARY·지식허브·인물·키워드·헌법·취향·EXEC LOG·RETROSPECT·RESOURCE)
 
 ### 3. 인프라 (이미 완료 — 재기동 시 참고)
