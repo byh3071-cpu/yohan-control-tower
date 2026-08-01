@@ -7,8 +7,14 @@ import {
   collectPagedItems,
   InboxInputError,
   isSameOriginRequest,
+  readInboxJsonBody,
   runJsonProcess,
 } from "./inbox-controller.js"
+import {
+  CAPTURE_CONTENT_MAX_CHARS,
+  CAPTURE_NOTE_MAX_CHARS,
+  MAX_REQUEST_BYTES,
+} from "./inbox-limits.js"
 
 test("활성 큐를 100건 단위로 끝까지 페이지네이션한다", async () => {
   const source = Array.from({ length: 115 }, (_, index) => `item-${index + 1}`)
@@ -105,6 +111,64 @@ test("POST 신뢰 경계는 정확히 같은 origin만 허용한다", () => {
   assert.equal(isSameOriginRequest(same), true)
   assert.equal(isSameOriginRequest(foreign), false)
   assert.equal(isSameOriginRequest(missing), false)
+})
+
+test("한국어·이모지 100,000자 캡처 요청은 바이트 상한에 걸리지 않고 무손실 통과한다", async () => {
+  // UI maxLength 가 허용하는 최대치를 그대로 재현: 한글(자당 UTF-8 3바이트) 100,000자
+  const content = "가나다라마".repeat(CAPTURE_CONTENT_MAX_CHARS / 5)
+  // "메모😀".length === 4 (이모지는 UTF-16 2유닛) → 노트도 상한 8,000자 꽉 채움
+  const note = "메모😀".repeat(CAPTURE_NOTE_MAX_CHARS / 4)
+  const raw = JSON.stringify({ action: "enqueue", content, note })
+  const rawBytes = Buffer.byteLength(raw, "utf8")
+  assert.ok(rawBytes > 300_000, "멀티바이트 페이로드 재현이 깨졌다 (옛 상한 120,000 회귀 감시)")
+  assert.ok(rawBytes <= MAX_REQUEST_BYTES)
+
+  const body = await readInboxJsonBody({
+    headers: new Headers({
+      "content-type": "application/json",
+      "content-length": String(rawBytes),
+    }),
+    text: async () => raw,
+  })
+  assert.equal(body.content, content)
+
+  const envelope = buildQuickCaptureEnvelope({ content, note })
+  assert.equal(String(envelope.raw_text).length, CAPTURE_CONTENT_MAX_CHARS)
+  assert.equal(envelope.user_note, note)
+})
+
+test("바이트 상한 초과는 헤더에서 조기 거절하고, 헤더가 거짓이면 실제 바이트로 재거절한다", async () => {
+  const oversized = JSON.stringify({
+    action: "enqueue",
+    content: "가".repeat(CAPTURE_CONTENT_MAX_CHARS * 2 + 20_000),
+  })
+  assert.ok(Buffer.byteLength(oversized, "utf8") > MAX_REQUEST_BYTES)
+
+  // ① content-length 헤더 조기 거절 — 본문은 읽히지 않아야 한다
+  let bodyRead = false
+  await assert.rejects(
+    readInboxJsonBody({
+      headers: new Headers({
+        "content-type": "application/json",
+        "content-length": String(MAX_REQUEST_BYTES + 1),
+      }),
+      text: async () => {
+        bodyRead = true
+        return oversized
+      },
+    }),
+    InboxInputError
+  )
+  assert.equal(bodyRead, false)
+
+  // ② 헤더가 없어도(또는 속여도) 실제 UTF-8 바이트 재검사로 거절
+  await assert.rejects(
+    readInboxJsonBody({
+      headers: new Headers({ "content-type": "application/json" }),
+      text: async () => oversized,
+    }),
+    /너무 큽니다/
+  )
 })
 
 test("JSON 프로세스 실행기는 shell 없이 stdin과 JSON stdout만 전달한다", async () => {

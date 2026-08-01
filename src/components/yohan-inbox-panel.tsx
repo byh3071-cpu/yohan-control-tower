@@ -13,6 +13,7 @@ import {
 } from "lucide-react"
 
 import { SotDraftPanel } from "@/components/sot-draft-panel"
+import { CAPTURE_CONTENT_MAX_CHARS, CAPTURE_NOTE_MAX_CHARS } from "@/lib/inbox-limits"
 import type {
   InboxDashboardResponse,
   InboxDisposition,
@@ -235,7 +236,7 @@ export function YohanInboxPanel({ onSaved }: Props) {
               value={content}
               onChange={(event) => setContent(event.target.value)}
               rows={4}
-              maxLength={100_000}
+              maxLength={CAPTURE_CONTENT_MAX_CHARS}
               className="w-full resize-y rounded-lg border border-border bg-background px-3 py-2 text-xs leading-relaxed outline-none focus:ring-2 focus:ring-ring"
               placeholder="URL을 붙여넣거나 생각 조각을 그대로 적으세요."
             />
@@ -245,7 +246,7 @@ export function YohanInboxPanel({ onSaved }: Props) {
             <input
               value={note}
               onChange={(event) => setNote(event.target.value)}
-              maxLength={8_000}
+              maxLength={CAPTURE_NOTE_MAX_CHARS}
               className="w-full rounded-lg border border-border bg-background px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-ring"
               placeholder="나중에 판단할 때 필요한 한 줄"
             />
@@ -428,7 +429,7 @@ export function YohanInboxPanel({ onSaved }: Props) {
                                   value={draft.myThoughts}
                                   onChange={(event) => updateDraft(item, { myThoughts: event.target.value })}
                                   rows={2}
-                                  maxLength={8_000}
+                                  maxLength={CAPTURE_NOTE_MAX_CHARS}
                                   className="w-full resize-y rounded-md border border-border bg-background px-2 py-1.5 text-[10px]"
                                   placeholder="정본에 함께 보존할 맥락"
                                 />

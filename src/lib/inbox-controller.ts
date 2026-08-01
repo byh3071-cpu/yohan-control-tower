@@ -3,6 +3,11 @@ import { randomUUID } from "node:crypto"
 import { existsSync } from "node:fs"
 import { join } from "node:path"
 
+import {
+  CAPTURE_CONTENT_MAX_CHARS,
+  CAPTURE_NOTE_MAX_CHARS,
+  MAX_REQUEST_BYTES,
+} from "@/lib/inbox-limits"
 import { resolveRepoRoot } from "@/lib/paths"
 import type {
   InboxCounts,
@@ -120,8 +125,8 @@ function platformFromUrl(url: URL): string {
 }
 
 export function buildQuickCaptureEnvelope(input: QuickCaptureInput): Record<string, unknown> {
-  const content = normalizeRequiredText(input.content, "링크 또는 텍스트", 100_000)
-  const note = normalizeOptionalText(input.note, "메모", 8_000)
+  const content = normalizeRequiredText(input.content, "링크 또는 텍스트", CAPTURE_CONTENT_MAX_CHARS)
+  const note = normalizeOptionalText(input.note, "메모", CAPTURE_NOTE_MAX_CHARS)
   const url = canonicalHttpUrl(content)
 
   return {
@@ -157,7 +162,7 @@ export function buildHumanDecision(input: InboxDecisionInput): Record<string, un
     throw new InboxInputError("거절 결정의 처리 방식은 reject만 허용합니다.")
   }
 
-  const thoughts = normalizeOptionalText(input.myThoughts, "내 생각", 8_000)
+  const thoughts = normalizeOptionalText(input.myThoughts, "내 생각", CAPTURE_NOTE_MAX_CHARS)
   const selected = input.selectedActions ?? []
   if (!Array.isArray(selected) || selected.length > 24) {
     throw new InboxInputError("선택 행동은 최대 24개까지 허용합니다.")
@@ -176,6 +181,37 @@ export function buildHumanDecision(input: InboxDecisionInput): Record<string, un
       decided_by: "yohan-control-tower",
     },
   }
+}
+
+/** NextRequest 가 구조적으로 만족하는 최소 표면 — 테스트에서 mock 으로 대체 가능. */
+type InboxJsonRequest = Pick<Request, "headers" | "text">
+
+/**
+ * 인박스 POST 본문 파서. 상한 검사는 2단이다:
+ * ① content-length 헤더 조기 거절 — 본문을 읽기 전에 끊는다(자원 절약).
+ * ② 실제 UTF-8 바이트 재검사 — 헤더는 클라이언트가 속일 수 있으므로 믿지 않는다.
+ */
+export async function readInboxJsonBody(request: InboxJsonRequest): Promise<Record<string, unknown>> {
+  const contentType = request.headers.get("content-type") ?? ""
+  if (!contentType.toLowerCase().startsWith("application/json")) {
+    throw new InboxInputError("Content-Type은 application/json이어야 합니다.")
+  }
+  const contentLength = Number(request.headers.get("content-length") ?? 0)
+  if (Number.isFinite(contentLength) && contentLength > MAX_REQUEST_BYTES) {
+    throw new InboxInputError("요청 본문이 너무 큽니다.")
+  }
+  const raw = await request.text()
+  if (Buffer.byteLength(raw, "utf8") > MAX_REQUEST_BYTES) {
+    throw new InboxInputError("요청 본문이 너무 큽니다.")
+  }
+  let body: unknown
+  try {
+    body = JSON.parse(raw) as unknown
+  } catch {
+    throw new InboxInputError("올바른 JSON 본문이 필요합니다.")
+  }
+  if (!isRecord(body)) throw new InboxInputError("JSON 객체가 필요합니다.")
+  return body
 }
 
 export function isSameOriginRequest(request: Request): boolean {

@@ -7,41 +7,13 @@ import {
   InboxInputError,
   isSameOriginRequest,
   loadInboxDashboard,
+  readInboxJsonBody,
 } from "@/lib/inbox-controller"
 import type { InboxDecisionInput, QuickCaptureInput } from "@/lib/inbox-controller"
 import type { InboxDisposition } from "@/lib/types"
 
 export const dynamic = "force-dynamic"
 export const runtime = "nodejs"
-
-const MAX_REQUEST_BYTES = 120_000
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value)
-}
-
-async function readJsonBody(request: NextRequest): Promise<Record<string, unknown>> {
-  const contentType = request.headers.get("content-type") ?? ""
-  if (!contentType.toLowerCase().startsWith("application/json")) {
-    throw new InboxInputError("Content-Type은 application/json이어야 합니다.")
-  }
-  const contentLength = Number(request.headers.get("content-length") ?? 0)
-  if (Number.isFinite(contentLength) && contentLength > MAX_REQUEST_BYTES) {
-    throw new InboxInputError("요청 본문이 너무 큽니다.")
-  }
-  const raw = await request.text()
-  if (Buffer.byteLength(raw, "utf8") > MAX_REQUEST_BYTES) {
-    throw new InboxInputError("요청 본문이 너무 큽니다.")
-  }
-  let body: unknown
-  try {
-    body = JSON.parse(raw) as unknown
-  } catch {
-    throw new InboxInputError("올바른 JSON 본문이 필요합니다.")
-  }
-  if (!isRecord(body)) throw new InboxInputError("JSON 객체가 필요합니다.")
-  return body
-}
 
 function optionalStringArray(value: unknown): string[] | undefined {
   if (value === undefined) return undefined
@@ -71,7 +43,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const body = await readJsonBody(request)
+    const body = await readInboxJsonBody(request)
     const action = body.action
 
     if (action === "enqueue") {
