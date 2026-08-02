@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import {
   AlertTriangle,
   CheckCircle2,
@@ -98,10 +98,27 @@ export function YohanInboxPanel({ onSaved }: Props) {
   const [content, setContent] = useState("")
   const [note, setNote] = useState("")
   const [submitting, setSubmitting] = useState(false)
-  const [actionId, setActionId] = useState<string | null>(null)
+  const pendingIdsRef = useRef<Set<string>>(new Set())
+  const [pendingIds, setPendingIds] = useState<Set<string>>(() => new Set())
   const [ack, setAck] = useState<string | null>(null)
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [drafts, setDrafts] = useState<Record<string, DecisionDraft>>({})
+
+  const beginItemAction = useCallback((id: string): boolean => {
+    if (pendingIdsRef.current.has(id)) return false
+    const next = new Set(pendingIdsRef.current)
+    next.add(id)
+    pendingIdsRef.current = next
+    setPendingIds(next)
+    return true
+  }, [])
+
+  const endItemAction = useCallback((id: string) => {
+    const next = new Set(pendingIdsRef.current)
+    next.delete(id)
+    pendingIdsRef.current = next
+    setPendingIds(next)
+  }, [])
 
   const refresh = useCallback(async (showSpinner = false) => {
     if (showSpinner) setLoading(true)
@@ -176,8 +193,8 @@ export function YohanInboxPanel({ onSaved }: Props) {
   }
 
   const saveDecision = async (item: InboxItem, decision: "approve" | "defer") => {
+    if (!beginItemAction(item.id)) return
     const draft = drafts[item.id] ?? initialDecision(item)
-    setActionId(item.id)
     setError(null)
     try {
       await postAction({
@@ -193,14 +210,14 @@ export function YohanInboxPanel({ onSaved }: Props) {
     } catch (decisionError) {
       setError(decisionError instanceof Error ? decisionError.message : "결정 저장 실패")
     } finally {
-      setActionId(null)
+      endItemAction(item.id)
     }
   }
 
   const promote = async (item: InboxItem) => {
     const confirmed = window.confirm("이 항목을 brain 정본으로 승격할까요? 기존 파일은 덮어쓰지 않습니다.")
     if (!confirmed) return
-    setActionId(item.id)
+    if (!beginItemAction(item.id)) return
     setError(null)
     try {
       await postAction({ action: "approve", id: item.id })
@@ -210,7 +227,7 @@ export function YohanInboxPanel({ onSaved }: Props) {
     } catch (promoteError) {
       setError(promoteError instanceof Error ? promoteError.message : "정본 승격 실패")
     } finally {
-      setActionId(null)
+      endItemAction(item.id)
     }
   }
 
@@ -347,7 +364,7 @@ export function YohanInboxPanel({ onSaved }: Props) {
                 const canPromote = item.status === "review_required"
                   && item.stage === "decided"
                   && item.human?.decision === "approve"
-                const working = actionId === item.id
+                const working = pendingIds.has(item.id)
 
                 return (
                   <article key={item.id} className="overflow-hidden rounded-lg border border-border bg-background/70">

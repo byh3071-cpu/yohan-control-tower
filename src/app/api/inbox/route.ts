@@ -5,6 +5,7 @@ import {
   decideInbox,
   enqueueInbox,
   InboxInputError,
+  isLocalReadRequest,
   isSameOriginRequest,
   loadInboxDashboard,
   readInboxJsonBody,
@@ -15,6 +16,8 @@ import type { InboxDisposition } from "@/lib/types"
 export const dynamic = "force-dynamic"
 export const runtime = "nodejs"
 
+const SENSITIVE_ERROR_LINE = /\b(token|secret|password|passwd|pwd|api[-_ ]?key|credential|authorization|bearer)\b/i
+
 function optionalStringArray(value: unknown): string[] | undefined {
   if (value === undefined) return undefined
   if (!Array.isArray(value) || value.some((entry) => typeof entry !== "string")) {
@@ -24,12 +27,22 @@ function optionalStringArray(value: unknown): string[] | undefined {
 }
 
 function errorResponse(error: unknown) {
-  const message = error instanceof Error ? error.message : "인박스 요청 처리 실패"
-  const status = error instanceof InboxInputError ? 400 : 500
-  return NextResponse.json({ ok: false, error: message }, { status })
+  if (error instanceof InboxInputError) {
+    return NextResponse.json({ ok: false, error: error.message }, { status: 400 })
+  }
+  const detail = (error instanceof Error ? error.message : String(error))
+    .split(/\r?\n/)
+    .map((line) => SENSITIVE_ERROR_LINE.test(line) ? "[민감 정보 포함 오류 줄 숨김]" : line)
+    .join("\n")
+    .slice(0, 2_000)
+  console.error("[inbox] 내부 요청 실패:", detail)
+  return NextResponse.json({ ok: false, error: "인박스 요청 처리 실패" }, { status: 500 })
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  if (!isLocalReadRequest(request)) {
+    return NextResponse.json({ ok: false, error: "로컬 조회 요청만 허용합니다." }, { status: 403 })
+  }
   try {
     return NextResponse.json(await loadInboxDashboard())
   } catch (error) {

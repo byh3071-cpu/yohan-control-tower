@@ -80,7 +80,7 @@ flowchart LR
   M["api/missions -> lib/missions.ts"]
   L["api/lint -> lib/lint.ts"]
   D["api/docs -> lib/memory.ts"]
-  S["api/sot-draft (F009, 유일한 brain 쓰기)"]
+  S["api/sot-draft (F009, 유일한 직접 brain 쓰기)"]
   I["api/inbox -> brain inbox CLI"]
   R["api/run (F010, allowlist 11)"]
   V["api/vector/ingest (F003)"]

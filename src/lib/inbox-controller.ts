@@ -118,7 +118,7 @@ function platformFromUrl(url: URL): string {
   if (host === "youtu.be" || host === "youtube.com" || host.endsWith(".youtube.com")) return "youtube"
   if (host === "instagram.com" || host.endsWith(".instagram.com")) return "instagram"
   if (host === "threads.net" || host.endsWith(".threads.net")) return "threads"
-  if (host === "x.com" || host === "twitter.com" || host.endsWith(".twitter.com")) return "x"
+  if (host === "x.com" || host.endsWith(".x.com") || host === "twitter.com" || host.endsWith(".twitter.com")) return "x"
   if (host === "github.com" || host.endsWith(".github.com")) return "github"
   if (host === "notion.so" || host.endsWith(".notion.so") || host.endsWith(".notion.site")) return "notion"
   if (host === "t.me" || host === "telegram.org" || host.endsWith(".telegram.org")) return "telegram"
@@ -136,7 +136,7 @@ export function buildQuickCaptureEnvelope(input: QuickCaptureInput): Record<stri
     idempotency_key: `control-tower:${randomUUID()}`,
     platform: url ? platformFromUrl(url) : "local",
     capture_channel: "browser",
-    content_kind: url ? (note ? "mixed" : "url") : note ? "mixed" : "text",
+    content_kind: note ? "mixed" : url ? "url" : "text",
     captured_at: new Date().toISOString(),
     ...(url ? { canonical_url: url.toString() } : { raw_text: content }),
     ...(note ? { user_note: note } : {}),
@@ -185,7 +185,39 @@ export function buildHumanDecision(input: InboxDecisionInput): Record<string, un
 }
 
 /** NextRequest 가 구조적으로 만족하는 최소 표면 — 테스트에서 mock 으로 대체 가능. */
-type InboxJsonRequest = Pick<Request, "headers" | "text">
+type InboxJsonRequest = Pick<Request, "headers" | "text"> & {
+  body?: ReadableStream<Uint8Array> | null
+}
+
+async function readRequestTextWithinLimit(request: InboxJsonRequest): Promise<string> {
+  if (!request.body) {
+    const raw = await request.text()
+    if (Buffer.byteLength(raw, "utf8") > MAX_REQUEST_BYTES) {
+      throw new InboxInputError("요청 본문이 너무 큽니다.")
+    }
+    return raw
+  }
+
+  const reader = request.body.getReader()
+  const chunks: Uint8Array[] = []
+  let totalBytes = 0
+  try {
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+      if (!value) continue
+      totalBytes += value.byteLength
+      if (totalBytes > MAX_REQUEST_BYTES) {
+        await reader.cancel().catch(() => undefined)
+        throw new InboxInputError("요청 본문이 너무 큽니다.")
+      }
+      chunks.push(value)
+    }
+  } finally {
+    reader.releaseLock()
+  }
+  return Buffer.concat(chunks, totalBytes).toString("utf8")
+}
 
 /**
  * 인박스 POST 본문 파서. 상한 검사는 2단이다:
@@ -201,10 +233,7 @@ export async function readInboxJsonBody(request: InboxJsonRequest): Promise<Reco
   if (Number.isFinite(contentLength) && contentLength > MAX_REQUEST_BYTES) {
     throw new InboxInputError("요청 본문이 너무 큽니다.")
   }
-  const raw = await request.text()
-  if (Buffer.byteLength(raw, "utf8") > MAX_REQUEST_BYTES) {
-    throw new InboxInputError("요청 본문이 너무 큽니다.")
-  }
+  const raw = await readRequestTextWithinLimit(request)
   let body: unknown
   try {
     body = JSON.parse(raw) as unknown
@@ -222,6 +251,22 @@ export function isSameOriginRequest(request: Request): boolean {
     const requestUrl = new URL(request.url)
     return LOOPBACK_HOSTNAMES.has(requestUrl.hostname)
       && new URL(origin).origin === requestUrl.origin
+  } catch {
+    return false
+  }
+}
+
+/**
+ * GET은 브라우저가 같은 출처 요청에도 Origin을 생략할 수 있다. loopback URL을 강제하고
+ * Sec-Fetch-Site=cross-site 및 명시적으로 다른 Origin을 거부해 정상 로컬 조회는 보존한다.
+ */
+export function isLocalReadRequest(request: Request): boolean {
+  try {
+    const requestUrl = new URL(request.url)
+    if (!LOOPBACK_HOSTNAMES.has(requestUrl.hostname)) return false
+    if (request.headers.get("sec-fetch-site")?.toLowerCase() === "cross-site") return false
+    const origin = request.headers.get("origin")
+    return !origin || new URL(origin).origin === requestUrl.origin
   } catch {
     return false
   }
@@ -261,39 +306,55 @@ export async function runJsonProcess<T>(spec: {
     })
     let stdout = ""
     let stderr = ""
+    let stdoutBytes = 0
+    let stderrBytes = 0
     let settled = false
+    let closed = false
+    const timers: { timeout?: NodeJS.Timeout; hardKill?: NodeJS.Timeout } = {}
 
     const finishError = (error: Error) => {
       if (settled) return
       settled = true
-      clearTimeout(timer)
-      if (!child.killed) child.kill()
+      if (timers.timeout) clearTimeout(timers.timeout)
+      if (!closed) {
+        child.kill()
+        timers.hardKill = setTimeout(() => {
+          if (!closed) child.kill("SIGKILL")
+        }, 2_000)
+        timers.hardKill.unref()
+      }
       reject(error)
     }
 
-    const timer = setTimeout(() => {
+    timers.timeout = setTimeout(() => {
       finishError(new Error(`인박스 CLI가 ${timeoutMs}ms 안에 끝나지 않았습니다.`))
     }, timeoutMs)
 
     child.stdout.setEncoding("utf8")
     child.stderr.setEncoding("utf8")
     child.stdout.on("data", (chunk: string) => {
+      if (settled) return
       stdout += chunk
-      if (Buffer.byteLength(stdout, "utf8") > maxOutputBytes) {
+      stdoutBytes += Buffer.byteLength(chunk, "utf8")
+      if (stdoutBytes > maxOutputBytes) {
         finishError(new Error("인박스 CLI stdout이 허용 크기를 넘었습니다."))
       }
     })
     child.stderr.on("data", (chunk: string) => {
+      if (settled) return
       stderr += chunk
-      if (Buffer.byteLength(stderr, "utf8") > maxOutputBytes) {
+      stderrBytes += Buffer.byteLength(chunk, "utf8")
+      if (stderrBytes > maxOutputBytes) {
         finishError(new Error("인박스 CLI stderr가 허용 크기를 넘었습니다."))
       }
     })
     child.on("error", (error) => finishError(error))
     child.on("close", (code) => {
+      closed = true
+      if (timers.hardKill) clearTimeout(timers.hardKill)
       if (settled) return
       settled = true
-      clearTimeout(timer)
+      if (timers.timeout) clearTimeout(timers.timeout)
       if (code !== 0) {
         const detail = stderr.trim().slice(-2_000) || `exit code ${code ?? "unknown"}`
         reject(new Error(`인박스 CLI 실패: ${detail}`))
@@ -339,12 +400,14 @@ export async function collectPagedItems<T>(input: {
   const target = Math.min(input.total, maxItems)
   const items: T[] = []
   while (items.length < target) {
-    const page = await input.loadPage(items.length, pageSize)
+    const remaining = target - items.length
+    const requested = Math.min(pageSize, remaining)
+    const page = await input.loadPage(items.length, requested)
     if (page.length > pageSize) {
       throw new Error("인박스 페이지가 요청한 크기를 초과했습니다.")
     }
-    items.push(...page)
-    if (page.length < pageSize) break
+    items.push(...page.slice(0, remaining))
+    if (page.length < requested) break
   }
   return items
 }

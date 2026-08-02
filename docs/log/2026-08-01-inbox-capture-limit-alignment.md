@@ -21,13 +21,14 @@ raw_text 100,000자를 실제 UTF-8(한글 3바이트/자)에서 수용하지 �
     최악 6바이트(한글 3·이모지 유닛당 2·`\uXXXX` 이스케이프 6)로 유도. 글자수 검증은
     서버가 따로 하므로 바이트 상한은 DoS 겉껍질일 뿐 타이트할 이유 없음.
 - `readJsonBody` 를 `inbox-controller.readInboxJsonBody` 로 이동(테스트 가능) —
-  content-length 헤더 조기 거절 + 실제 UTF-8 바이트 재검사 2단 유지.
+  content-length 헤더 조기 거절 + 실제 stream 누적 UTF-8 바이트 상한 검사를 적용한다.
+  헤더가 없거나 거짓이어도 상한을 넘는 첫 chunk에서 읽기를 취소한다.
 - UI(`yohan-inbox-panel`) maxLength 3곳·컨트롤러 글자수 한도를 전부 상수로 교체.
 
 ## 회귀 테스트 (src/lib/inbox-controller.test.ts)
 - 한국어·이모지 100,000자(+노트 8,000자) 요청: 바이트 상한 통과 + envelope 무손실 보존.
-- 상한 초과: ①거짓 content-length 헤더 조기 거절(본문 안 읽음 검증) ②헤더 없어도
-  실제 바이트 재검사로 거절.
+- 상한 초과: ①초과 content-length 헤더 조기 거절(본문 안 읽음 검증) ②헤더가 없어도
+  실제 stream이 상한을 넘는 즉시 취소하고 후속 chunk를 읽지 않음.
 
 ## 게이트
 test 20/20 · typecheck 0 · lint 0 · build 통과.
@@ -38,4 +39,4 @@ test 20/20 · typecheck 0 · lint 0 · build 통과.
 모아라 (UI·검증·전송 3계층 공유).
 
 ## 범위 밖 (건드리지 않음)
-리뷰의 low 관찰(DNS/ARIA/문서명) — 별도 처리 대상.
+리뷰의 low 관찰(ARIA/문서명) — 별도 처리 대상. DNS rebinding 경계는 2026-08-02 후속에서 반영.

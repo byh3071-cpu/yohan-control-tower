@@ -6,6 +6,7 @@ import {
   buildQuickCaptureEnvelope,
   collectPagedItems,
   InboxInputError,
+  isLocalReadRequest,
   isSameOriginRequest,
   readInboxJsonBody,
   runJsonProcess,
@@ -29,7 +30,7 @@ test("활성 큐를 100건 단위로 끝까지 페이지네이션한다", async 
 
   assert.deepEqual(calls, [
     { offset: 0, limit: 100 },
-    { offset: 100, limit: 100 },
+    { offset: 100, limit: 15 },
   ])
   assert.deepEqual(items, source)
 })
@@ -41,13 +42,21 @@ test("페이지 응답이 비거나 상한에 닿으면 숨기지 않고 수집�
   })
   assert.equal(partial.length, 40)
 
+  const cappedCalls: Array<{ offset: number; limit: number }> = []
   const capped = await collectPagedItems({
     total: 10_001,
     pageSize: 100,
-    maxItems: 200,
-    loadPage: async (offset, limit) => Array.from({ length: limit }, (_, index) => offset + index),
+    maxItems: 150,
+    loadPage: async (offset, limit) => {
+      cappedCalls.push({ offset, limit })
+      return Array.from({ length: 100 }, (_, index) => offset + index)
+    },
   })
-  assert.equal(capped.length, 200)
+  assert.equal(capped.length, 150)
+  assert.deepEqual(cappedCalls, [
+    { offset: 0, limit: 100 },
+    { offset: 100, limit: 50 },
+  ])
 })
 
 test("빠른 수집 URL을 CaptureEnvelope.v1로 보존한다", () => {
@@ -63,6 +72,9 @@ test("빠른 수집 URL을 CaptureEnvelope.v1로 보존한다", () => {
   assert.equal(envelope.canonical_url, "https://x.com/example/status/123?utm_source=test")
   assert.equal(envelope.user_note, "스킬 후보인지 확인")
   assert.equal("raw_text" in envelope, false)
+
+  const subdomain = buildQuickCaptureEnvelope({ content: "https://mobile.x.com/example/status/456" })
+  assert.equal(subdomain.platform, "x")
 })
 
 test("빠른 수집 텍스트는 로컬 원문으로 보존한다", () => {
@@ -121,6 +133,26 @@ test("POST 신뢰 경계는 loopback의 정확히 같은 origin만 허용한다"
   assert.equal(isSameOriginRequest(missing), false)
 })
 
+test("GET 신뢰 경계는 Origin 없는 로컬 조회를 허용하고 cross-site·외부 host를 거부한다", () => {
+  const local = new Request("http://localhost:3001/api/inbox")
+  const localSameSite = new Request("http://127.0.0.1:3001/api/inbox", {
+    headers: { "sec-fetch-site": "same-origin" },
+  })
+  const crossSite = new Request("http://localhost:3001/api/inbox", {
+    headers: { "sec-fetch-site": "cross-site" },
+  })
+  const foreignOrigin = new Request("http://localhost:3001/api/inbox", {
+    headers: { origin: "http://evil.example" },
+  })
+  const rebound = new Request("http://evil.example/api/inbox")
+
+  assert.equal(isLocalReadRequest(local), true)
+  assert.equal(isLocalReadRequest(localSameSite), true)
+  assert.equal(isLocalReadRequest(crossSite), false)
+  assert.equal(isLocalReadRequest(foreignOrigin), false)
+  assert.equal(isLocalReadRequest(rebound), false)
+})
+
 test("한국어·이모지 100,000자 캡처 요청은 바이트 상한에 걸리지 않고 무손실 통과한다", async () => {
   // UI maxLength 가 허용하는 최대치를 그대로 재현: 한글(자당 UTF-8 3바이트) 100,000자
   const content = "가나다라마".repeat(CAPTURE_CONTENT_MAX_CHARS / 5)
@@ -177,6 +209,29 @@ test("바이트 상한 초과는 헤더에서 조기 거절하고, 헤더가 거
     }),
     /너무 큽니다/
   )
+
+  // ③ 실제 Request stream은 상한을 넘는 첫 chunk에서 취소되고 후속 chunk를 읽지 않는다
+  let pulls = 0
+  let cancelled = false
+  const oversizedStream = new ReadableStream<Uint8Array>({
+    pull(controller) {
+      pulls += 1
+      controller.enqueue(new Uint8Array(MAX_REQUEST_BYTES + 1))
+    },
+    cancel() {
+      cancelled = true
+    },
+  })
+  await assert.rejects(
+    readInboxJsonBody({
+      headers: new Headers({ "content-type": "application/json" }),
+      body: oversizedStream,
+      text: async () => { throw new Error("stream 경로에서 text()를 호출하면 안 됩니다.") },
+    }),
+    /너무 큽니다/
+  )
+  assert.equal(pulls, 1)
+  assert.equal(cancelled, true)
 })
 
 test("JSON 프로세스 실행기는 shell 없이 stdin과 JSON stdout만 전달한다", async () => {
@@ -207,5 +262,14 @@ test("JSON이 아니거나 출력 상한을 넘긴 프로세스는 실패한다"
       maxOutputBytes: 32,
     }),
     /허용 크기/
+  )
+  await assert.rejects(
+    runJsonProcess({
+      executable: process.execPath,
+      args: ["-e", "setInterval(() => {}, 1000)"],
+      cwd,
+      timeoutMs: 50,
+    }),
+    /50ms/
   )
 })
