@@ -22,6 +22,7 @@ const CLI_OUTPUT_MAX_BYTES = 4 * 1024 * 1024
 const INBOX_PAGE_SIZE = 100
 const INBOX_ACTIVE_LOAD_MAX = 10_000
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+const LOOPBACK_HOSTNAMES = new Set(["localhost", "127.0.0.1", "[::1]"])
 
 export const INBOX_DISPOSITIONS = [
   "knowledge",
@@ -218,7 +219,9 @@ export function isSameOriginRequest(request: Request): boolean {
   const origin = request.headers.get("origin")
   if (!origin) return false
   try {
-    return new URL(origin).origin === new URL(request.url).origin
+    const requestUrl = new URL(request.url)
+    return LOOPBACK_HOSTNAMES.has(requestUrl.hostname)
+      && new URL(origin).origin === requestUrl.origin
   } catch {
     return false
   }

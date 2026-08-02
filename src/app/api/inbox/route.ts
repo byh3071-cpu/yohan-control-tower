@@ -39,7 +39,7 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   if (!isSameOriginRequest(request)) {
-    return NextResponse.json({ ok: false, error: "same-origin 요청만 허용합니다." }, { status: 403 })
+    return NextResponse.json({ ok: false, error: "로컬 same-origin 요청만 허용합니다." }, { status: 403 })
   }
 
   try {

@@ -99,17 +99,25 @@ test("사람 결정은 UUID·처리 방식·행동 목록을 닫힌 값으로 �
   )
 })
 
-test("POST 신뢰 경계는 정확히 같은 origin만 허용한다", () => {
+test("POST 신뢰 경계는 loopback의 정확히 같은 origin만 허용한다", () => {
   const same = new Request("http://localhost:3001/api/inbox", {
     headers: { origin: "http://localhost:3001" },
   })
+  const loopbackIp = new Request("http://127.0.0.1:3001/api/inbox", {
+    headers: { origin: "http://127.0.0.1:3001" },
+  })
   const foreign = new Request("http://localhost:3001/api/inbox", {
+    headers: { origin: "http://evil.example" },
+  })
+  const rebound = new Request("http://evil.example/api/inbox", {
     headers: { origin: "http://evil.example" },
   })
   const missing = new Request("http://localhost:3001/api/inbox")
 
   assert.equal(isSameOriginRequest(same), true)
+  assert.equal(isSameOriginRequest(loopbackIp), true)
   assert.equal(isSameOriginRequest(foreign), false)
+  assert.equal(isSameOriginRequest(rebound), false)
   assert.equal(isSameOriginRequest(missing), false)
 })
 

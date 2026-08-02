@@ -19,7 +19,7 @@ tags: [inbox, local, process-boundary, security, brain]
 - 서버는 **YOHAN_OS_ROOT**로 brain을 찾고, brain의 고정 tsx 실행기와 고정 인박스 CLI만 호출한다.
 - 실행은 **process.execPath**, argv 배열, 고정 cwd, **shell:false**, 타임아웃, 출력 상한으로 제한한다.
 - 브라우저가 보낸 임의 명령·경로·플래그는 받지 않는다. action·disposition·UUID를 코드의 닫힌 목록으로 검증한다.
-- POST는 정확한 same-origin 요청만 허용한다.
+- POST는 localhost·127.0.0.1·::1 중 하나를 쓰는 정확한 same-origin 요청만 허용한다. 요청 URL과 Origin을 같은 외부 도메인으로 맞춘 DNS rebinding 형태도 거부한다.
 - 큐와 정본 규칙은 brain CLI 응답을 권위로 삼는다. 관제탑은 SQLite를 직접 열거나 정본 파일을 직접 쓰지 않는다.
 - 운영 목록은 brain CLI의 **active + offset** 페이지를 100건씩 이어 붙인다. 첫 100건 뒤의 활성 항목을 숨긴 채 “0건”으로 판정하지 않으며, 보호 상한에 걸리거나 중간 페이지가 비면 활성 총계와 표시 건수의 차이를 화면에 경고한다.
 - 사람 결정 저장과 write-once 정본 승격은 별도 동작으로 유지한다.
