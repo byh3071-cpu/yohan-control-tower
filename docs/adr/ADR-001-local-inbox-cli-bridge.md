@@ -37,4 +37,4 @@ tags: [inbox, local, process-boundary, security, brain]
 - 실패 모드: CLI·tsx·env가 없으면 0건으로 위장하지 않고 인박스 패널에 오류를 표시한다.
 - 운영 제약: 인증·배포·스케줄러·플랫폼 보관함 해제는 이 라우트에 추가하지 않는다.
 - 되돌리기: 전용 패널과 Route Handler를 제거하면 기존 SoT 초안 흐름으로 돌아갈 수 있으며, brain 큐·정본 데이터는 영향을 받지 않는다.
-- 남은 사람 게이트: 두 레포 PR 머지, 실제 Telegram/플랫폼 수집 실행, 플랫폼 읽음·저장 해제, 스케줄러 활성화.
+- 남은 사람 게이트: Control Tower PR 머지, 실제 Telegram/플랫폼 수집 실행, 플랫폼 읽음·저장 해제, 스케줄러 활성화.

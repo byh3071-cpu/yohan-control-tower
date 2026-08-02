@@ -3,8 +3,9 @@ vhk_format: 1
 type: goal
 id: 1
 title: 요한 인박스 운영 화면 연결
-status: IN_PROGRESS
+status: DONE
 priority: P0
+completed: 2026-08-02
 ---
 
 # Goal 1: 요한 인박스 운영 화면 연결
@@ -29,12 +30,12 @@ priority: P0
 
 ## Completion Check
 
-- [ ] 빠른 수집이 CaptureEnvelope.v1로 enqueue되고 항목 ID가 보인다.
-- [ ] 활성 건수와 단계·상태가 처리 큐에 보이며 실패가 0건으로 위장되지 않는다.
-- [ ] 사람 결정 저장 뒤 별도 승인 동작으로만 정본 승격이 실행된다.
-- [ ] POST는 same-origin, 닫힌 action·disposition, UUID 검증을 통과해야 한다.
-- [ ] CLI는 process.execPath + 고정 tsx/CLI 경로 + shell:false + 고정 cwd로만 실행된다.
-- [ ] npm test, npm run typecheck, npm run build가 통과한다.
+- [x] 빠른 수집이 CaptureEnvelope.v1로 enqueue되고 항목 ID가 보인다.
+- [x] 활성 건수와 단계·상태가 처리 큐에 보이며 실패가 0건으로 위장되지 않는다.
+- [x] 사람 결정 저장 뒤 별도 승인 동작으로만 정본 승격이 실행된다.
+- [x] POST는 same-origin, 닫힌 action·disposition, UUID 검증을 통과해야 한다.
+- [x] CLI는 process.execPath + 고정 tsx/CLI 경로 + shell:false + 고정 cwd로만 실행된다.
+- [x] npm test, npm run typecheck, npm run build가 통과한다.
 
 ## 악수
 
