@@ -32,7 +32,8 @@
 | 문서 인덱스 | `src/lib/memory.ts`, `doc-scope.ts` (이관) | brain 문서 556건 목록·본문·통계, managed(113)/collected(443) 축 | F001 |
 | 문서 API·뷰 | `src/app/api/docs/route.ts`, `docs/[...path]/route.ts` + `components/{table-view,doc-card,doc-preview}.tsx` (이관) | 목록·본문·표 | F001 |
 | 문서 관계 뷰 | `src/lib/{constellation,constellation-gravity,force-sim-2d,domains}.ts` + `api/constellation/route.ts` + `components/{constellation-view,graph-view-2d}.tsx` (이관) | 문서 그래프 — **문서 탭 안의 뷰 모드**(탭 아님). 라우트는 `page.tsx:160` 이 fetch 중 | F001 |
-| **인박스** | `src/app/api/sot-draft/route.ts`, `sot-draft/generate/route.ts` + `components/sot-draft-panel.tsx` (이관·**개조**) | brain 에 **신규** md 생성 — 유일한 쓰기 통로. 존재 검사 추가(§6-①) | **F009** |
+| **인박스** | `src/app/api/sot-draft/route.ts`, `sot-draft/generate/route.ts` + `components/sot-draft-panel.tsx` (이관·**개조**) | brain 에 **신규** md 생성 — 유일한 직접 파일 쓰기 통로. 존재 검사 추가(§6-①) | **F009** |
+| **요한 인박스 운영** | `src/app/api/inbox/route.ts` + `src/lib/inbox-controller.ts` + `components/yohan-inbox-panel.tsx` (신규) | brain CLI의 수집·조회·사람 결정·write-once 승격을 닫힌 argv와 stdin JSON으로 호출. SQLite·brain 파일 직접 조작 금지([ADR-001](./adr/ADR-001-local-inbox-cli-bridge.md)) | **F009 확장** |
 | 타임라인·차트 | `src/components/{timeline-view,full-charts}.tsx` (이관) | 기록 탭 시간축 뷰 | F002 |
 | 밤루프 감사 | `src/lib/audits.ts` + `api/overnight-status/route.ts` + `components/overnight-status-card.tsx` (이관) | overnight 요약·이월 큐 | F002 |
 | 발행 상태 | `src/lib/publish.ts` + `api/publish-status/route.ts` + `components/publish-status-card.tsx` (이관·**개조**) | studio mdx 집계 — silent fallback 제거(§5) | F002 |
@@ -65,6 +66,7 @@
 | 벡터 포인트 | `lib/vector/qdrant.ts` | `api/vector/*` | Qdrant `:6333` — **노션의 복사본**, 전량 재생성 가능 |
 | 뷰 캐시 | `lib/server-cache.ts` | `docs-cache`, `api/{missions,lint,docs,constellation}` | 프로세스 메모리 — **복사본**, 재기동 시 소멸 |
 | 인박스 초안 | `api/sot-draft` → **brain** | `lib/memory.ts` | `brain/memory/{decisions,insights}/` |
+| 요한 인박스 큐·승격 영수증 | **yohan-brain CLI**(외부) | `api/inbox` → `lib/inbox-controller.ts` | 로컬 SQLite + brain 신규 정본 파일 |
 
 **소유권 시간축 이양**: 인박스 초안과 Doc 은 같은 `brain/memory/**` 를 쓰지만 충돌이 아니다 — **생성 순간에만 관제탑 소유(쓰기), 존재한 뒤부터는 brain 소유(읽기 전용)**. 그래서 §6-① 이 "존재하면 거부"다.
 
@@ -78,17 +80,20 @@ flowchart LR
   M["api/missions -> lib/missions.ts"]
   L["api/lint -> lib/lint.ts"]
   D["api/docs -> lib/memory.ts"]
-  S["api/sot-draft (F009, 유일한 brain 쓰기)"]
+  S["api/sot-draft (F009, 유일한 직접 brain 쓰기)"]
+  I["api/inbox -> brain inbox CLI"]
   R["api/run (F010, allowlist 11)"]
   V["api/vector/ingest (F003)"]
   CACHE["lib/server-cache.ts (TTL + 스탬프)"]
   BRAIN[("brain: projects.yaml, memory/**, docs/audits")]
+  INBOX[("로컬 inbox.sqlite + raw pointers")]
   REPOS[("YOHAN_REPOS_ROOT: goals/*.md, .vhk/events")]
   Q[("Qdrant :6333")]
   UI -->|fetch no-store| M
   UI --> L
   UI --> D
   UI --> S
+  UI --> I
   UI --> R
   UI --> V
   M --> CACHE
@@ -98,12 +103,15 @@ flowchart LR
   CACHE -->|읽기| REPOS
   R -->|cwd=brain| BRAIN
   S -->|신규 파일 생성만| BRAIN
+  I -->|고정 CLI · write-once 신규 파일| BRAIN
+  I -->|상태 조회·결정| INBOX
   V --> Q
 ```
 
 1. **홈 롤업(v1.1, F004·F006)**: 셸 → `GET /api/missions|/api/lint` → lib → 캐시(hit면 즉시) → miss면 `projects.yaml` + `goals/` 스캔 → JSON.
 2. **인박스(F009)**: 패널 → `POST /api/sot-draft` → **경로 존재 검사** → brain md 생성 → `clearDocsCache()`.
 3. **벡터 인제스트(F003)**: 버튼 → `POST /api/vector/ingest/<source>` → 노션 페치 → 청킹 → Ollama 임베딩 → Qdrant 결정적 ID upsert(멱등).
+4. **요한 인박스 운영(F009 확장)**: 패널 → `GET|POST /api/inbox` → `lib/inbox-controller.ts` → 고정 yohan-brain CLI. 조회는 status 뒤 active 목록을 100건 단위 offset 페이지로 순차 수집하고, 총계와 표시 건수가 다르면 0건으로 위장하지 않는다. 사람 결정과 정본 승격은 별도 요청이며 관제탑은 SQLite·정본 파일을 직접 열지 않는다.
 
 ## 5. 외부 의존 + 실패 모드
 
@@ -121,7 +129,7 @@ flowchart LR
 
 일반 코딩·보안·AI 제안 규칙은 [`RULES.md`](../RULES.md) §코딩·§보안·§프론트 아키텍처 참조. 아래는 **이 아키텍처 고유**의 것만.
 
-1. **brain 쓰기 통로는 `api/sot-draft/**`(F009) 하나뿐이고, 새 경로 생성만 한다.** 대상 절대경로가 이미 있으면 409 거부 — 현행 `sot-draft/route.ts:181-182` 는 `writeFile` 무검사라 동일 분·동일 제목이면 덮어쓴다. ※ 근거 계약 **개정 예정**: `ecosystem-contract.yaml:87-88` 의 `must_not` 은 `read_brain_memory_as_ingest_source` 1개뿐이고 `modify_existing_brain_files` 문자열은 없다. `:89` `note_ko` 도 충돌 → 사람 승인 커밋 선행(PRD §10 게이트 ①).
+1. **관제탑의 brain 직접 쓰기 통로는 `api/sot-draft/**`(F009) 하나뿐이고 새 경로 생성만 한다.** 대상 절대경로가 이미 있으면 409 거부한다. `api/inbox`는 직접 파일을 쓰지 않고 [ADR-001](./adr/ADR-001-local-inbox-cli-bridge.md)의 고정 yohan-brain CLI에 위임하며, 그 CLI도 UUID 고정 write-once 신규 파일만 만든다. 관제탑에서 SQLite·정본 경로를 직접 여는 우회는 금지한다. ※ 근거 계약 **개정 예정**: `ecosystem-contract.yaml:87-88` 의 `must_not` 은 `read_brain_memory_as_ingest_source` 1개뿐이고 `modify_existing_brain_files` 문자열은 없다. `:89` `note_ko` 도 충돌 → 사람 승인 커밋 선행(PRD §10 게이트 ①).
 2. **`resolveRepoRoot()` 는 env 없으면 무조건 throw.** 현행 `paths.ts:11-21` 폴백 4단계 중 **2·3·4 전부 제거**. 3·4(`cwd/..`)만 지우면 폴백 2(`cwd/memory` 있으면 cwd)가 남아, 이 레포에 `memory/` 가 생기는 순간 자기를 brain 으로 조용히 해석한다.
 3. **F010 의 모든 액션은 `root: "brain"` 필수 필드를 갖는다** — 옵셔널·기본값·암묵 폴백 금지. 현행 `ROOT = resolve(process.cwd(), "..")`(`run/route.ts:7`)는 `brain/dashboard` 안이라서만 맞았고, 이관하면 `..`=`yohan-ecosystem/` 이라 **11개 액션 전부 엉뚱한 디렉토리에서 실행**된다. `"self"` 리터럴은 만들지 않는다(11종 전부 brain 명령 = 사용처 0).
 4. **탭 상한 5.** `ViewTab` union(`view-tabs.tsx`)이 SoT — **v1.0 은 4 리터럴, v1.1 에 `home` 1개만 추가해 5에서 동결. 6번째 금지.**

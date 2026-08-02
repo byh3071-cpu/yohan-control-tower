@@ -10,7 +10,7 @@ import { CommandPalette } from "@/components/command-palette"
 import { ViewTabs, type ViewTab } from "@/components/view-tabs"
 import { OvernightStatusCard } from "@/components/overnight-status-card"
 import { PublishStatusCard } from "@/components/publish-status-card"
-import { SotDraftPanel } from "@/components/sot-draft-panel"
+import { YohanInboxPanel } from "@/components/yohan-inbox-panel"
 import { FullCharts } from "@/components/full-charts"
 import { TimelineView } from "@/components/timeline-view"
 import { TableView } from "@/components/table-view"
@@ -363,8 +363,8 @@ export default function DashboardPage() {
 
               {inboxOpen && (
                 <div className="shrink-0 border-b border-border/60 px-3 py-3">
-                  <div className="mx-auto max-w-3xl">
-                    <SotDraftPanel onSaved={() => void loadDashboard(true)} />
+                  <div className="mx-auto max-w-5xl">
+                    <YohanInboxPanel onSaved={() => void loadDashboard(true)} />
                   </div>
                 </div>
               )}

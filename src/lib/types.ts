@@ -170,3 +170,111 @@ export interface DecisionEntry {
   relPath: string
   summary: string
 }
+
+export type InboxItemStatus =
+  | "queued"
+  | "processing"
+  | "review_required"
+  | "completed"
+  | "action_required"
+  | "failed"
+
+export type InboxStage = "captured" | "triaged" | "deep_analyzed" | "decided" | "promoted"
+
+export type InboxDisposition =
+  | "knowledge"
+  | "skill"
+  | "action"
+  | "reference"
+  | "duplicate"
+  | "reject"
+  | "unrecoverable"
+
+export interface InboxActionCandidate {
+  id: string
+  title: string
+  detail?: string
+}
+
+export interface InboxCaptureEnvelope {
+  version: "CaptureEnvelope.v1"
+  raw_text?: string
+  canonical_url?: string
+  user_note?: string
+  captured_at: string
+  attachments: Array<{
+    id?: string
+    filename?: string
+    content_type?: string
+    sha256: string
+  }>
+}
+
+export interface InboxItem {
+  id: string
+  status: InboxItemStatus
+  stage: InboxStage
+  disposition: InboxDisposition | null
+  platform: string
+  capture_channel: string
+  content_kind: string
+  canonical_url: string | null
+  envelope: InboxCaptureEnvelope
+  triage: null | {
+    source_summary: string
+    relevance: number
+    recommended_disposition: InboxDisposition
+    requires_deep: boolean
+    duplicate_of?: string
+    missing_context: string[]
+  }
+  deep: null | {
+    title: string
+    summary: string
+    key_points: string[]
+    evidence: string[]
+    yohan_relevance: string
+    recommended_disposition: InboxDisposition
+    actions: InboxActionCandidate[]
+    uncertainties: string[]
+  }
+  human: null | {
+    decision: "approve" | "reject" | "defer"
+    disposition?: InboxDisposition
+    my_thoughts?: string
+    selected_actions: string[]
+  }
+  promotion: Record<string, unknown> | null
+  attempt_count: number
+  created_at: string
+  updated_at: string
+}
+
+export interface InboxCounts {
+  queued: number
+  processing: number
+  review_required: number
+  completed: number
+  action_required: number
+  failed: number
+  total: number
+}
+
+export interface InboxStageCounts {
+  captured: number
+  triaged: number
+  deep_analyzed: number
+  decided: number
+  promoted: number
+  total: number
+}
+
+export interface InboxDashboardResponse {
+  ok: boolean
+  status: InboxCounts
+  stage: InboxStageCounts
+  active: { total: number; by_status: InboxCounts }
+  items: InboxItem[]
+  generatedAt: string
+  error?: string
+}
