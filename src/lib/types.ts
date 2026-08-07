@@ -228,6 +228,8 @@ export interface CalendarItem {
 export interface CalendarOccurrence {
   id: string
   sourceId: string
+  sourceDate: string
+  sourceUpdatedAt: string
   kind: CalendarItemKind
   title: string
   date: string
@@ -235,6 +237,9 @@ export interface CalendarOccurrence {
   endTime: string | null
   status: CalendarItemStatus
   recurring: boolean
+  recurrence: CalendarRecurrence
+  recurrenceInterval: number
+  recurrenceUntil: string | null
   notes: string
 }
 
@@ -265,6 +270,29 @@ export interface CalendarCreateInput {
   recurrenceInterval?: number
   recurrenceUntil?: string | null
   notes?: string
+}
+
+export interface CalendarUpdateInput extends Omit<CalendarCreateInput, "kind"> {
+  expectedUpdatedAt: string
+}
+
+export interface CalendarTrashItem {
+  trashId: string
+  id: string
+  kind: CalendarItemKind
+  title: string
+  date: string
+  updatedAt: string
+  deletedAt: string
+}
+
+export interface CalendarTrashResponse {
+  ok: boolean
+  setupRequired: boolean
+  items: CalendarTrashItem[]
+  issues: CalendarFileIssue[]
+  generatedAt: string
+  error?: string
 }
 
 export interface DocFull extends DocMeta {

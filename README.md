@@ -1,10 +1,10 @@
 # 👁️ 요한 관제탑 (yohan-control-tower)
 
-요한 브레인 **P0 벡터 인프라** 관제탑. 노션(SoT)의 DB/페이지를 읽어 청킹 → Ollama 로컬 임베딩 → **Qdrant** 벡터 인덱스(읽기 전용 복사본)에 저장하고, 검색을 테스트하는 대시보드.
+요한 생태계의 **로컬 통합 관제탑**. Brain(SoT)의 미션·프로젝트·Goal·문서를 읽고, 로컬 Markdown Calendar와 벡터 검색을 한 화면에서 관제하는 대시보드다.
 
 - 포트: **3001** (요한 스튜디오 3000과 분리된 독립 프로젝트)
 - 비용 **0**: 외부 API 없음. Ollama 로컬 임베딩 + 로컬 Qdrant.
-- 노션이 **SoT**. Qdrant 는 복사본. 수정은 항상 노션에서.
+- Brain이 **SoT**. 노션은 사람용 뷰·모바일 인박스이고 Qdrant는 읽기 전용 검색 복사본이다.
 - 모든 실행은 **관제탑 버튼**에서(터미널 인제스트 불필요).
 
 ```
@@ -65,8 +65,28 @@ npm run init:collections    # 컬렉션 4개 보장 (멱등, 이미 완료)
 ### 4. 실행
 
 ```powershell
+npm run setup:check         # 경로·로컬 VHK 준비 상태 점검(값은 출력하지 않음)
 npm run dev                 # http://localhost:3001
 ```
+
+`setup:check`에서 Calendar 경로가 아직 없다고 표시되면 상위 디렉터리만 유효한지 확인하면 된다. Calendar 원장 디렉터리는 첫 일정 저장 때 생성된다. `NOTION_TOKEN`이 없으면 Calendar·프로젝트 관제는 사용할 수 있고 Notion 인제스트만 비활성이다.
+
+### 5. 새 PC·새 AI 세션에서 이어서 작업
+
+```powershell
+git pull
+npm install
+npm run setup:check
+npm run vhk -- context
+npm run vhk -- goal peek
+npm run vhk -- goal list
+```
+
+- VHK는 프로젝트에 `2.12.0`으로 고정되어 전역 설치가 필요 없다.
+- 프로젝트 VHK 래퍼는 `.env.local`의 `YOHAN_OS_ROOT`에서 CORE-RULES 원본을 자동 연결한다. 원본이 없으면 규칙 동기화를 중단해 기존 규칙을 보존한다.
+- Claude Code·Codex는 `AGENTS.md`와 active Goal을 읽고 **Phase → Goal → Completion Check** 순서로 작업한다.
+- 실제 작업을 시작할 때만 `npm run vhk -- goal next`, 검증은 `npm run vhk -- goal check --id <id> --force`, 완료는 `npm run vhk -- goal done --id <id>`를 사용한다.
+- 긴 작업은 독립 Goal로 더 나누고, 외부 협업이나 장기 추적이 필요한 경우에만 GitHub Issue를 티켓으로 연결한다.
 
 브라우저에서:
 1. **상태 패널**에서 Qdrant 🟢 / Ollama 🟢 / Notion 🟢 확인

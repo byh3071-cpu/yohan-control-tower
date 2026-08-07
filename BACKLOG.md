@@ -29,6 +29,11 @@ rename 은 import 수정을 동반하므로 7파일 이상 — 별도 작업으�
 
 기존 등록분: vhk #543 #544 #545 #546
 
+- **상태 문서 규칙 모순** — 생성된 `AGENTS.md`는 `next-task.md`를 append-only라고 하지만 `vhk goal next`는 백업 후 덮어쓴다. VHK [#555](https://github.com/byh3071-cpu/vhk/issues/555)에 재현·기대 동작 등록 완료.
+- **CORE-RULES 무음 다운그레이드** — 설정 원본이 없는 새 환경에서 `vhk sync`가 configured v0.1.5를 번들 v0.1.0으로 경고 없이 교체하고 `sync --check`도 통과한다. VHK [#556](https://github.com/byh3071-cpu/vhk/issues/556)에 등록했고 프로젝트 래퍼로 차단한다.
+- **개인 memory 백업 Git 노출** — `vhk learn`의 `.vhk/memory.json.bak`이 개인 교훈을 담고도 ignore되지 않는다. VHK [#557](https://github.com/byh3071-cpu/vhk/issues/557)에 등록했고 `.vhk/.gitignore`의 `*.bak`으로 차단한다.
+- **전체 Goal 완료 시 stale next-task** — `vhk goal next`가 모든 Goal 완료를 출력하고도 마지막 Goal `IN_PROGRESS` snapshot을 남긴다. VHK [#558](https://github.com/byh3071-cpu/vhk/issues/558)에 등록했고 프로젝트 래퍼가 VHK 관리본만 전체 완료 snapshot으로 보정한다.
+
 ## 2차 (범위 밖 — 인터뷰에서 나온 것)
 
 - **자동 갱신 배선** — 전역 Stop hook(4벤더) · GitHub Actions on push · 작업스케줄러. always-on 은 Actions 뿐

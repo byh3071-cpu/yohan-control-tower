@@ -2,11 +2,11 @@
 
 - 상태: Accepted
 - 날짜: 2026-08-07
-- 범위: Goal 4 / Calendar MVP
+- 범위: Goal 4~8 / Calendar 일상 사용 MVP
 
 ## 결정
 
-Calendar의 첫 원장은 `YOHAN_CALENDAR_ROOT/items/*.md`로 둔다. 일정과 할 일은 파일 하나당 항목 하나이며, 구조화 필드는 YAML frontmatter, 메모는 Markdown 본문에 저장한다. 관제탑은 이 원장을 읽고 쓰되 Brain·Notion은 수정하지 않는다.
+Calendar의 활성 원장은 `YOHAN_CALENDAR_ROOT/items/*.md`, 복구 대기 원장은 `YOHAN_CALENDAR_ROOT/trash/*.md`로 둔다. 일정과 할 일은 파일 하나당 항목 하나이며, 구조화 필드는 YAML frontmatter, 메모는 Markdown 본문에 저장한다. 관제탑은 이 원장을 읽고 쓰되 Brain·Notion은 수정하지 않는다.
 
 핵심 필드는 `calendar_format`, `id`, `kind`, `title`, `date`, `start_time`, `end_time`, `status`, `recurrence`, `recurrence_interval`, `recurrence_until`, `completed_dates`, `created_at`, `updated_at`이다.
 
@@ -22,7 +22,10 @@ Calendar의 첫 원장은 `YOHAN_CALENDAR_ROOT/items/*.md`로 둔다. 일정과 
 - `YOHAN_CALENDAR_ROOT`는 PC별 절대경로로 명시하며 cwd·Brain 위치에서 추론하지 않는다.
 - Calendar의 `task`는 날짜에 배치된 개인 실행 항목이고, 프로젝트 `goals/*.md`의 Task(Goal)는 프로젝트 진행 정본이다. 이번 MVP는 둘을 자동 복제·동기화하지 않는다.
 - 반복 발생분은 읽을 때 파생한다. 반복 할 일의 완료일만 `completed_dates`에 기록해 원본 전체 완료를 막는다.
-- 삭제는 이번 MVP에서 제공하지 않는다. 잘못 만든 항목은 AI/파일 편집 또는 후속 archive 기능으로 다룬다.
+- 수정·휴지통 이동은 UI가 읽은 `updated_at`을 `expectedUpdatedAt`으로 보내야 한다. 외부 편집으로 값이 달라졌으면 409로 거부해 AI·사람의 로컬 변경을 덮어쓰지 않는다.
+- 삭제 UI는 별도 확인을 거친다. 반복 항목은 선택한 발생일 한 번이 아니라 원본 반복 전체가 이동됨을 명시한다.
+- 휴지통 이동은 원본 Markdown 바이트를 바꾸거나 `unlink`로 영구 삭제하지 않고 `items/`에서 `trash/`로 `rename`한다. 복구도 활성 ID 충돌이 없을 때 같은 파일을 다시 `items/`로 rename한다.
+- 영구 삭제는 이번 MVP에서 제공하지 않는다. 휴지통 보존 기간·비우기는 별도 데이터 보존 정책이 생긴 뒤 결정한다.
 - PWA 알림과 Google·Apple·Outlook Calendar 동기화는 이 원장의 소비자이며 정본이 아니다.
 
 ## 기각한 대안

@@ -1,7 +1,7 @@
 # PRD — yohan-control-tower (요한 생태계 통합 관제탑)
 
 > 유형: 웹앱(로컬 전용 대시보드) · 포트 3001 · 정본 = 파일(`yohan-brain`), 노션은 사람용 뷰(ADR-009)
-> v1 은 **v1.0(이관·통합)**, **v1.1(계층축)**, **v1.2(Calendar 세로 슬라이스)**로 분할한다.
+> v1 은 **v1.0(이관·통합)**, **v1.1(계층축)**, **v1.2(Calendar 일상 사용 세로 슬라이스)**로 분할한다.
 
 ## 1. 프로젝트 핵심
 
@@ -26,13 +26,13 @@
 | F004 | v1.1 | 미션 롤업 계기판 | 부모 미션별 프로젝트 수·Task 상태 집계 API | 홈 |
 | F005 | v1.1 | 3단 드릴다운 | 미션 → 프로젝트(레포) → Task(goals) | 프로젝트 |
 | F006 | v1.1 | 정합성 lint 엔진 | 미션 미배정 프로젝트 / `projects.yaml` 미등재 레포 / goal frontmatter 위반. **워크트리·변형 디렉토리(`vhk-privacy-v3`·`vhk-wt-drift` 등) 제외** | 프로젝트 (결함 수 배지는 홈) |
-| F011 | v1.2 | 로컬 Calendar MVP | 항목별 Markdown 원장에 일정·할 일을 기록하고 월간·목록 보기, 반복, 발생일별 완료 제공 | 홈 내부 Calendar |
+| F011 | v1.2 | 로컬 Calendar MVP | 항목별 Markdown 원장에 일정·할 일을 기록하고 월간·목록, 반복, 발생일별 완료, 안전 수정·휴지통·복구, 모바일 선택일 우선 제공 | 홈 내부 Calendar |
 
 - **AI 규칙(F009·F005·F006)**: AI 는 분류·상태변경·초안을 **제안**만. 반영·승인은 사람.
 - **F010 오너 승인항 — 판정 완료(2026-07-28, 비노출)**: `git:sync`(= `git pull && git push`)와 `sync:notion:push` 는 RULES.md "main 직 push·발송은 사람 게이트"와 정면으로 만난다 → **둘 다 UI 비노출 + 서버 403**. `api/run` 의 `humanGate` 플래그가 거부하고, `sidebar.tsx`·`command-palette.tsx` 목록에서도 뺐다(누르면 실패할 버튼을 띄우지 않는다). 여는 방법은 플래그 1줄 제거 — 오너 판정 사항.
 - **goal status 정책**: 스키마 정본 = VHK 템플릿 4값(`NOT_STARTED|IN_PROGRESS|DONE|BLOCKED`). 단 **실측상 vhk 9건·brain 4건이 확장 어휘**를 쓴다(`DEFERRED·OBSERVING·CANCELED·PR_OPEN·ACTIVE·BACKLOG`). → F006 lint 는 4값을 하드코딩하지 말고, **템플릿 4값 = 정본 / 그 밖은 `warn`(에러 아님) + 레포별 확장 허용 목록을 설정으로 수용**한다.
 - **v1.1 구현 상태(2026-08-07)**: F004·F005·F006 완료. Home 미션 카드가 선택한 미션을 프로젝트 탭으로 전달하고, `/api/projects`·`/api/projects/[slug]`가 레포·Goal 상세를 제공한다. `/api/lint`는 자동 수정 없이 actionable 결함 수와 사람 검토 제안만 반환한다.
-- **v1.2 구현 상태(2026-08-07)**: F011 완료. `YOHAN_CALENDAR_ROOT/items/*.md`를 원장으로 쓰며 6번째 탭 없이 Home의 `개요 / 캘린더` 내부 전환으로 흡수한다. 일정·날짜형 할일은 Calendar, 프로젝트 실행 정본은 각 레포 Goal이며 자동 동기화하지 않는다.
+- **v1.2 구현 상태(2026-08-07)**: F011의 일상 사용 슬라이스 완료. `YOHAN_CALENDAR_ROOT/items/*.md`를 활성 원장, `trash/*.md`를 복구 가능한 휴지통으로 쓰며 6번째 탭 없이 Home의 `개요 / 캘린더` 내부 전환으로 흡수한다. 생성·반복·발생일 완료·원본 전체 수정·충돌 거부·휴지통 이동·즉시/목록 복구와 모바일 선택일 우선 배치를 제공한다. 일정·날짜형 할일은 Calendar, 프로젝트 실행 정본은 각 레포 Goal이며 자동 동기화하지 않는다.
 
 ## 4. 데이터/상태 모델
 
@@ -43,13 +43,13 @@
 | Task (Goal) | `<repo>/goals/<id>-<slug>.md` frontmatter | type, id, status, priority, title |
 | Event (실행 증거) | `<repo>/.vhk/events/*.jsonl` | ts, action, channel, guard, ran, reason, agent |
 | LintFinding (런타임) | 메모리 | rule, severity, target_path, message |
-| CalendarItem | `YOHAN_CALENDAR_ROOT/items/*.md` | kind, title, date, time, status, recurrence, completed_dates |
+| CalendarItem | `YOHAN_CALENDAR_ROOT/items/*.md`; 복구 대기 = `trash/*.md` | kind, title, date, time, status, recurrence, completed_dates, created_at, updated_at |
 | Doc | `brain/memory/**`, `brain/docs/**` | 경로, 제목, status, updated |
 
 - **L2 부모 미션 5개**: 요한 생태계 구축 / AI 1인 운영 OS / 수익 파이프라인 / 재무·투자·경영 시스템 / 삶·기반. **출처: 오너 발화(2026-07-27)** — brain `memory/core/projects.yaml` active v0.1.1에 정본화됐다(2026-08-07 재검증).
 - 코어 컨텍스트의 "4축(애착·돈·유통·학습)"과의 관계: 정찰 실측 결과 그 4축은 SoT 에 없다(idea-bank 국지 3축 애착·돈·유통만 존재, '학습' 축은 어느 파일에도 미발견). 따라서 **충돌이 아니라 미문서화 상태**다.
 - **스캔 대상 = 로컬 클론된 레포만.** registry 45 는 목표치이지 v1 대상이 아니다. 실측: `yohan-ecosystem/` 형제 레포 **13개**, `goals/` 보유 **5개**(brain·vhk·studio·voice·control-tower — 이 중 control-tower 는 `_meta.md` 뿐). 미클론 레포는 **`unknown` 표기(0 표기 금지)**. v1.1 집계 범위는 이 로컬 실재 기준으로 재선언한다.
-- **Task 경계**: Calendar `task`는 특정 날짜에 배치한 개인 실행 항목, `<repo>/goals/*.md`는 프로젝트 진행 정본이다. Goal 4에서는 링크·복제·완료 상태 동기화를 하지 않는다.
+- **Task 경계**: Calendar `task`는 특정 날짜에 배치한 개인 실행 항목, `<repo>/goals/*.md`는 프로젝트 진행 정본이다. v1.2에서는 링크·복제·완료 상태 동기화를 하지 않는다.
 
 ## 5. 기술 스택
 
@@ -66,7 +66,7 @@ Next.js 16.2.9 (App Router) · React 19.2.4 · TypeScript · Tailwind 4 · shadc
 
 - **v1.0**: 앱 실행(3001) → 기본 탭 **문서**(읽기 + 인박스 투입) → 할 일은 **프로젝트**, 무슨 일이 있었나는 **기록**, 검색 품질이 의심되면 **벡터**. 명령은 어느 탭에서나 커맨드 팔레트로.
 - **v1.1**: 기본 탭이 **홈**으로 바뀜 → 미션 롤업·정합성 결함 수를 훑고 → 미션 카드 클릭 → **프로젝트**에서 레포→Task 드릴다운.
-- **v1.2**: Home에서 **캘린더**로 전환 → 월간 날짜 선택 또는 목록 확인 → 일정·할 일 생성 → 반복 할 일은 해당 발생일만 완료.
+- **v1.2**: Home에서 **캘린더**로 전환 → 모바일은 선택일 일정·할 일을 먼저, 데스크톱은 월간 격자와 선택일을 나란히 확인 → 생성·수정 → 반복 할 일은 해당 발생일만 완료 → 잘못 만든 원본은 확인 후 휴지통으로 이동하고 즉시 또는 휴지통 목록에서 복구.
 
 ## 8. 페이지별 상세
 
@@ -77,7 +77,7 @@ Next.js 16.2.9 (App Router) · React 19.2.4 · TypeScript · Tailwind 4 · shadc
 | 문서 | brain 문서 탐색·미리보기 + 인박스 투입 | 검색, 열람, 새 문서 초안 생성 | 탭 클릭 / Task 참조 링크 | F001, F009 |
 | 기록 | 실행 타임라인·상태 카드 | 기간 훑기, 이벤트 상세 열기 | 탭 클릭 | F002 |
 | 벡터 | Qdrant 컬렉션 상태·인제스트·질의 테스트 | 인제스트 실행, 질의 입력 | 탭 클릭 (Qdrant·Ollama 기동 시) | F003 |
-| 홈 (v1.1+) | 미션 롤업·결함 수·Calendar | 미션 카드 클릭 → 프로젝트 / 개요↔캘린더 / 일정·할일 생성·완료 | **v1.1 기본 진입 탭** | F004, F006(배지), F011 |
+| 홈 (v1.1+) | 미션 롤업·결함 수·Calendar | 미션 카드 클릭 → 프로젝트 / 개요↔캘린더 / 일정·할일 생성·수정·완료·휴지통·복구 | **v1.1 기본 진입 탭** | F004, F006(배지), F011 |
 
 > 구현 경로: 미션 `/api/missions`, 프로젝트 목록·상세 `/api/projects|/api/projects/[slug]`, 정합성 `/api/lint`, Calendar `/api/calendar`.
 

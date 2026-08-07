@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto"
 import { existsSync } from "node:fs"
-import { mkdir, readdir, readFile, writeFile } from "node:fs/promises"
+import { mkdir, readdir, readFile, rename, writeFile } from "node:fs/promises"
 import { join } from "node:path"
 
 import matter from "gray-matter"
@@ -16,11 +16,14 @@ import type {
   CalendarItemStatus,
   CalendarOccurrence,
   CalendarRecurrence,
+  CalendarTrashItem,
+  CalendarUpdateInput,
 } from "@/lib/types"
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/
 const TIME_RE = /^(?:[01]\d|2[0-3]):[0-5]\d$/
 const ID_RE = /^cal_[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+const TRASH_ID_RE = /^(cal_[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})--(\d{13})--[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.md$/i
 const MAX_RANGE_DAYS = 400
 const MAX_OCCURRENCES = 10_000
 const ITEM_KINDS = new Set<CalendarItemKind>(["event", "task"])
@@ -36,6 +39,13 @@ export class CalendarInputError extends Error {
   constructor(message: string) {
     super(message)
     this.name = "CalendarInputError"
+  }
+}
+
+export class CalendarConflictError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = "CalendarConflictError"
   }
 }
 
@@ -261,6 +271,8 @@ export function expandCalendarItems(items: CalendarItem[], from: string, to: str
       occurrences.push({
         id: `${item.id}@${date}`,
         sourceId: item.id,
+        sourceDate: item.date,
+        sourceUpdatedAt: item.updatedAt,
         kind: item.kind,
         title: item.title,
         date,
@@ -268,6 +280,9 @@ export function expandCalendarItems(items: CalendarItem[], from: string, to: str
         endTime: item.endTime,
         status,
         recurring,
+        recurrence: item.recurrence,
+        recurrenceInterval: item.recurrenceInterval,
+        recurrenceUntil: item.recurrenceUntil,
         notes: item.notes,
       })
       if (occurrences.length > MAX_OCCURRENCES) {
@@ -351,6 +366,163 @@ export async function createCalendarItem(input: CalendarCreateInput, rootOverrid
     encoding: "utf8",
     flag: "wx",
   })
+  calendarCache.clear()
+  return item
+}
+
+function preserveTaskCompletion(
+  previous: CalendarItem,
+  next: Omit<CalendarItem, "id" | "createdAt" | "updatedAt">
+): Pick<CalendarItem, "status" | "completedDates"> {
+  if (previous.kind !== "task") return { status: previous.status, completedDates: [] }
+  if (previous.status === "canceled") {
+    return { status: "canceled", completedDates: previous.completedDates }
+  }
+  if (next.recurrence === "none") {
+    const done = previous.recurrence === "none"
+      ? previous.status === "done"
+      : previous.completedDates.includes(next.date)
+    return { status: done ? "done" : "open", completedDates: [] }
+  }
+
+  const candidates = previous.recurrence === "none"
+    ? previous.status === "done" ? [next.date] : []
+    : previous.completedDates
+  const probe: CalendarItem = {
+    id: previous.id,
+    ...next,
+    status: "open",
+    completedDates: [],
+    createdAt: previous.createdAt,
+    updatedAt: previous.updatedAt,
+  }
+  return {
+    status: "open",
+    completedDates: candidates.filter((date) => occursOn(probe, parseDate(date, "completed_dates 항목"))),
+  }
+}
+
+export async function updateCalendarItem(
+  id: string,
+  input: CalendarUpdateInput,
+  rootOverride?: string
+): Promise<CalendarItem> {
+  if (!ID_RE.test(id)) throw new CalendarInputError("Calendar 항목 ID 형식이 올바르지 않습니다.")
+  if (!input.expectedUpdatedAt || Number.isNaN(Date.parse(input.expectedUpdatedAt))) {
+    throw new CalendarInputError("expectedUpdatedAt은 유효한 ISO 날짜여야 합니다.")
+  }
+  const root = rootOverride ?? resolveCalendarRoot()
+  const file = join(/* turbopackIgnore: true */ root, "items", `${id}.md`)
+  if (!existsSync(file)) throw new CalendarInputError("Calendar 항목을 찾을 수 없습니다.")
+  const previous = parseCalendarItem(await readFile(file, "utf8"), `${id}.md`)
+  if (previous.updatedAt !== input.expectedUpdatedAt) {
+    throw new CalendarConflictError("Calendar 원본이 외부에서 먼저 바뀌었습니다. 최신 내용을 다시 불러온 뒤 수정하세요.")
+  }
+
+  const normalized = normalizeCreateInput({ kind: previous.kind, ...input })
+  const completion = preserveTaskCompletion(previous, normalized)
+  const item: CalendarItem = {
+    id: previous.id,
+    ...normalized,
+    ...completion,
+    createdAt: previous.createdAt,
+    updatedAt: new Date().toISOString(),
+  }
+  await writeFile(file, serializeCalendarItem(item), "utf8")
+  calendarCache.clear()
+  return item
+}
+
+function parseTrashItem(raw: string, trashId: string): { item: CalendarItem; summary: CalendarTrashItem } {
+  const match = TRASH_ID_RE.exec(trashId)
+  if (!match) throw new CalendarInputError("Calendar 휴지통 복구 키 형식이 올바르지 않습니다.")
+  const [, id, deletedAtMs] = match
+  const item = parseCalendarItem(raw, `${id}.md`)
+  const deletedAt = new Date(Number(deletedAtMs)).toISOString()
+  return {
+    item,
+    summary: {
+      trashId,
+      id: item.id,
+      kind: item.kind,
+      title: item.title,
+      date: item.date,
+      updatedAt: item.updatedAt,
+      deletedAt,
+    },
+  }
+}
+
+export async function listCalendarTrash(rootOverride?: string): Promise<{
+  items: CalendarTrashItem[]
+  issues: CalendarFileIssue[]
+}> {
+  const root = rootOverride ?? resolveCalendarRoot()
+  const trashDir = join(/* turbopackIgnore: true */ root, "trash")
+  let files: string[]
+  try {
+    files = (await readdir(trashDir)).filter((file) => file.endsWith(".md")).sort()
+  } catch (error: unknown) {
+    if (isRecord(error) && error.code === "ENOENT") return { items: [], issues: [] }
+    throw error
+  }
+
+  const settled = await Promise.all(files.map(async (file) => {
+    const raw = await readFile(join(/* turbopackIgnore: true */ trashDir, file), "utf8")
+    return parseTrashItem(raw, file).summary
+  }).map((promise) => promise.then(
+    (item) => ({ ok: true as const, item }),
+    (error: unknown) => ({ ok: false as const, error })
+  )))
+  const items: CalendarTrashItem[] = []
+  const issues: CalendarFileIssue[] = []
+  settled.forEach((result, index) => {
+    if (result.ok) items.push(result.item)
+    else issues.push({ file: files[index], message: result.error instanceof Error ? result.error.message : String(result.error) })
+  })
+  items.sort((a, b) => b.deletedAt.localeCompare(a.deletedAt))
+  return { items, issues }
+}
+
+export async function trashCalendarItem(
+  id: string,
+  expectedUpdatedAt: string,
+  rootOverride?: string
+): Promise<CalendarTrashItem> {
+  if (!ID_RE.test(id)) throw new CalendarInputError("Calendar 항목 ID 형식이 올바르지 않습니다.")
+  if (!expectedUpdatedAt || Number.isNaN(Date.parse(expectedUpdatedAt))) {
+    throw new CalendarInputError("expectedUpdatedAt은 유효한 ISO 날짜여야 합니다.")
+  }
+  const root = rootOverride ?? resolveCalendarRoot()
+  const itemsDir = join(/* turbopackIgnore: true */ root, "items")
+  const trashDir = join(/* turbopackIgnore: true */ root, "trash")
+  const source = join(/* turbopackIgnore: true */ itemsDir, `${id}.md`)
+  if (!existsSync(source)) throw new CalendarInputError("Calendar 항목을 찾을 수 없습니다.")
+  const raw = await readFile(source, "utf8")
+  const item = parseCalendarItem(raw, `${id}.md`)
+  if (item.updatedAt !== expectedUpdatedAt) {
+    throw new CalendarConflictError("Calendar 원본이 외부에서 먼저 바뀌었습니다. 최신 내용을 다시 불러온 뒤 삭제하세요.")
+  }
+
+  await mkdir(trashDir, { recursive: true })
+  const trashId = `${id}--${Date.now()}--${randomUUID()}.md`
+  const target = join(/* turbopackIgnore: true */ trashDir, trashId)
+  await rename(source, target)
+  calendarCache.clear()
+  return parseTrashItem(raw, trashId).summary
+}
+
+export async function restoreCalendarItem(trashId: string, rootOverride?: string): Promise<CalendarItem> {
+  if (!TRASH_ID_RE.test(trashId)) throw new CalendarInputError("Calendar 휴지통 복구 키 형식이 올바르지 않습니다.")
+  const root = rootOverride ?? resolveCalendarRoot()
+  const itemsDir = join(/* turbopackIgnore: true */ root, "items")
+  const source = join(/* turbopackIgnore: true */ root, "trash", trashId)
+  if (!existsSync(source)) throw new CalendarInputError("휴지통 항목을 찾을 수 없습니다.")
+  const { item } = parseTrashItem(await readFile(source, "utf8"), trashId)
+  const target = join(/* turbopackIgnore: true */ itemsDir, `${item.id}.md`)
+  if (existsSync(target)) throw new CalendarConflictError("같은 ID의 활성 Calendar 항목이 있어 복구할 수 없습니다.")
+  await mkdir(itemsDir, { recursive: true })
+  await rename(source, target)
   calendarCache.clear()
   return item
 }
