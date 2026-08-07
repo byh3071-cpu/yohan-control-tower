@@ -30,6 +30,7 @@
 - **AI 규칙(F009·F005·F006)**: AI 는 분류·상태변경·초안을 **제안**만. 반영·승인은 사람.
 - **F010 오너 승인항 — 판정 완료(2026-07-28, 비노출)**: `git:sync`(= `git pull && git push`)와 `sync:notion:push` 는 RULES.md "main 직 push·발송은 사람 게이트"와 정면으로 만난다 → **둘 다 UI 비노출 + 서버 403**. `api/run` 의 `humanGate` 플래그가 거부하고, `sidebar.tsx`·`command-palette.tsx` 목록에서도 뺐다(누르면 실패할 버튼을 띄우지 않는다). 여는 방법은 플래그 1줄 제거 — 오너 판정 사항.
 - **goal status 정책**: 스키마 정본 = VHK 템플릿 4값(`NOT_STARTED|IN_PROGRESS|DONE|BLOCKED`). 단 **실측상 vhk 9건·brain 4건이 확장 어휘**를 쓴다(`DEFERRED·OBSERVING·CANCELED·PR_OPEN·ACTIVE·BACKLOG`). → F006 lint 는 4값을 하드코딩하지 말고, **템플릿 4값 = 정본 / 그 밖은 `warn`(에러 아님) + 레포별 확장 허용 목록을 설정으로 수용**한다.
+- **v1.1 구현 상태(2026-08-07)**: F004·F005·F006 완료. Home 미션 카드가 선택한 미션을 프로젝트 탭으로 전달하고, `/api/projects`·`/api/projects/[slug]`가 레포·Goal 상세를 제공한다. `/api/lint`는 자동 수정 없이 actionable 결함 수와 사람 검토 제안만 반환한다.
 
 ## 4. 데이터/상태 모델
 
@@ -73,7 +74,7 @@ Next.js 16.2.9 (App Router) · React 19.2.4 · TypeScript · Tailwind 4 · shadc
 | 벡터 | Qdrant 컬렉션 상태·인제스트·질의 테스트 | 인제스트 실행, 질의 입력 | 탭 클릭 (Qdrant·Ollama 기동 시) | F003 |
 | 홈 (v1.1) | 미션 롤업·결함 수 한 눈에 | 미션 카드 클릭 → 프로젝트 | **v1.1 기본 진입 탭** | F004, F006(배지) |
 
-> URL 경로는 구현 단계에서 결정. 여기선 페이지 이름만 확정.
+> 구현 경로: 미션 `/api/missions`, 프로젝트 목록·상세 `/api/projects|/api/projects/[slug]`, 정합성 `/api/lint`.
 
 ## 9. v1 OUT (명시적 제외 — 스코프 크립 차단)
 

@@ -119,6 +119,91 @@ export interface MissionsResponse {
   error?: string
 }
 
+export interface GoalTask {
+  file: string
+  type: string | null
+  id: number | null
+  title: string
+  /** fallback 파일명이 아닌 frontmatter title이 실제로 있었는지 */
+  titleDeclared: boolean
+  status: string | null
+  priority: string | null
+  completed: string | null
+  checks: { total: number; done: number }
+}
+
+export interface ProjectSummary {
+  name: string
+  mission: string
+  status: string | null
+  role: string | null
+  local: boolean
+  goalsAvailable: boolean
+  tasks: MissionTaskSummary
+}
+
+export interface ProjectMissionGroup {
+  id: string
+  label: string
+  unit: MissionUnit
+  projects: ProjectSummary[]
+}
+
+export interface ProjectsResponse {
+  ok: boolean
+  setupRequired: boolean
+  missions: ProjectMissionGroup[]
+  unassignedProjects: number
+  sourceVersion: string | null
+  generatedAt: string
+  error?: string
+}
+
+export interface ProjectDetailResponse {
+  ok: boolean
+  setupRequired: boolean
+  project: ProjectSummary | null
+  goals: GoalTask[]
+  available: boolean
+  generatedAt: string
+  error?: string
+}
+
+export type LintSeverity = "error" | "warning" | "info"
+export type LintIssueKind =
+  | "project_unassigned"
+  | "repo_unregistered"
+  | "goal_frontmatter"
+  | "goal_status_extension"
+
+export interface LintIssue {
+  id: string
+  kind: LintIssueKind
+  severity: LintSeverity
+  project: string | null
+  file: string | null
+  message: string
+  suggestion: string
+}
+
+export interface LintCounts {
+  total: number
+  actionable: number
+  error: number
+  warning: number
+  info: number
+}
+
+export interface LintResponse {
+  ok: boolean
+  setupRequired: boolean
+  counts: LintCounts
+  issues: LintIssue[]
+  excludedLocalDirs: string[]
+  generatedAt: string
+  error?: string
+}
+
 export interface DocFull extends DocMeta {
   content: string
   frontmatter: Record<string, unknown>

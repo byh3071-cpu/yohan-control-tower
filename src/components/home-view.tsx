@@ -11,7 +11,7 @@ import {
   Loader2,
 } from "lucide-react"
 import type { DocFilter } from "@/lib/doc-scope"
-import type { MissionRollup, MissionsResponse, Stats, TodoItem, TodosResponse } from "@/lib/types"
+import type { LintResponse, MissionRollup, MissionsResponse, Stats, TodoItem, TodosResponse } from "@/lib/types"
 import type { ViewTab } from "@/components/view-tabs"
 import { cn } from "@/lib/utils"
 
@@ -21,6 +21,7 @@ interface HomeViewProps {
   gaps: number
   dashboardError: string | null
   onNavigate: (tab: ViewTab, category?: DocFilter) => void
+  onOpenMission: (missionId: string) => void
   onOpenInbox: () => void
   onOpenDoc: (relPath: string) => void
 }
@@ -61,6 +62,7 @@ export function HomeView({
   gaps,
   dashboardError,
   onNavigate,
+  onOpenMission,
   onOpenInbox,
   onOpenDoc,
 }: HomeViewProps) {
@@ -68,6 +70,7 @@ export function HomeView({
   const [todoError, setTodoError] = useState<string | null>(null)
   const [missionData, setMissionData] = useState<MissionsResponse | null>(null)
   const [missionError, setMissionError] = useState<string | null>(null)
+  const [lintData, setLintData] = useState<LintResponse | null>(null)
 
   useEffect(() => {
     let alive = true
@@ -81,6 +84,25 @@ export function HomeView({
       })
       .catch((error: unknown) => {
         if (alive) setTodoError(error instanceof Error ? error.message : String(error))
+      })
+    return () => {
+      alive = false
+    }
+  }, [])
+
+  useEffect(() => {
+    let alive = true
+    fetch(`/api/lint?t=${Date.now()}`, { cache: "no-store" })
+      .then(async (response) => {
+        const data = await response.json() as LintResponse
+        if (!response.ok || !data.ok) throw new Error(data.error ?? `HTTP ${response.status}`)
+        return data
+      })
+      .then((data) => {
+        if (alive) setLintData(data)
+      })
+      .catch(() => {
+        // Home 미션 자체는 F006 연결 실패와 독립적으로 유지한다. 프로젝트 탭에서 상세 오류를 표시한다.
       })
     return () => {
       alive = false
@@ -270,11 +292,22 @@ export function HomeView({
               <h2 id="missions-heading" className="text-sm font-semibold tracking-tight">미션 지도</h2>
               <p className="mt-0.5 text-[11px] text-muted-foreground">Brain의 프로젝트 배속과 로컬 Goal을 읽기 전용으로 합칩니다.</p>
             </div>
-            {missionData && !missionData.setupRequired && (
-              <span className="hidden text-[10px] font-medium tabular-nums text-muted-foreground sm:block">
-                로컬 {missionData.coverage.localAssignedProjects}/{missionData.coverage.assignedProjects} 프로젝트
-              </span>
-            )}
+            <div className="flex items-center gap-2">
+              {lintData && !lintData.setupRequired && lintData.counts.actionable > 0 && (
+                <button
+                  type="button"
+                  onClick={() => onNavigate("projects")}
+                  className="rounded-full border border-amber-300 bg-amber-50 px-2 py-1 text-[9px] font-semibold text-amber-700 transition-colors hover:bg-amber-100 focus-visible:ring-2 focus-visible:ring-ring dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-300"
+                >
+                  정합성 {lintData.counts.actionable}건
+                </button>
+              )}
+              {missionData && !missionData.setupRequired && (
+                <span className="hidden text-[10px] font-medium tabular-nums text-muted-foreground sm:inline">
+                  로컬 {missionData.coverage.localAssignedProjects}/{missionData.coverage.assignedProjects} 프로젝트
+                </span>
+              )}
+            </div>
           </div>
 
           {!missionData && !missionError && (
@@ -302,7 +335,7 @@ export function HomeView({
           {missionData && !missionData.setupRequired && (
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
               {missionData.missions.map((mission) => (
-                <MissionCard key={mission.id} mission={mission} onClick={() => onNavigate("projects")} />
+                <MissionCard key={mission.id} mission={mission} onClick={() => onOpenMission(mission.id)} />
               ))}
             </div>
           )}

@@ -23,11 +23,12 @@
 | 탭 셸 | `src/app/page.tsx`, `layout.tsx`, `globals.css`, `components/view-tabs.tsx` (이관) | 탭 전환 + App Router 루트. **명령 실행 UI 배선**: `runServerAction`(`page.tsx:216`)이 `/api/run` 유일 호출처 → `Sidebar`·`CommandPalette` prop(`page.tsx:555`). 결과 표시는 기록 탭 | F008, F010 |
 | UI 프리미티브 | `src/components/ui/*`, `header.tsx`, `sidebar.tsx`, `theme-provider.tsx`, `src/lib/utils.ts`(`cn`) (이관) | shadcn 껍데기 — `utils.ts` 는 `ui/*`·`view-tabs`·`graph-view-2d` 전부가 import, 누락 시 컴파일 불가 | F008 |
 | 전역 검색 | `src/components/command-palette.tsx` (이관·**개조 완료**) + `src/app/api/search/route.ts` (이관) | 팔레트 → 문서 검색·명령 실행. **`/api/search` 로 재배선 완료**(구 `/api/nlp-command` 삭제). 자연어 의도 파싱은 되살리지 않는다 — `open_view` 5종 중 4종이 탭 지위를 잃었고, 자연어 명령 실행은 오분류 1회가 곧 실행이라 F010 사람 게이트와 충돌 | F008, F001 |
-| 미션 집계 | `src/lib/missions.ts` (신규) | `projects.yaml` + 레포 `goals/` 스캔 → 미션별 롤업 | F004, F005 |
+| 생태계 데이터 계약 | `src/lib/ecosystem-projects.ts` (신규) | `projects.yaml` 파싱·Goal frontmatter·완료 조건 진행률의 공용 읽기 계층 | F004, F005, F006 |
+| 미션 집계 | `src/lib/missions.ts` (신규) | 공용 읽기 계층 + 레포 스캔 → 미션별 롤업 | F004 |
 | 미션 API | `src/app/api/missions/route.ts` (신규) | 롤업 JSON | F004 |
-| 프로젝트 드릴다운 | `src/app/api/projects/[slug]/route.ts` (신규) | 레포 1개의 Task·이벤트 상세 | F005 |
-| Task 수집·뷰 | `src/app/api/todos/route.ts` + `components/todo-view.tsx` (이관) | **v1.0 은 `resolveRepoRoot()` + `SCAN_DIRS`(`todos/route.ts:26-32`)로 brain 한 레포만 읽는다(현행 그대로).** `<repo>/goals/*.md` 다레포 스캔은 v1.1 목표 | **F002**, F005 |
-| 정합성 규칙 | `src/lib/lint.ts` (신규) | 미션 미배정·미등재 레포·goal frontmatter 위반 판정. **status allowlist 하드코딩 금지** — 템플릿 4값이 정본이나 실측 13건이 그 밖(vhk `DEFERRED` 7·`OBSERVING`·`CANCELED`, brain `PR_OPEN` 2·`ACTIVE`·`BACKLOG`) → 검출하되 severity `warn`(에러 아님) + 레포별 확장 허용 목록을 설정으로 수용 | F006 |
+| 프로젝트 드릴다운 | `src/lib/projects.ts`, `src/app/api/projects/route.ts`, `src/app/api/projects/[slug]/route.ts`, `components/project-view.tsx` (신규) | 미션 5개 → 배속 레포 → `goals/*.md` Task·완료 조건 진행률. 미클론은 `available:false` | F005 |
+| 기존 할일 수집 | `src/app/api/todos/route.ts` + `components/todo-view.tsx` (이관) | Brain 한 레포의 문서 다음 액션을 Home에 공급. 프로젝트 탭의 다레포 Goal 뷰는 F005 경로로 분리 | F002 |
+| 정합성 규칙 | `src/lib/lint.ts`, `config/goal-status-extensions.yaml` (신규) | 미션 미배정·미등재 레포·goal frontmatter 위반 판정. `.git` 파일 worktree와 원격 repo명≠로컬 dir 변형은 제외. 표준 4값 밖 status는 error가 아닌 warning이며 레포별 확장을 설정으로 허용 | F006 |
 | lint API | `src/app/api/lint/route.ts` (신규) | 결함 목록 + 홈 배지 건수 | F006 |
 | 문서 인덱스 | `src/lib/memory.ts`, `doc-scope.ts` (이관) | brain 문서 556건 목록·본문·통계, managed(113)/collected(443) 축 | F001 |
 | 문서 API·뷰 | `src/app/api/docs/route.ts`, `docs/[...path]/route.ts` + `components/{table-view,doc-card,doc-preview}.tsx` (이관) | 목록·본문·표 | F001 |
@@ -108,10 +109,11 @@ flowchart LR
   V --> Q
 ```
 
-1. **홈 롤업(v1.1, F004·F006)**: 셸 → `GET /api/missions|/api/lint` → lib → 캐시(hit면 즉시) → miss면 `projects.yaml` + `goals/` 스캔 → JSON.
-2. **인박스(F009)**: 패널 → `POST /api/sot-draft` → **경로 존재 검사** → brain md 생성 → `clearDocsCache()`.
-3. **벡터 인제스트(F003)**: 버튼 → `POST /api/vector/ingest/<source>` → 노션 페치 → 청킹 → Ollama 임베딩 → Qdrant 결정적 ID upsert(멱등).
-4. **요한 인박스 운영(F009 확장)**: 패널 → `GET|POST /api/inbox` → `lib/inbox-controller.ts` → 고정 yohan-brain CLI. 조회는 status 뒤 active 목록을 100건 단위 offset 페이지로 순차 수집하고, 총계와 표시 건수가 다르면 0건으로 위장하지 않는다. 사람 결정과 정본 승격은 별도 요청이며 관제탑은 SQLite·정본 파일을 직접 열지 않는다.
+1. **홈 롤업(v1.1, F004·F006)**: 셸 → `GET /api/missions|/api/lint` → 공용 parser → `projects.yaml` + `goals/` 스캔 → 롤업·actionable 결함 배지.
+2. **프로젝트 드릴다운(F005)**: Home 미션 카드 → 선택 ID를 프로젝트 탭에 전달 → `GET /api/projects` → 레포 선택 → `GET /api/projects/[slug]` → Goal 원시 status·priority·Completion Check 표시.
+3. **인박스(F009)**: 패널 → `POST /api/sot-draft` → **경로 존재 검사** → brain md 생성 → `clearDocsCache()`.
+4. **벡터 인제스트(F003)**: 버튼 → `POST /api/vector/ingest/<source>` → 노션 페치 → 청킹 → Ollama 임베딩 → Qdrant 결정적 ID upsert(멱등).
+5. **요한 인박스 운영(F009 확장)**: 패널 → `GET|POST /api/inbox` → `lib/inbox-controller.ts` → 고정 yohan-brain CLI. 조회는 status 뒤 active 목록을 100건 단위 offset 페이지로 순차 수집하고, 총계와 표시 건수가 다르면 0건으로 위장하지 않는다. 사람 결정과 정본 승격은 별도 요청이며 관제탑은 SQLite·정본 파일을 직접 열지 않는다.
 
 ## 5. 외부 의존 + 실패 모드
 
