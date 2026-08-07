@@ -86,6 +86,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - VHK 문제처럼 보여도 먼저 고정 버전에서 재현하고 환경 권한·npm 캐시·프로젝트 설정·명령 오용을 분리한다.
 - 실제 VHK 동작 또는 생성물의 결함으로 재현될 때만 `byh3071-cpu/vhk`의 open·closed 이슈를 중복 검색한다.
 - 중복이 없으면 버전·환경·최소 재현 단계·실제 결과·기대 결과·영향·가능한 수정 방향을 담아 GitHub Issue를 등록하고 현재 Goal 또는 세션 로그에 링크한다.
+- 사용자가 읽거나 승인하는 GitHub Issue·PR·VHK Goal·Task·세션 인수인계 문서는 **한국어를 기본 언어**로 작성한다. 명령어·코드·필드명·고유명사는 원문 영어를 유지하되 처음 나올 때 한국어로 의미를 설명한다. 외부 프로젝트가 영어를 요구하는 경우에도 사용자용 한국어 요약을 함께 남긴다.
 - 보안 정보, 토큰, 개인 절대경로, 비공개 원문은 이슈에 넣지 않는다.
 - `.vhk/memory.json`, `refs.json`과 그 `*.bak` 백업은 개인 메모이므로 Git에 올리지 않는다. VHK 2.12.0 백업 ignore 누락은 VHK [#557](https://github.com/byh3071-cpu/vhk/issues/557)에서 추적한다.
 
