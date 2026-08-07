@@ -250,8 +250,9 @@ export async function searchCollection(
   vector: number[],
   limit = 5,
 ): Promise<SearchHit[]> {
-  const res = await getQdrant().search(name, { vector, limit, with_payload: true })
-  return res.map((r) => ({
+  // js-client 1.18부터 기존 search 메서드가 통합 query API로 대체됐다.
+  const res = await getQdrant().query(name, { query: vector, limit, with_payload: true })
+  return res.points.map((r) => ({
     id: r.id,
     score: r.score,
     // 정상 payload 면 가드로 narrow, 비정상/누락이면 기존과 동일하게 빈 객체 폴백.

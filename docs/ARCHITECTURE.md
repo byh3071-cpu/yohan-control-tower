@@ -2,7 +2,7 @@
 
 > 웹앱(로컬 전용 대시보드) · 포트 3001 · **`yohan-brain/dashboard/src` 60파일 이관 후의 목표 구조**(현재 상태 아님).
 > 규칙은 [`RULES.md`](../RULES.md), 기능ID·단계는 [`PRD.md`](./PRD.md) §3 이 SoT — 복제하지 않는다.
-> **단계**: v1.0 = F001·F002·F003·F008·F009·F010(이관·통합, **4탭**) / v1.1 = F004·F005·F006(계층축, 홈 추가 → **5탭 동결**). F007 = v1 OUT.
+> **단계**: v1.0 = F001·F002·F003·F008·F009·F010(이관·통합, **4탭**) / v1.1 = F004·F005·F006(계층축, 홈 추가 → **5탭 동결**) / v1.2 = F011(Home 내부 Calendar). F007 = v1 OUT.
 
 **표기** · `(이관)` = `yohan-brain/dashboard/<동일 상대경로>`에서 이동, import 무수정 · `(이동)` = 이 레포 파일 재배치 — **import 경로 + fetch URL 재작성 포함** · `(개조)` = 코드 변경 필수 · `(신규)`.
 **`src/` 채택** — dashboard paths `@/* → ./src/*` vs 이 레포 `@/* → ./*`. 60 vs 37 이라 다수를 안 건드린다: 이 레포 `tsconfig.json` paths 만 바꾸고 37파일을 `src/**/vector/` 로 옮긴다. **전제 = deps 15개 선설치**(목록 PRD §10) — 미설치면 "import 무수정"이 거짓이 된다.
@@ -11,10 +11,10 @@
 
 - **안**: 탭 셸(v1.0 4탭 → v1.1 5탭), `src/app/api/**`(파일시스템 리더·계층 집계·lint·allowlist 실행), 벡터 인제스트 파이프라인, 프로세스 내 뷰 캐시.
 - **밖 — 읽기만**: brain(`YOHAN_OS_ROOT`) · 형제 레포 `goals/*.md`·`.vhk/events/*.jsonl`(`YOHAN_REPOS_ROOT`, v1.1) · `../yohan-studio/src/content/blog/*.mdx` · Notion API.
-- **밖 — 쓰기 있음**: Qdrant(upsert/delete — 노션 복사본이라 재생성 가능) · brain `memory/` 에 **신규 md 생성만**(F009).
+- **밖 — 쓰기 있음**: Qdrant(upsert/delete — 노션 복사본이라 재생성 가능) · brain `memory/` 에 **신규 md 생성만**(F009) · Calendar 전용 `YOHAN_CALENDAR_ROOT/items/*.md` 생성·수정과 `trash/*.md` 간 rename·복구(F011).
 - **밖 — 관제탑이 기동하지 않는 로컬 데몬**: Qdrant `:6333`, Ollama `:11434`.
 - **배포**: 로컬 `next dev -p 3001` 뿐. `vercel.json`(cron `/api/ingest/incremental`) **삭제** — 라우트가 POST만 export 하는데 cron 은 GET 이라 이미 고장난 채였다.
-- **보안 경계**: 인증 0·localhost 바인딩 전제 → 경계는 §6-③(F010 cwd)과 §6-①(F009 단일 쓰기 통로) 둘뿐.
+- **보안 경계**: 인증 0·localhost 바인딩 전제 → F009 Brain 쓰기 제한, F010 cwd·사람 게이트, F011 Calendar GET의 loopback 및 POST·PATCH·DELETE의 same-origin 검사를 적용한다.
 
 ## 2. 모듈 맵
 
@@ -23,12 +23,15 @@
 | 탭 셸 | `src/app/page.tsx`, `layout.tsx`, `globals.css`, `components/view-tabs.tsx` (이관) | 탭 전환 + App Router 루트. **명령 실행 UI 배선**: `runServerAction`(`page.tsx:216`)이 `/api/run` 유일 호출처 → `Sidebar`·`CommandPalette` prop(`page.tsx:555`). 결과 표시는 기록 탭 | F008, F010 |
 | UI 프리미티브 | `src/components/ui/*`, `header.tsx`, `sidebar.tsx`, `theme-provider.tsx`, `src/lib/utils.ts`(`cn`) (이관) | shadcn 껍데기 — `utils.ts` 는 `ui/*`·`view-tabs`·`graph-view-2d` 전부가 import, 누락 시 컴파일 불가 | F008 |
 | 전역 검색 | `src/components/command-palette.tsx` (이관·**개조 완료**) + `src/app/api/search/route.ts` (이관) | 팔레트 → 문서 검색·명령 실행. **`/api/search` 로 재배선 완료**(구 `/api/nlp-command` 삭제). 자연어 의도 파싱은 되살리지 않는다 — `open_view` 5종 중 4종이 탭 지위를 잃었고, 자연어 명령 실행은 오분류 1회가 곧 실행이라 F010 사람 게이트와 충돌 | F008, F001 |
-| 미션 집계 | `src/lib/missions.ts` (신규) | `projects.yaml` + 레포 `goals/` 스캔 → 미션별 롤업 | F004, F005 |
+| 생태계 데이터 계약 | `src/lib/ecosystem-projects.ts` (신규) | `projects.yaml` 파싱·Goal frontmatter·완료 조건 진행률의 공용 읽기 계층 | F004, F005, F006 |
+| 미션 집계 | `src/lib/missions.ts` (신규) | 공용 읽기 계층 + 레포 스캔 → 미션별 롤업 | F004 |
 | 미션 API | `src/app/api/missions/route.ts` (신규) | 롤업 JSON | F004 |
-| 프로젝트 드릴다운 | `src/app/api/projects/[slug]/route.ts` (신규) | 레포 1개의 Task·이벤트 상세 | F005 |
-| Task 수집·뷰 | `src/app/api/todos/route.ts` + `components/todo-view.tsx` (이관) | **v1.0 은 `resolveRepoRoot()` + `SCAN_DIRS`(`todos/route.ts:26-32`)로 brain 한 레포만 읽는다(현행 그대로).** `<repo>/goals/*.md` 다레포 스캔은 v1.1 목표 | **F002**, F005 |
-| 정합성 규칙 | `src/lib/lint.ts` (신규) | 미션 미배정·미등재 레포·goal frontmatter 위반 판정. **status allowlist 하드코딩 금지** — 템플릿 4값이 정본이나 실측 13건이 그 밖(vhk `DEFERRED` 7·`OBSERVING`·`CANCELED`, brain `PR_OPEN` 2·`ACTIVE`·`BACKLOG`) → 검출하되 severity `warn`(에러 아님) + 레포별 확장 허용 목록을 설정으로 수용 | F006 |
+| 프로젝트 드릴다운 | `src/lib/projects.ts`, `src/app/api/projects/route.ts`, `src/app/api/projects/[slug]/route.ts`, `components/project-view.tsx` (신규) | 미션 5개 → 배속 레포 → `goals/*.md` Task·완료 조건 진행률. 미클론은 `available:false` | F005 |
+| 기존 할일 수집 | `src/app/api/todos/route.ts` + `components/todo-view.tsx` (이관) | Brain 한 레포의 문서 다음 액션을 Home에 공급. 프로젝트 탭의 다레포 Goal 뷰는 F005 경로로 분리 | F002 |
+| 정합성 규칙 | `src/lib/lint.ts`, `config/goal-status-extensions.yaml` (신규) | 미션 미배정·미등재 레포·goal frontmatter 위반 판정. `.git` 파일 worktree와 원격 repo명≠로컬 dir 변형은 제외. 표준 4값 밖 status는 error가 아닌 warning이며 레포별 확장을 설정으로 허용 | F006 |
 | lint API | `src/app/api/lint/route.ts` (신규) | 결함 목록 + 홈 배지 건수 | F006 |
+| Calendar 원장 | `src/lib/calendar.ts`, `src/lib/paths.ts` (신규·개조) | 항목별 Markdown 검증·반복 발생 확장·발생일별 할일 완료·원본 수정 충돌 검사·`items/`↔`trash/` rename 복구. 2초 TTL 캐시와 앱 쓰기 후 clear | F011 |
+| Calendar API·뷰 | `src/app/api/calendar/route.ts`, `components/calendar-view.tsx`, `components/home-view.tsx` (신규·개조) | 로컬 same-origin GET·POST·PATCH·DELETE, 월간·목록, 생성·수정·완료·휴지통·복구와 모바일 선택일 우선. Home 내부 보기라 탭 수 불변 | F011 |
 | 문서 인덱스 | `src/lib/memory.ts`, `doc-scope.ts` (이관) | brain 문서 556건 목록·본문·통계, managed(113)/collected(443) 축 | F001 |
 | 문서 API·뷰 | `src/app/api/docs/route.ts`, `docs/[...path]/route.ts` + `components/{table-view,doc-card,doc-preview}.tsx` (이관) | 목록·본문·표 | F001 |
 | 문서 관계 뷰 | `src/lib/{constellation,constellation-gravity,force-sim-2d,domains}.ts` + `api/constellation/route.ts` + `components/{constellation-view,graph-view-2d}.tsx` (이관) | 문서 그래프 — **문서 탭 안의 뷰 모드**(탭 아님). 라우트는 `page.tsx:160` 이 fetch 중 | F001 |
@@ -43,7 +46,7 @@
 | 벡터 API | `src/app/api/vector/{status,query,reset}/route.ts` + `vector/ingest/*/route.ts` 14종 (이동) | 상태·질의·인제스트 | F003 |
 | 벡터 패널 | `src/components/vector/{VectorPanel,CollectionStatus,IngestButton,LogViewer,QueryTester}.tsx` (이동 + `VectorPanel` **신규 추출**) | 벡터 탭 UI. `VectorPanel` 은 탭 셸의 벡터 탭과 독립 주소 `src/app/vector/page.tsx` 가 **같은 화면을 공유**하게 하는 단일 소유자 — 어느 한쪽에만 두면 다른 쪽이 빈 껍데기가 된다 | F003 |
 | 벡터 스크립트·테스트 | `scripts/vector/{init-collections,incremental-cron}.ts` + `src/lib/vector/{notion-since,qdrant-max-edited,qdrant-orphan}.test.ts` (이동) | 컬렉션 초기화·증분 cron·회귀 3건. `init-collections.ts:8-9` 의 `../lib/qdrant` → `../../src/lib/vector/qdrant` 재작성 | F003 |
-| 경로 해석 | `src/lib/paths.ts` (이관·**개조**) | `YOHAN_OS_ROOT`·`YOHAN_REPOS_ROOT` 해석 (§6-②) | 전역 |
+| 경로 해석 | `src/lib/paths.ts` (이관·**개조**) | `YOHAN_OS_ROOT`·`YOHAN_REPOS_ROOT`·`YOHAN_CALENDAR_ROOT` 해석 (§6-②) | 전역 |
 | 뷰 캐시 | `src/lib/{server-cache,docs-cache,http-cache}.ts` (이관·**개조**) | TTL + inflight dedupe + 스탬프 무효화(§3) | 전역 |
 | 타입 SoT | `src/lib/types.ts` (이관) | dashboard 공용 타입 SoT. **벡터 타입은 `src/lib/vector/types.ts` 로 분리 유지** — 벡터 모듈 7개(`chunking·collections·ingest·notion·producers·qdrant·sources`) + `notion-since.test.ts:4` 가 `./types` 를 상대 import 한다. 병합하면 8곳이 깨진다 | 전역 |
 
@@ -60,6 +63,7 @@
 | Doc(556) | **brain**(외부) | `lib/memory.ts` | `brain/memory/**`, `brain/docs/**` |
 | Task(Goal) | **각 레포**(외부) | `api/todos`, `api/projects/[slug]` | `<repo>/goals/*.md` frontmatter |
 | Event(실행 증거) | **각 레포**(외부) | `api/projects/[slug]` | `<repo>/.vhk/events/*.jsonl` |
+| CalendarItem | **Calendar 전용 로컬 원장** | `lib/calendar.ts` → `api/calendar` | 활성 `YOHAN_CALENDAR_ROOT/items/*.md`; 복구 대기 `YOHAN_CALENDAR_ROOT/trash/*.md` |
 | 밤루프 감사·이월 큐 | **brain**(외부) | `lib/audits.ts` | `brain/docs/audits/overnight-*.md` |
 | 발행 상태 | **yohan-studio**(외부) | `lib/publish.ts` | `../yohan-studio/src/content/blog/*.mdx` |
 | 노션 페이지 | **Notion**(외부) | `lib/vector/notion.ts` | Notion API |
@@ -84,11 +88,13 @@ flowchart LR
   I["api/inbox -> brain inbox CLI"]
   R["api/run (F010, allowlist 11)"]
   V["api/vector/ingest (F003)"]
+  C["api/calendar -> lib/calendar.ts (F011)"]
   CACHE["lib/server-cache.ts (TTL + 스탬프)"]
   BRAIN[("brain: projects.yaml, memory/**, docs/audits")]
   INBOX[("로컬 inbox.sqlite + raw pointers")]
   REPOS[("YOHAN_REPOS_ROOT: goals/*.md, .vhk/events")]
   Q[("Qdrant :6333")]
+  CAL[("YOHAN_CALENDAR_ROOT/items/*.md + trash/*.md")]
   UI -->|fetch no-store| M
   UI --> L
   UI --> D
@@ -96,6 +102,7 @@ flowchart LR
   UI --> I
   UI --> R
   UI --> V
+  UI --> C
   M --> CACHE
   L --> CACHE
   D --> CACHE
@@ -106,12 +113,15 @@ flowchart LR
   I -->|고정 CLI · write-once 신규 파일| BRAIN
   I -->|상태 조회·결정| INBOX
   V --> Q
+  C -->|same-origin 읽기·쓰기| CAL
 ```
 
-1. **홈 롤업(v1.1, F004·F006)**: 셸 → `GET /api/missions|/api/lint` → lib → 캐시(hit면 즉시) → miss면 `projects.yaml` + `goals/` 스캔 → JSON.
-2. **인박스(F009)**: 패널 → `POST /api/sot-draft` → **경로 존재 검사** → brain md 생성 → `clearDocsCache()`.
-3. **벡터 인제스트(F003)**: 버튼 → `POST /api/vector/ingest/<source>` → 노션 페치 → 청킹 → Ollama 임베딩 → Qdrant 결정적 ID upsert(멱등).
-4. **요한 인박스 운영(F009 확장)**: 패널 → `GET|POST /api/inbox` → `lib/inbox-controller.ts` → 고정 yohan-brain CLI. 조회는 status 뒤 active 목록을 100건 단위 offset 페이지로 순차 수집하고, 총계와 표시 건수가 다르면 0건으로 위장하지 않는다. 사람 결정과 정본 승격은 별도 요청이며 관제탑은 SQLite·정본 파일을 직접 열지 않는다.
+1. **홈 롤업(v1.1, F004·F006)**: 셸 → `GET /api/missions|/api/lint` → 공용 parser → `projects.yaml` + `goals/` 스캔 → 롤업·actionable 결함 배지.
+2. **프로젝트 드릴다운(F005)**: Home 미션 카드 → 선택 ID를 프로젝트 탭에 전달 → `GET /api/projects` → 레포 선택 → `GET /api/projects/[slug]` → Goal 원시 status·priority·Completion Check 표시.
+3. **인박스(F009)**: 패널 → `POST /api/sot-draft` → **경로 존재 검사** → brain md 생성 → `clearDocsCache()`.
+4. **벡터 인제스트(F003)**: 버튼 → `POST /api/vector/ingest/<source>` → 노션 페치 → 청킹 → Ollama 임베딩 → Qdrant 결정적 ID upsert(멱등).
+5. **요한 인박스 운영(F009 확장)**: 패널 → `GET|POST /api/inbox` → `lib/inbox-controller.ts` → 고정 yohan-brain CLI. 조회는 status 뒤 active 목록을 100건 단위 offset 페이지로 순차 수집하고, 총계와 표시 건수가 다르면 0건으로 위장하지 않는다. 사람 결정과 정본 승격은 별도 요청이며 관제탑은 SQLite·정본 파일을 직접 열지 않는다.
+6. **Calendar(F011)**: Home 내부 `개요 / 캘린더` → `GET|POST|PATCH|DELETE /api/calendar` → 항목별 Markdown. 반복은 요청 범위에서 파생하며 반복 할일 완료는 `completed_dates`에 발생일만 기록한다. 수정·휴지통 이동은 클라이언트가 받은 `expectedUpdatedAt`을 비교해 외부 파일 변경을 409로 보호한다. 삭제 확인 후 원문 바이트를 `trash/`로 rename하고, 복구는 활성 ID 충돌이 없을 때 같은 원문을 `items/`로 되돌린다.
 
 ## 5. 외부 의존 + 실패 모드
 
@@ -119,6 +129,7 @@ flowchart LR
 |---|---|---|
 | **brain 루트 `YOHAN_OS_ROOT`** | 모든 SoT | **하드 실패** — env 미설정이면 throw. cwd 추론 폴백 전면 금지(§6-②) |
 | **레포 스캔 루트 `YOHAN_REPOS_ROOT`** (신규 env, v1.1) | F004·F005·F006 의 레포 열거 | **하드 실패** — 미설정 시 throw. `YOHAN_OS_ROOT` 는 brain 을 가리키고 §6-② 가 `cwd/..` 추론을 금지하므로 별도 env 가 필수다. 실측: 형제 13 + 자기 1 = **14 중 `goals/` 디렉토리 보유 6개, 그중 goal md 보유 5개**(vhk 52·brain 14·studio 10·voice 3·control-tower 1 / `vhk-privacy-v3` 는 디렉토리만 있고 0건). 필터 = 워크트리·변형 디렉토리 제외(PRD §3 F006) |
+| **Calendar 루트 `YOHAN_CALENDAR_ROOT`** | F011 일정·할일 원장·휴지통 | 미설정은 `setupRequired`, 상대경로는 거부. `items/`·`trash/` 손상 파일은 `issues[]`로 표면화하며 다른 정상 파일은 유지. 오래된 수정·삭제와 복구 ID 충돌은 409 |
 | **`projects.yaml` 부재** | 미션 계층 | **첫 실행 시 반드시 부재 = 정상 초기 상태.** `{ok:true, missions:[], setupRequired:true}` 로 **명시 구별 신호** 반환. 미션 0개·Task 0개로 조용히 표시 금지 |
 | Qdrant `:6333` | 벡터 저장·검색 | **degrade** — `api/vector/status` 가 `connected:false`+error(`app/api/status/route.ts:29-31`), 벡터 탭만 접힘. 인제스트·질의는 **하드 실패**(5xx). 30초 타임아웃 |
 | Ollama `:11434` | bge-m3 임베딩 | **degrade** — `ollamaStatus()` 3초 타임아웃 후 `available:false`+사유(모델 미설치까지 구분). 임베딩 호출 자체는 차원 불일치 시 throw = **하드 실패** |
@@ -129,7 +140,7 @@ flowchart LR
 
 일반 코딩·보안·AI 제안 규칙은 [`RULES.md`](../RULES.md) §코딩·§보안·§프론트 아키텍처 참조. 아래는 **이 아키텍처 고유**의 것만.
 
-1. **관제탑의 brain 직접 쓰기 통로는 `api/sot-draft/**`(F009) 하나뿐이고 새 경로 생성만 한다.** 대상 절대경로가 이미 있으면 409 거부한다. `api/inbox`는 직접 파일을 쓰지 않고 [ADR-001](./adr/ADR-001-local-inbox-cli-bridge.md)의 고정 yohan-brain CLI에 위임하며, 그 CLI도 UUID 고정 write-once 신규 파일만 만든다. 관제탑에서 SQLite·정본 경로를 직접 여는 우회는 금지한다. ※ 근거 계약 **개정 예정**: `ecosystem-contract.yaml:87-88` 의 `must_not` 은 `read_brain_memory_as_ingest_source` 1개뿐이고 `modify_existing_brain_files` 문자열은 없다. `:89` `note_ko` 도 충돌 → 사람 승인 커밋 선행(PRD §10 게이트 ①).
+1. **관제탑의 brain 직접 쓰기 통로는 `api/sot-draft/**`(F009) 하나뿐이고 새 경로 생성만 한다.** 대상 절대경로가 이미 있으면 409 거부한다. `api/inbox`는 직접 파일을 쓰지 않고 [ADR-001](./adr/ADR-001-local-inbox-cli-bridge.md)의 고정 yohan-brain CLI에 위임하며, 그 CLI도 UUID 고정 write-once 신규 파일만 만든다. 관제탑에서 SQLite·정본 경로를 직접 여는 우회는 금지한다. 근거 계약은 active `ecosystem-contract.yaml` v0.3.0의 `control_tower.must_not: modify_existing_brain_files`다(2026-08-07 재검증).
 2. **`resolveRepoRoot()` 는 env 없으면 무조건 throw.** 현행 `paths.ts:11-21` 폴백 4단계 중 **2·3·4 전부 제거**. 3·4(`cwd/..`)만 지우면 폴백 2(`cwd/memory` 있으면 cwd)가 남아, 이 레포에 `memory/` 가 생기는 순간 자기를 brain 으로 조용히 해석한다.
 3. **F010 의 모든 액션은 `root: "brain"` 필수 필드를 갖는다** — 옵셔널·기본값·암묵 폴백 금지. 현행 `ROOT = resolve(process.cwd(), "..")`(`run/route.ts:7`)는 `brain/dashboard` 안이라서만 맞았고, 이관하면 `..`=`yohan-ecosystem/` 이라 **11개 액션 전부 엉뚱한 디렉토리에서 실행**된다. `"self"` 리터럴은 만들지 않는다(11종 전부 brain 명령 = 사용처 0).
 4. **탭 상한 5.** `ViewTab` union(`view-tabs.tsx`)이 SoT — **v1.0 은 4 리터럴, v1.1 에 `home` 1개만 추가해 5에서 동결. 6번째 금지.**
@@ -137,6 +148,7 @@ flowchart LR
 5. **외부 의존 실패는 `ok:false`+`error` 또는 `setupRequired` 로 표면화한다.** 빈 배열·0·마지막 성공값을 정상값처럼 반환 금지(§5 studio 행이 이 위반의 실례).
 6. **fs 스캔은 전부 `server-cache` 를 거친다.** 라우트가 `listDocs()`·레포 워크를 직접 호출하지 않는다.
 7. **brain 절대경로는 `resolveRepoRoot()` 로만 얻는다 — `process.cwd()` 기준 상대 이동 금지.** ③이 `api/run` 만 지목했지만 **같은 결함이 2곳 더 있었다**: `api/search:8`·`api/sot-draft/generate:7` 의 `config({ path: resolve(cwd, "..", ".env") })`. 이관 후 `yohan-ecosystem/.env` 를 가리켜 아무것도 안 읽었고(dev 로그 `injected env (0)`), brain `.env` 의 `OPENAI_API_KEY` 가 유실됐다. 시스템 env 에 같은 키가 있어 **우연히 동작 중**이라 정적 게이트 4종이 전부 통과했다 — 실기동에서만 드러났다. 해결: `lib/paths.ts` 의 `loadBrainEnv()`(lazy + 1회) 를 요청 처리 중에 호출.
+8. **Calendar 삭제는 영구 삭제가 아니다.** DELETE는 확인된 항목의 원문을 `items/`에서 `trash/`로 `rename`만 하며 `unlink`를 사용하지 않는다. 복구 키는 엄격한 파일명 패턴으로 검증하고 활성 ID 충돌 시 덮어쓰지 않는다. 수정·삭제 모두 `expectedUpdatedAt`이 일치해야 하며 성공 전 UI에서 낙관적으로 제거하지 않는다.
 
 ## 7. 기술 스택
 

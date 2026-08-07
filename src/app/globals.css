@@ -50,38 +50,38 @@
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  --background: #f4f1ea;
+  --foreground: #0a0a0a;
+  --card: #fbfaf7;
+  --card-foreground: #0a0a0a;
+  --popover: #fbfaf7;
+  --popover-foreground: #0a0a0a;
+  --primary: #0a0a0a;
+  --primary-foreground: #fbfaf7;
+  --secondary: #ece8df;
+  --secondary-foreground: #171717;
+  --muted: #ebe7de;
+  --muted-foreground: #666158;
+  --accent: #e8e3d9;
+  --accent-foreground: #171717;
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
+  --border: #d9d3c8;
+  --input: #d9d3c8;
+  --ring: #ff5c28;
+  --chart-1: #ff5c28;
   --chart-2: oklch(0.6 0.118 184.714);
   --chart-3: oklch(0.398 0.07 227.334);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar: #eeeae2;
+  --sidebar-foreground: #0a0a0a;
+  --sidebar-primary: #0a0a0a;
+  --sidebar-primary-foreground: #fbfaf7;
+  --sidebar-accent: #e5e0d6;
+  --sidebar-accent-foreground: #171717;
+  --sidebar-border: #d9d3c8;
+  --sidebar-ring: #ff5c28;
 }
 
 .dark {
@@ -123,10 +123,20 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
   }
   html {
     @apply font-sans;
     scrollbar-color: oklch(0.4 0.02 270) transparent;
+  }
+}
+
+@layer components {
+  .calendar-icon-button {
+    @apply inline-flex size-8 items-center justify-center rounded-lg border border-border bg-background transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring;
+  }
+
+  .calendar-input {
+    @apply block min-h-9 w-full rounded-lg border border-input bg-background px-3 py-2 text-xs outline-none transition-colors placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/20 disabled:cursor-not-allowed disabled:opacity-50;
   }
 }

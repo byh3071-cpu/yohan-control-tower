@@ -69,6 +69,232 @@ export interface TodosResponse {
   generatedAt: string
 }
 
+export type MissionUnit = "task" | "calendar"
+
+export interface MissionProjectSummary {
+  /** projects.yaml에 이 미션으로 배속된 전체 프로젝트 */
+  configured: number
+  /** YOHAN_REPOS_ROOT 아래 실제 로컬 클론 */
+  local: number
+  /** 로컬 클론 중 goals/ 계약을 가진 프로젝트 */
+  withGoals: number
+  /** 아직 로컬에 없어 Task 수를 알 수 없는 프로젝트 */
+  unknown: number
+}
+
+export interface MissionTaskSummary {
+  total: number
+  active: number
+  queued: number
+  blocked: number
+  done: number
+  other: number
+  /** 확장 status를 손실하지 않는 원시 집계 */
+  byStatus: Record<string, number>
+}
+
+export interface MissionRollup {
+  id: string
+  label: string
+  unit: MissionUnit
+  projects: MissionProjectSummary
+  tasks: MissionTaskSummary
+}
+
+export interface MissionCoverage {
+  configuredProjects: number
+  assignedProjects: number
+  unassignedProjects: number
+  localAssignedProjects: number
+  unknownAssignedProjects: number
+}
+
+export interface MissionsResponse {
+  ok: boolean
+  setupRequired: boolean
+  missions: MissionRollup[]
+  coverage: MissionCoverage
+  sourceVersion: string | null
+  generatedAt: string
+  error?: string
+}
+
+export interface GoalTask {
+  file: string
+  type: string | null
+  id: number | null
+  title: string
+  /** fallback 파일명이 아닌 frontmatter title이 실제로 있었는지 */
+  titleDeclared: boolean
+  status: string | null
+  priority: string | null
+  completed: string | null
+  checks: { total: number; done: number }
+}
+
+export interface ProjectSummary {
+  name: string
+  mission: string
+  status: string | null
+  role: string | null
+  local: boolean
+  goalsAvailable: boolean
+  tasks: MissionTaskSummary
+}
+
+export interface ProjectMissionGroup {
+  id: string
+  label: string
+  unit: MissionUnit
+  projects: ProjectSummary[]
+}
+
+export interface ProjectsResponse {
+  ok: boolean
+  setupRequired: boolean
+  missions: ProjectMissionGroup[]
+  unassignedProjects: number
+  sourceVersion: string | null
+  generatedAt: string
+  error?: string
+}
+
+export interface ProjectDetailResponse {
+  ok: boolean
+  setupRequired: boolean
+  project: ProjectSummary | null
+  goals: GoalTask[]
+  available: boolean
+  generatedAt: string
+  error?: string
+}
+
+export type LintSeverity = "error" | "warning" | "info"
+export type LintIssueKind =
+  | "project_unassigned"
+  | "repo_unregistered"
+  | "goal_frontmatter"
+  | "goal_status_extension"
+
+export interface LintIssue {
+  id: string
+  kind: LintIssueKind
+  severity: LintSeverity
+  project: string | null
+  file: string | null
+  message: string
+  suggestion: string
+}
+
+export interface LintCounts {
+  total: number
+  actionable: number
+  error: number
+  warning: number
+  info: number
+}
+
+export interface LintResponse {
+  ok: boolean
+  setupRequired: boolean
+  counts: LintCounts
+  issues: LintIssue[]
+  excludedLocalDirs: string[]
+  generatedAt: string
+  error?: string
+}
+
+export type CalendarItemKind = "event" | "task"
+export type CalendarItemStatus = "open" | "done" | "canceled"
+export type CalendarRecurrence = "none" | "daily" | "weekly" | "monthly"
+
+export interface CalendarItem {
+  id: string
+  kind: CalendarItemKind
+  title: string
+  date: string
+  startTime: string | null
+  endTime: string | null
+  status: CalendarItemStatus
+  recurrence: CalendarRecurrence
+  recurrenceInterval: number
+  recurrenceUntil: string | null
+  completedDates: string[]
+  notes: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface CalendarOccurrence {
+  id: string
+  sourceId: string
+  sourceDate: string
+  sourceUpdatedAt: string
+  kind: CalendarItemKind
+  title: string
+  date: string
+  startTime: string | null
+  endTime: string | null
+  status: CalendarItemStatus
+  recurring: boolean
+  recurrence: CalendarRecurrence
+  recurrenceInterval: number
+  recurrenceUntil: string | null
+  notes: string
+}
+
+export interface CalendarFileIssue {
+  file: string
+  message: string
+}
+
+export interface CalendarResponse {
+  ok: boolean
+  setupRequired: boolean
+  from: string
+  to: string
+  occurrences: CalendarOccurrence[]
+  sourceItems: number
+  issues: CalendarFileIssue[]
+  generatedAt: string
+  error?: string
+}
+
+export interface CalendarCreateInput {
+  kind: CalendarItemKind
+  title: string
+  date: string
+  startTime?: string | null
+  endTime?: string | null
+  recurrence?: CalendarRecurrence
+  recurrenceInterval?: number
+  recurrenceUntil?: string | null
+  notes?: string
+}
+
+export interface CalendarUpdateInput extends Omit<CalendarCreateInput, "kind"> {
+  expectedUpdatedAt: string
+}
+
+export interface CalendarTrashItem {
+  trashId: string
+  id: string
+  kind: CalendarItemKind
+  title: string
+  date: string
+  updatedAt: string
+  deletedAt: string
+}
+
+export interface CalendarTrashResponse {
+  ok: boolean
+  setupRequired: boolean
+  items: CalendarTrashItem[]
+  issues: CalendarFileIssue[]
+  generatedAt: string
+  error?: string
+}
+
 export interface DocFull extends DocMeta {
   content: string
   frontmatter: Record<string, unknown>

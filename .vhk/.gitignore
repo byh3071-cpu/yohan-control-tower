@@ -30,3 +30,6 @@ backups/
 # 증거 영수증 — 로컬 산출물(추적하면 자기 dirty 증거 오염). vhk receipt.
 receipts/
 .synced
+reports/
+# VHK memory/refs 원본과 같은 개인정보를 담는 자동 백업 — VHK #557.
+*.bak

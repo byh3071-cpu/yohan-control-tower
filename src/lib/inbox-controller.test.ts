@@ -124,12 +124,20 @@ test("POST 신뢰 경계는 loopback의 정확히 같은 origin만 허용한다"
   const rebound = new Request("http://evil.example/api/inbox", {
     headers: { origin: "http://evil.example" },
   })
+  const browserSameOrigin = new Request("http://127.0.0.1:3001/api/inbox", {
+    headers: {
+      host: "localhost:3001",
+      referer: "http://localhost:3001/",
+      "sec-fetch-site": "same-origin",
+    },
+  })
   const missing = new Request("http://localhost:3001/api/inbox")
 
   assert.equal(isSameOriginRequest(same), true)
   assert.equal(isSameOriginRequest(loopbackIp), true)
   assert.equal(isSameOriginRequest(foreign), false)
   assert.equal(isSameOriginRequest(rebound), false)
+  assert.equal(isSameOriginRequest(browserSameOrigin), true)
   assert.equal(isSameOriginRequest(missing), false)
 })
 

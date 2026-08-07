@@ -1,0 +1,8 @@
+schema: goal-status-extensions
+schema_version: 1
+
+# VHK 표준 4값(NOT_STARTED|IN_PROGRESS|DONE|BLOCKED) 밖의 레포별 허용 어휘.
+# 여기에 없는 확장값도 버리거나 error로 만들지 않고 F006 warning으로 표시한다.
+repos:
+  vhk: [DEFERRED, OBSERVING, CANCELED]
+  yohan-brain: [PR_OPEN, ACTIVE, BACKLOG]

@@ -7,7 +7,7 @@ type Theme = "dark" | "light"
 const ThemeCtx = createContext<{
   theme: Theme
   toggle: () => void
-}>({ theme: "dark", toggle: () => {} })
+}>({ theme: "light", toggle: () => {} })
 
 export function useTheme() {
   return useContext(ThemeCtx)
@@ -15,9 +15,9 @@ export function useTheme() {
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>(() => {
-    if (typeof window === "undefined") return "dark"
+    if (typeof window === "undefined") return "light"
     const stored = localStorage.getItem("yohan-os-theme") as Theme | null
-    return stored === "light" || stored === "dark" ? stored : "dark"
+    return stored === "light" || stored === "dark" ? stored : "light"
   })
 
   useEffect(() => {

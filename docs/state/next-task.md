@@ -1,7 +1,8 @@
 # Next Task
 
-_Auto-updated via `vhk goal next`._
+_Auto-updated 2026-08-07T11:49:48.484Z via `vhk goal next` + project workaround for VHK #558._
 
-```text
-TASK: (활성 Goal 없음 — Goal 1 완료)
+```
+TASK: 없음 — 모든 Goal 완료
+  status: DONE
 ```

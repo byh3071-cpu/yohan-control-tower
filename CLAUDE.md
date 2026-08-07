@@ -31,7 +31,7 @@
 ## 프로젝트 정체성 · 아키텍처 불변식
 - 한 줄 설명: 요한 생태계 **통합 관제탑** — brain(SoT)을 읽어 미션·프로젝트·Task·문서·벡터를 한 화면에서 관제하는 **로컬 전용** 대시보드
 - 포트: **3001**
-- **brain = SoT.** 관제탑은 읽기 자유 + **신규 파일 생성만** 허용. 기존 brain 파일 수정은 금지. — **이 레포 자체 규칙이다. 아직 계약 조항이 아니다.** 현행 `ecosystem-contract.yaml` 의 `control_tower.must_not` 은 `read_brain_memory_as_ingest_source` 하나뿐이고, `modify_existing_brain_files` 신설은 **계약 개정(사람 승인 커밋) 대상**이다.
+- **brain = SoT.** 관제탑은 읽기 자유 + **신규 파일 생성만** 허용. 기존 brain 파일 수정은 금지. active `ecosystem-contract.yaml` v0.3.0의 `control_tower.must_not: modify_existing_brain_files`가 이를 강제한다.
 - **로컬 전용.** localhost 서비스(Qdrant 6333 · Ollama 11434)와 로컬 파일시스템에 의존한다. 클라우드 배포 대상이 아니다.
 - brain 경로는 `YOHAN_OS_ROOT` env 로 해석한다. 절대경로 하드코딩 금지.
 - 노션은 **사람용 뷰·모바일 인박스**. 정본이 아니다 (ADR-009).
@@ -66,6 +66,34 @@
 <!-- BEGIN:nextjs-agent-rules -->
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
 <!-- END:nextjs-agent-rules -->
+
+## VHK 운영 규칙
+### 새 세션 시작
+
+1. 저장소 루트에서 `.vhk/HARD_STOP`을 먼저 확인한다. 있으면 자동화를 중단하고 이유를 보고한다.
+2. `npm install`이 끝난 상태에서 `npm run vhk -- context`, `npm run vhk -- goal peek`, `npm run vhk -- goal list`를 실행하고 `docs/state/blockers.md`를 읽는다.
+3. 구현 작업이면 수정 전에 라우팅 크기와 현재 **Phase · Goal · 이번 Completion Check**를 선언한다.
+4. active Goal이 없으면 전체 요청을 Phase로 나누고, 독립 검증 가능한 Goal 파일을 만든 뒤 `npm run vhk -- goal sync`와 `npm run vhk -- goal next`로 활성화한다.
+5. 새 세션도 이전 대화 기억이 아니라 `RULES.md`, active Goal, Git 상태, 검증 Evidence를 기준으로 이어간다.
+
+### 작업 분해와 완료
+
+- 구현은 **Phase → Goal → Completion Check** 순서로 쪼갠다. Phase는 사용자 결과 묶음, Goal은 단독으로 검증·완료 가능한 한 가지 결과, Completion Check는 참/거짓으로 확인 가능한 원자적 Task다.
+- active Goal은 항상 하나만 둔다. 다른 결과가 섞이거나 한 세션에서 검증하기 너무 길면 다음 번호 Goal로 분리한다.
+- VHK 2.12.0에는 ticket 하위 명령이 없다. 장기 추적·외부 협업·크로스레포 의존이 필요할 때만 GitHub Issue를 티켓으로 만들고 Goal의 Scope/Evidence에서 링크한다. 단순 구현 단위는 추가 Goal이 우선이다.
+- 구현 중에는 `npm run vhk -- goal check --id <id> --force`, 완료 시에는 같은 게이트를 다시 실행하는 `npm run vhk -- goal done --id <id>`를 사용한다. 검증 없이 체크박스나 status를 완료로 바꾸지 않는다.
+- `docs/state/next-task.md`는 `vhk goal next`가 백업 후 덮어쓰는 **VHK 관리 현재 스냅샷**이다. 직접 append하지 않으며 조회만 할 때는 `goal peek`을 쓴다. `docs/state/blockers.md`는 append-only다. 생성 규칙의 모순은 VHK [#555](https://github.com/byh3071-cpu/vhk/issues/555)에서 추적한다. 이 규칙이 생성 파일의 포괄적 append-only 문구보다 우선한다.
+- 모든 Goal이 DONE일 때 VHK 2.12.0은 과거 IN_PROGRESS next-task를 남길 수 있다(VHK [#558](https://github.com/byh3071-cpu/vhk/issues/558)). 프로젝트 래퍼는 성공한 `goal next` 뒤 모든 Goal을 다시 읽고, 기존 파일이 VHK 관리본일 때만 `TASK: 없음 — 모든 Goal 완료 / status: DONE` 전체 완료 snapshot으로 보정한다.
+- 모든 npm VHK 명령은 `scripts/run-vhk.mjs`를 거친다. 래퍼는 `.env.local`의 `YOHAN_OS_ROOT/memory/core/core-ruleset.yaml`을 `VHK_RULES_FILE`로 연결한다. 기존 configured CORE-RULES가 있는데 원본을 찾지 못하면 최상위 `sync`·`inject-bootstrap`을 중단해 번들 규칙으로의 무음 다운그레이드를 막는다(VHK [#556](https://github.com/byh3071-cpu/vhk/issues/556)).
+
+### VHK upstream 이슈 등록 기준
+
+- VHK 문제처럼 보여도 먼저 고정 버전에서 재현하고 환경 권한·npm 캐시·프로젝트 설정·명령 오용을 분리한다.
+- 실제 VHK 동작 또는 생성물의 결함으로 재현될 때만 `byh3071-cpu/vhk`의 open·closed 이슈를 중복 검색한다.
+- 중복이 없으면 버전·환경·최소 재현 단계·실제 결과·기대 결과·영향·가능한 수정 방향을 담아 GitHub Issue를 등록하고 현재 Goal 또는 세션 로그에 링크한다.
+- 사용자가 읽거나 승인하는 GitHub Issue·PR·VHK Goal·Task·세션 인수인계 문서는 **한국어를 기본 언어**로 작성한다. 명령어·코드·필드명·고유명사는 원문 영어를 유지하되 처음 나올 때 한국어로 의미를 설명한다. 외부 프로젝트가 영어를 요구하는 경우에도 사용자용 한국어 요약을 함께 남긴다.
+- 보안 정보, 토큰, 개인 절대경로, 비공개 원문은 이슈에 넣지 않는다.
+- `.vhk/memory.json`, `refs.json`과 그 `*.bak` 백업은 개인 메모이므로 Git에 올리지 않는다. VHK 2.12.0 백업 ignore 누락은 VHK [#557](https://github.com/byh3071-cpu/vhk/issues/557)에서 추적한다.
 
 ## 기록 규칙
 - 세션 종료 시 `docs/log/YYYY-MM-DD-{작업명}.md` 생성

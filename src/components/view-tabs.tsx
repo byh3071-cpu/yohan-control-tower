@@ -1,6 +1,6 @@
 "use client"
 
-import { Clock, Database, FolderKanban, Table2 } from "lucide-react"
+import { Clock, Database, FolderKanban, House, Table2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 /**
@@ -10,9 +10,10 @@ import { cn } from "@/lib/utils"
  * 확장은 탭 추가가 아니라 **흡수**로 한다 — 실제로 6탭이던 것을 4로 줄였다:
  *   통계 → 기록 안 · 작업실 → 문서(인박스)와 기록(상태카드)으로 분해 · 관계 → 문서의 표시 모드
  */
-export type ViewTab = "projects" | "docs" | "records" | "vector"
+export type ViewTab = "home" | "projects" | "docs" | "records" | "vector"
 
 const TABS: { id: ViewTab; label: string; icon: React.ReactNode }[] = [
+  { id: "home", label: "홈", icon: <House size={14} /> },
   { id: "projects", label: "프로젝트", icon: <FolderKanban size={14} /> },
   { id: "docs", label: "문서", icon: <Table2 size={14} /> },
   { id: "records", label: "기록", icon: <Clock size={14} /> },
@@ -32,6 +33,7 @@ export function ViewTabs({ active, onChange }: ViewTabsProps) {
           key={t.id}
           type="button"
           onClick={() => onChange(t.id)}
+          aria-pressed={active === t.id}
           className={cn(
             "relative flex shrink-0 items-center gap-1.5 px-2.5 sm:px-3 py-2.5 text-xs font-medium transition-colors whitespace-nowrap",
             active === t.id

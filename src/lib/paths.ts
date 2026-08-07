@@ -1,5 +1,5 @@
 import { existsSync } from "node:fs"
-import { join, resolve } from "node:path"
+import { isAbsolute, join, resolve } from "node:path"
 
 import { config as loadDotenv } from "dotenv"
 
@@ -40,6 +40,25 @@ export function resolveReposRoot(): string {
     throw new Error(
       "YOHAN_REPOS_ROOT 미설정 — 레포 스캔 루트를 알 수 없습니다. .env.local 에 절대경로를 지정하세요."
     )
+  }
+  return resolve(/* turbopackIgnore: true */ env)
+}
+
+/**
+ * 로컬 Calendar 원장 루트 — `items/*.md`의 소유 경로.
+ *
+ * 개인정보가 들어갈 수 있어 앱 소스·Brain·Notion에서 추론하지 않는다. PC마다
+ * `YOHAN_CALENDAR_ROOT` 절대경로를 명시해야 하며, 디렉터리는 첫 항목 생성 시 만든다.
+ */
+export function resolveCalendarRoot(): string {
+  const env = process.env.YOHAN_CALENDAR_ROOT?.trim()
+  if (!env) {
+    throw new Error(
+      "YOHAN_CALENDAR_ROOT 미설정 — Calendar 원장 위치를 알 수 없습니다. .env.local 에 절대경로를 지정하세요."
+    )
+  }
+  if (!isAbsolute(env)) {
+    throw new Error("YOHAN_CALENDAR_ROOT 는 절대경로여야 합니다.")
   }
   return resolve(/* turbopackIgnore: true */ env)
 }
