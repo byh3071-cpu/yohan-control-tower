@@ -15,6 +15,7 @@ import { FullCharts } from "@/components/full-charts"
 import { TimelineView } from "@/components/timeline-view"
 import { TableView } from "@/components/table-view"
 import { TodoView } from "@/components/todo-view"
+import { HomeView } from "@/components/home-view"
 import { VectorPanel } from "@/components/vector/VectorPanel"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { countByScope, docScope, matchesFilter, type DocFilter } from "@/lib/doc-scope"
@@ -100,11 +101,12 @@ export default function DashboardPage() {
   const [sessionLogs, setSessionLogs] = useState<SessionLog[]>([])
   const [activeCategory, setActiveCategory] = useState<DocFilter>("all")
   const [selectedDoc, setSelectedDoc] = useState<string | null>(null)
-  const [activeView, setActiveView] = useState<ViewTab>("docs")
+  const [activeView, setActiveView] = useState<ViewTab>("home")
   const [docsMode, setDocsMode] = useState<DocsMode>("card")
   const [inboxOpen, setInboxOpen] = useState(false)
   const [cmdOpen, setCmdOpen] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [dashboardError, setDashboardError] = useState<string | null>(null)
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [constellationData, setConstellationData] = useState<ConstellationData | null>(null)
   const [constellationAsOfYmd, setConstellationAsOfYmd] = useState<string | null>(null)
@@ -117,14 +119,18 @@ export default function DashboardPage() {
     try {
       const r = await fetch(url, { cache: "no-store" })
       const data = await r.json()
+      if (!r.ok) throw new Error(data.error ?? `HTTP ${r.status}`)
       setDocs(data.docs ?? [])
       setStats((prev) => data.stats ?? prev)
       setCharts((prev) => data.charts ?? prev)
       setChangelog(data.changelog ?? [])
       setDecisionEntries(data.decisions ?? [])
       setSessionLogs(data.sessions ?? [])
-    } catch (e) {
-      console.error(e)
+      setDashboardError(null)
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error)
+      setDashboardError(message)
+      console.error(error)
     }
   }, [])
 
@@ -261,6 +267,23 @@ export default function DashboardPage() {
     setMobileNavOpen(false)
   }, [])
 
+  const navigateFromHome = useCallback((tab: ViewTab, category?: DocFilter) => {
+    if (category) {
+      setActiveCategory(category)
+      setDocsMode("card")
+    }
+    setActiveView(tab)
+    setMobileNavOpen(false)
+  }, [])
+
+  const openInboxFromHome = useCallback(() => {
+    setActiveCategory("all")
+    setDocsMode("card")
+    setInboxOpen(true)
+    setActiveView("docs")
+    setMobileNavOpen(false)
+  }, [])
+
   if (loading) {
     return (
       <div className="h-screen flex items-center justify-center bg-background">
@@ -317,6 +340,21 @@ export default function DashboardPage() {
         </div>
 
         <div className="flex-1 flex flex-col overflow-hidden min-h-0">
+          {/* ── 홈 ── 한 화면 관제. 상세 기능은 기존 4개 원장으로 흡수한다. */}
+          {activeView === "home" && (
+            <ScrollArea className="flex-1 min-h-0">
+              <HomeView
+                stats={stats}
+                docCounts={counts}
+                gaps={scopeCounts.gaps}
+                dashboardError={dashboardError}
+                onNavigate={navigateFromHome}
+                onOpenInbox={openInboxFromHome}
+                onOpenDoc={openDoc}
+              />
+            </ScrollArea>
+          )}
+
           {/* ── 프로젝트 ── v1.0 은 할일 목록. v1.1 에서 미션→레포→Task 드릴다운으로 확장 */}
           {activeView === "projects" && (
             <ScrollArea className="flex-1 min-h-0">
