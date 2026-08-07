@@ -33,6 +33,7 @@ export function ViewTabs({ active, onChange }: ViewTabsProps) {
           key={t.id}
           type="button"
           onClick={() => onChange(t.id)}
+          aria-pressed={active === t.id}
           className={cn(
             "relative flex shrink-0 items-center gap-1.5 px-2.5 sm:px-3 py-2.5 text-xs font-medium transition-colors whitespace-nowrap",
             active === t.id

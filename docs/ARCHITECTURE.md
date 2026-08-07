@@ -129,7 +129,7 @@ flowchart LR
 
 일반 코딩·보안·AI 제안 규칙은 [`RULES.md`](../RULES.md) §코딩·§보안·§프론트 아키텍처 참조. 아래는 **이 아키텍처 고유**의 것만.
 
-1. **관제탑의 brain 직접 쓰기 통로는 `api/sot-draft/**`(F009) 하나뿐이고 새 경로 생성만 한다.** 대상 절대경로가 이미 있으면 409 거부한다. `api/inbox`는 직접 파일을 쓰지 않고 [ADR-001](./adr/ADR-001-local-inbox-cli-bridge.md)의 고정 yohan-brain CLI에 위임하며, 그 CLI도 UUID 고정 write-once 신규 파일만 만든다. 관제탑에서 SQLite·정본 경로를 직접 여는 우회는 금지한다. ※ 근거 계약 **개정 예정**: `ecosystem-contract.yaml:87-88` 의 `must_not` 은 `read_brain_memory_as_ingest_source` 1개뿐이고 `modify_existing_brain_files` 문자열은 없다. `:89` `note_ko` 도 충돌 → 사람 승인 커밋 선행(PRD §10 게이트 ①).
+1. **관제탑의 brain 직접 쓰기 통로는 `api/sot-draft/**`(F009) 하나뿐이고 새 경로 생성만 한다.** 대상 절대경로가 이미 있으면 409 거부한다. `api/inbox`는 직접 파일을 쓰지 않고 [ADR-001](./adr/ADR-001-local-inbox-cli-bridge.md)의 고정 yohan-brain CLI에 위임하며, 그 CLI도 UUID 고정 write-once 신규 파일만 만든다. 관제탑에서 SQLite·정본 경로를 직접 여는 우회는 금지한다. 근거 계약은 active `ecosystem-contract.yaml` v0.3.0의 `control_tower.must_not: modify_existing_brain_files`다(2026-08-07 재검증).
 2. **`resolveRepoRoot()` 는 env 없으면 무조건 throw.** 현행 `paths.ts:11-21` 폴백 4단계 중 **2·3·4 전부 제거**. 3·4(`cwd/..`)만 지우면 폴백 2(`cwd/memory` 있으면 cwd)가 남아, 이 레포에 `memory/` 가 생기는 순간 자기를 brain 으로 조용히 해석한다.
 3. **F010 의 모든 액션은 `root: "brain"` 필수 필드를 갖는다** — 옵셔널·기본값·암묵 폴백 금지. 현행 `ROOT = resolve(process.cwd(), "..")`(`run/route.ts:7`)는 `brain/dashboard` 안이라서만 맞았고, 이관하면 `..`=`yohan-ecosystem/` 이라 **11개 액션 전부 엉뚱한 디렉토리에서 실행**된다. `"self"` 리터럴은 만들지 않는다(11종 전부 brain 명령 = 사용처 0).
 4. **탭 상한 5.** `ViewTab` union(`view-tabs.tsx`)이 SoT — **v1.0 은 4 리터럴, v1.1 에 `home` 1개만 추가해 5에서 동결. 6번째 금지.**

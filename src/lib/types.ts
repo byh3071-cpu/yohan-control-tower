@@ -69,6 +69,56 @@ export interface TodosResponse {
   generatedAt: string
 }
 
+export type MissionUnit = "task" | "calendar"
+
+export interface MissionProjectSummary {
+  /** projects.yaml에 이 미션으로 배속된 전체 프로젝트 */
+  configured: number
+  /** YOHAN_REPOS_ROOT 아래 실제 로컬 클론 */
+  local: number
+  /** 로컬 클론 중 goals/ 계약을 가진 프로젝트 */
+  withGoals: number
+  /** 아직 로컬에 없어 Task 수를 알 수 없는 프로젝트 */
+  unknown: number
+}
+
+export interface MissionTaskSummary {
+  total: number
+  active: number
+  queued: number
+  blocked: number
+  done: number
+  other: number
+  /** 확장 status를 손실하지 않는 원시 집계 */
+  byStatus: Record<string, number>
+}
+
+export interface MissionRollup {
+  id: string
+  label: string
+  unit: MissionUnit
+  projects: MissionProjectSummary
+  tasks: MissionTaskSummary
+}
+
+export interface MissionCoverage {
+  configuredProjects: number
+  assignedProjects: number
+  unassignedProjects: number
+  localAssignedProjects: number
+  unknownAssignedProjects: number
+}
+
+export interface MissionsResponse {
+  ok: boolean
+  setupRequired: boolean
+  missions: MissionRollup[]
+  coverage: MissionCoverage
+  sourceVersion: string | null
+  generatedAt: string
+  error?: string
+}
+
 export interface DocFull extends DocMeta {
   content: string
   frontmatter: Record<string, unknown>

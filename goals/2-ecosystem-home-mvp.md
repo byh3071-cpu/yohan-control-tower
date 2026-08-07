@@ -3,8 +3,9 @@ vhk_format: 1
 type: goal
 id: 2
 title: 생태계 Home MVP
-status: BLOCKED
+status: DONE
 priority: P0
+completed: 2026-08-07
 ---
 
 # Goal 2: 생태계 Home MVP
@@ -29,12 +30,15 @@ priority: P0
 - [x] Knowledge, VHK·MCP·Skills, Finance 상태가 한 화면에 보인다.
 - [x] 카드와 빠른 동작이 기존 탭 또는 인박스로 연결된다.
 - [x] 캘린더와 재무에 가짜 수치를 사용하지 않는다.
-- [x] typecheck, 21 tests, lint, build가 통과한다.
-- [ ] 실제 브라우저에서 데스크톱·모바일 시각 검증을 완료한다.
-- [ ] v1.1 선행 게이트인 생태계 계약 개정과 `projects.yaml` 존재를 확인한다.
+- [x] Brain `projects.yaml`과 로컬 `goals/*.md`를 조인한 F004 미션 롤업을 표시한다.
+- [x] typecheck, 29 tests, lint, build가 통과한다.
+- [x] 실제 브라우저에서 데스크톱·모바일 시각 검증을 완료한다.
+- [x] v1.1 선행 게이트인 생태계 계약 개정과 `projects.yaml` 존재를 확인한다.
 
-## Blocked
+## Evidence
 
-- 현재 실행 환경의 클라우드 브라우저가 로컬 Next.js 미리보기에 연결되지 않았다.
-- brain이 이 체크아웃에 없어서 `ecosystem-contract.yaml` 개정 및 `projects.yaml` 정본화를 검증할 수 없다.
-- 세부 내용: `docs/ECOSYSTEM-CONTRACT-AUDIT.md`
+- Brain `ecosystem-contract.yaml` active v0.3.0, `inheritance-registry.yaml` contract v0.3.0, `projects.yaml` active v0.1.1을 GitHub Connector로 확인했다.
+- 로컬 Playwright로 1440×900·390×844를 검증했다. 가로 overflow 0, 탭 5개, 미션 카드 5개, 카드→프로젝트 이동, 콘솔 오류 0을 확인했다.
+- F004·캐시 테스트 8개를 추가했다. 세부 내용은 `docs/log/2026-08-07-mission-rollup-f004.md`에 기록한다.
+- VHK 2.12.0 `goal done --id 2`가 typecheck·lint·test·build와 Goal 고유 검증 7개를 재실행한 뒤 DONE으로 전이했다.
+- DONE 이후 캐시 경쟁 테스트와 test glob을 보강한 뒤 `goal check --id 2 --force`를 다시 통과했다.

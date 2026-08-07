@@ -78,7 +78,14 @@ export function Header({ onOpenSearch, onOpenMobileNav, stats, gaps = 0 }: Heade
             </span>
           )}
         </div>
-        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={toggle}>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
+          onClick={toggle}
+          aria-label={theme === "dark" ? "라이트 테마로 변경" : "다크 테마로 변경"}
+          title={theme === "dark" ? "라이트 테마로 변경" : "다크 테마로 변경"}
+        >
           {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
         </Button>
       </div>

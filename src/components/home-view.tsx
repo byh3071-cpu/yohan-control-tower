@@ -1,20 +1,17 @@
 "use client"
 
-import { useEffect, useMemo, useState, type ReactNode } from "react"
+import { useEffect, useMemo, useState } from "react"
 import {
   ArrowRight,
-  BookOpen,
   CalendarDays,
   CheckCircle2,
   CircleAlert,
-  CircleDollarSign,
-  Code2,
   FolderKanban,
   Inbox,
   Loader2,
 } from "lucide-react"
 import type { DocFilter } from "@/lib/doc-scope"
-import type { Stats, TodoItem, TodosResponse } from "@/lib/types"
+import type { MissionRollup, MissionsResponse, Stats, TodoItem, TodosResponse } from "@/lib/types"
 import type { ViewTab } from "@/components/view-tabs"
 import { cn } from "@/lib/utils"
 
@@ -43,6 +40,21 @@ function formatToday(): string {
   }).format(new Date())
 }
 
+function missionTaskSummary(mission: MissionRollup): string {
+  if (mission.unit === "calendar") {
+    return mission.tasks.total > 0 ? `Goal ${mission.tasks.total}개 · 일정 중심` : "일정 중심 미션 · Calendar 연결 전"
+  }
+  if (mission.tasks.total === 0) return mission.projects.local > 0 ? "등록된 로컬 Goal 없음" : "로컬 Goal 확인 전"
+
+  const parts: string[] = []
+  if (mission.tasks.active > 0) parts.push(`진행 ${mission.tasks.active}`)
+  if (mission.tasks.blocked > 0) parts.push(`차단 ${mission.tasks.blocked}`)
+  if (mission.tasks.queued > 0) parts.push(`대기 ${mission.tasks.queued}`)
+  if (mission.tasks.done > 0) parts.push(`완료 ${mission.tasks.done}`)
+  if (mission.tasks.other > 0) parts.push(`기타 ${mission.tasks.other}`)
+  return parts.join(" · ")
+}
+
 export function HomeView({
   stats,
   docCounts,
@@ -54,6 +66,8 @@ export function HomeView({
 }: HomeViewProps) {
   const [todoData, setTodoData] = useState<TodosResponse | null>(null)
   const [todoError, setTodoError] = useState<string | null>(null)
+  const [missionData, setMissionData] = useState<MissionsResponse | null>(null)
+  const [missionError, setMissionError] = useState<string | null>(null)
 
   useEffect(() => {
     let alive = true
@@ -67,6 +81,25 @@ export function HomeView({
       })
       .catch((error: unknown) => {
         if (alive) setTodoError(error instanceof Error ? error.message : String(error))
+      })
+    return () => {
+      alive = false
+    }
+  }, [])
+
+  useEffect(() => {
+    let alive = true
+    fetch(`/api/missions?t=${Date.now()}`, { cache: "no-store" })
+      .then(async (response) => {
+        const data = await response.json() as MissionsResponse
+        if (!response.ok || !data.ok) throw new Error(data.error ?? `HTTP ${response.status}`)
+        return data
+      })
+      .then((data) => {
+        if (alive) setMissionData(data)
+      })
+      .catch((error: unknown) => {
+        if (alive) setMissionError(error instanceof Error ? error.message : String(error))
       })
     return () => {
       alive = false
@@ -186,8 +219,8 @@ export function HomeView({
             </div>
           </section>
 
-          <section className="rounded-2xl border border-border bg-card p-4 sm:p-5">
-            <div className="mb-4 flex items-center justify-between">
+          <section className="rounded-2xl border border-border bg-card p-4">
+            <div className="mb-3 flex items-center justify-between">
               <div>
                 <h2 className="text-sm font-semibold tracking-tight">관제 신호</h2>
                 <p className="mt-0.5 text-[11px] text-muted-foreground">숫자보다 연결 상태를 먼저 봅니다.</p>
@@ -231,51 +264,52 @@ export function HomeView({
           </section>
         </div>
 
-        <section aria-labelledby="ecosystem-heading">
+        <section aria-labelledby="missions-heading">
           <div className="mb-3 flex items-end justify-between gap-3">
             <div>
-              <h2 id="ecosystem-heading" className="text-sm font-semibold tracking-tight">요한 생태계</h2>
-              <p className="mt-0.5 text-[11px] text-muted-foreground">Home은 요약만, 깊은 작업은 각 원장에서 이어갑니다.</p>
+              <h2 id="missions-heading" className="text-sm font-semibold tracking-tight">미션 지도</h2>
+              <p className="mt-0.5 text-[11px] text-muted-foreground">Brain의 프로젝트 배속과 로컬 Goal을 읽기 전용으로 합칩니다.</p>
             </div>
+            {missionData && !missionData.setupRequired && (
+              <span className="hidden text-[10px] font-medium tabular-nums text-muted-foreground sm:block">
+                로컬 {missionData.coverage.localAssignedProjects}/{missionData.coverage.assignedProjects} 프로젝트
+              </span>
+            )}
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            <EcosystemCard
-              icon={<FolderKanban size={16} />}
-              eyebrow="Work"
-              title="프로젝트와 할 일"
-              description={todoData ? `미완료 ${todoData.total}개 · 캘린더는 연결 전` : "Goal과 다음 액션을 한 흐름으로"}
-              action="프로젝트 열기"
-              onClick={() => onNavigate("projects")}
-            />
-            <EcosystemCard
-              icon={<BookOpen size={16} />}
-              eyebrow="Knowledge"
-              title="브레인과 지식"
-              description={dashboardError ? "로컬 Brain 연결 확인 필요" : `문서 ${stats.totalDocs}개 · 결정 ${stats.decisions}개`}
-              action="문서 열기"
-              onClick={() => onNavigate("docs", "all")}
-            />
-            <EcosystemCard
-              icon={<Code2 size={16} />}
-              eyebrow="Build & Skills"
-              title="VHK · MCP · Skills"
-              description={dashboardError ? "실행·도구 레지스트리 연결 확인 필요" : `규칙·템플릿 ${skillAssets}개 · AI 작업 근거`}
-              action="규칙 보기"
-              onClick={() => onNavigate("docs", "rules")}
-            />
-            <EcosystemCard
-              icon={<CircleDollarSign size={16} />}
-              eyebrow="Finance"
-              title="생활 재무 원장"
-              description="거래 원장 미연결 · 월간 소비 회고 준비"
-              status="준비"
-            />
-          </div>
+          {!missionData && !missionError && (
+            <div className="flex min-h-32 items-center justify-center gap-2 rounded-xl border border-border bg-card text-xs text-muted-foreground">
+              <Loader2 size={14} className="animate-spin" aria-hidden /> 미션을 모으는 중
+            </div>
+          )}
+
+          {missionError && (
+            <div className="flex min-h-32 flex-col items-center justify-center rounded-xl border border-amber-300/70 bg-amber-50/60 px-4 text-center dark:bg-amber-950/20">
+              <CircleAlert size={18} className="mb-2 text-amber-600" aria-hidden />
+              <p className="text-xs font-semibold">미션 원장 연결을 확인하세요.</p>
+              <p className="mt-1 max-w-xl text-[11px] leading-relaxed text-muted-foreground">{missionError}</p>
+            </div>
+          )}
+
+          {missionData?.setupRequired && (
+            <div className="flex min-h-32 flex-col items-center justify-center rounded-xl border border-dashed border-border bg-card px-4 text-center">
+              <FolderKanban size={18} className="mb-2 text-muted-foreground" aria-hidden />
+              <p className="text-xs font-semibold">미션 taxonomy 설정이 필요합니다.</p>
+              <p className="mt-1 text-[11px] text-muted-foreground">Brain의 memory/core/projects.yaml을 현재 로컬 클론에 동기화하세요.</p>
+            </div>
+          )}
+
+          {missionData && !missionData.setupRequired && (
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+              {missionData.missions.map((mission) => (
+                <MissionCard key={mission.id} mission={mission} onClick={() => onNavigate("projects")} />
+              ))}
+            </div>
+          )}
 
           <div className="mt-3 flex items-center gap-2 rounded-xl border border-dashed border-border px-3 py-2.5 text-[11px] text-muted-foreground">
             <CalendarDays size={14} className="shrink-0" aria-hidden />
-            일정·반복·알림은 캘린더 원장이 연결되면 Work 카드에 흡수됩니다. 별도 여섯 번째 탭은 만들지 않습니다.
+            일정·반복·알림과 재무 회고는 각 원장이 연결되면 Home에 흡수합니다. 별도 여섯 번째 탭은 만들지 않습니다.
           </div>
         </section>
       </main>
@@ -297,7 +331,7 @@ function SignalRow({
   muted?: boolean
 }) {
   return (
-    <div className="grid grid-cols-[1fr_auto] gap-x-3 py-3 first:pt-0 last:pb-0">
+    <div className="grid grid-cols-[1fr_auto] gap-x-3 py-2 first:pt-0 last:pb-0">
       <dt className="text-[11px] font-medium">{label}</dt>
       <dd className={cn("text-[11px] font-semibold tabular-nums", attention && "text-amber-700 dark:text-amber-400", muted && "text-muted-foreground")}>
         {value}
@@ -307,53 +341,32 @@ function SignalRow({
   )
 }
 
-function EcosystemCard({
-  icon,
-  eyebrow,
-  title,
-  description,
-  action,
-  onClick,
-  status,
-}: {
-  icon: ReactNode
-  eyebrow: string
-  title: string
-  description: string
-  action?: string
-  onClick?: () => void
-  status?: string
-}) {
-  const content = (
-    <>
-      <div className="mb-5 flex items-start justify-between gap-3">
-        <span className="flex size-8 items-center justify-center rounded-lg border border-border bg-background text-foreground" aria-hidden>
-          {icon}
-        </span>
-        {status && <span className="rounded-full bg-muted px-2 py-1 text-[9px] font-semibold text-muted-foreground">{status}</span>}
-      </div>
-      <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{eyebrow}</p>
-      <h3 className="mt-1 text-[13px] font-semibold tracking-tight">{title}</h3>
-      <p className="mt-1.5 min-h-8 text-[11px] leading-relaxed text-muted-foreground">{description}</p>
-      {action && (
-        <span className="mt-4 inline-flex items-center gap-1 text-[10px] font-semibold">
-          {action} <ArrowRight size={11} className="transition-transform group-hover:translate-x-0.5" aria-hidden />
-        </span>
-      )}
-    </>
-  )
-
-  if (!onClick) {
-    return <article className="rounded-xl border border-border bg-card p-4 opacity-75">{content}</article>
-  }
-
+function MissionCard({ mission, onClick }: { mission: MissionRollup; onClick: () => void }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="group rounded-xl border border-border bg-card p-4 text-left transition-[transform,border-color,background-color] hover:-translate-y-0.5 hover:border-foreground/25 hover:bg-background focus-visible:ring-2 focus-visible:ring-ring"
+      className="group flex min-h-36 flex-col rounded-xl border border-border bg-card p-4 text-left transition-[transform,border-color,background-color] hover:-translate-y-0.5 hover:border-foreground/25 hover:bg-background focus-visible:ring-2 focus-visible:ring-ring"
     >
-      {content}
+      <div className="flex items-start justify-between gap-2">
+        <span className="flex size-8 items-center justify-center rounded-lg border border-border bg-background text-foreground" aria-hidden>
+          <FolderKanban size={15} />
+        </span>
+        <span className="rounded-full bg-muted px-2 py-1 text-[9px] font-semibold text-muted-foreground">
+          {mission.unit === "calendar" ? "일정" : "Task"}
+        </span>
+      </div>
+      <h3 className="mt-4 text-[12px] font-semibold leading-snug tracking-tight">{mission.label}</h3>
+      <p className="mt-1 text-[10px] tabular-nums text-muted-foreground">
+        로컬 {mission.projects.local}/{mission.projects.configured} 프로젝트
+        {mission.projects.unknown > 0 ? ` · 미클론 ${mission.projects.unknown}` : ""}
+      </p>
+      <p className={cn("mt-2 text-[10px] leading-relaxed text-muted-foreground", mission.tasks.blocked > 0 && "font-semibold text-amber-700 dark:text-amber-400")}>
+        {missionTaskSummary(mission)}
+      </p>
+      <span className="mt-auto inline-flex items-center gap-1 pt-3 text-[10px] font-semibold">
+        프로젝트 탭 <ArrowRight size={11} className="transition-transform group-hover:translate-x-0.5" aria-hidden />
+      </span>
     </button>
   )
 }

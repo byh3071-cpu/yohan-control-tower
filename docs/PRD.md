@@ -42,7 +42,7 @@
 | LintFinding (런타임) | 메모리 | rule, severity, target_path, message |
 | Doc | `brain/memory/**`, `brain/docs/**` | 경로, 제목, status, updated |
 
-- **L2 부모 미션 5개**: 요한 생태계 구축 / AI 1인 운영 OS / 수익 파이프라인 / 재무·투자·경영 시스템 / 삶·기반. **출처: 오너 발화(2026-07-27)** — brain 에는 아직 없다. 정본화 시점 = `projects.yaml` 생성이며 이는 **v1.1 착수 전 선행 게이트**.
+- **L2 부모 미션 5개**: 요한 생태계 구축 / AI 1인 운영 OS / 수익 파이프라인 / 재무·투자·경영 시스템 / 삶·기반. **출처: 오너 발화(2026-07-27)** — brain `memory/core/projects.yaml` active v0.1.1에 정본화됐다(2026-08-07 재검증).
 - 코어 컨텍스트의 "4축(애착·돈·유통·학습)"과의 관계: 정찰 실측 결과 그 4축은 SoT 에 없다(idea-bank 국지 3축 애착·돈·유통만 존재, '학습' 축은 어느 파일에도 미발견). 따라서 **충돌이 아니라 미문서화 상태**다.
 - **스캔 대상 = 로컬 클론된 레포만.** registry 45 는 목표치이지 v1 대상이 아니다. 실측: `yohan-ecosystem/` 형제 레포 **13개**, `goals/` 보유 **5개**(brain·vhk·studio·voice·control-tower — 이 중 control-tower 는 `_meta.md` 뿐). 미클론 레포는 **`unknown` 표기(0 표기 금지)**. v1.1 집계 범위는 이 로컬 실재 기준으로 재선언한다.
 
@@ -89,9 +89,9 @@ Next.js 16.2.9 (App Router) · React 19.2.4 · TypeScript · Tailwind 4 · shadc
 - **로컬 전용**: Qdrant·Ollama·로컬 파일시스템 의존 → 클라우드 배포 불가. 인증 없음(로컬 바인딩 전제).
 - **`YOHAN_REPOS_ROOT` 필수**: 형제 레포 스캔의 루트 경로 env. 미설정이면 레포·Task 집계는 **하드 실패**(빈 목록으로 위장 금지).
 - **탭 상한 5**: 6탭 + 신규가 쌓이면 "복잡해서 안 쓰게 된 상태"가 재현된다. 확장은 탭 추가가 아니라 흡수·삭제로.
-- **brain 읽기 자유 + 신규 파일 생성만**: 기존 brain 파일 수정 금지 — **RULES.md 자체 규칙(계약 조항 아님)**. 계약화는 게이트 ① 에 포함. F009 인박스와 `projects.yaml` 은 신규라 허용.
-- **착수 전 선행 게이트 ①(계약 갱신 — 사람 승인 커밋)**: `ecosystem-contract.yaml` 의 `roles.control_tower` 전면 개정 + `roles.brain.hosts:[dashboard]` 제거 + **`control_tower.must_not: modify_existing_brain_files` 신설** + `inheritance-registry.yaml` 의 `yohan-brain-dashboard` 엔트리 제거·control-tower **tier B→A**. 이거 없이 코딩하면 계약 위반 상태로 진행된다.
-- **착수 전 선행 게이트 ②(v1.1 한정)**: 미션 taxonomy 확정 = `projects.yaml` 생성.
+- **brain 읽기 자유 + 신규 파일 생성만**: 기존 brain 파일 수정 금지. active `ecosystem-contract.yaml` v0.3.0의 `control_tower.must_not: modify_existing_brain_files`가 강제하며 F009 인박스의 write-once 신규 파일만 허용한다.
+- **착수 전 선행 게이트 ① — 충족(2026-08-07 재검증)**: `ecosystem-contract.yaml` active v0.3.0에 Control Tower 역할·수정 금지가 반영됐고, `inheritance-registry.yaml`도 contract v0.3.0·Control Tower tier A로 일치한다.
+- **착수 전 선행 게이트 ② — 충족(2026-08-07 재검증)**: 미션 taxonomy = `memory/core/projects.yaml` active v0.1.1.
 - **이관 전제**: "import 무수정 이관"은 deps **15종 선설치 이후에만** 참 — `gray-matter·recharts·shadcn·three·@react-three/fiber·@react-three/drei·react-markdown·remark-gfm·@base-ui/react·lucide-react·class-variance-authority·clsx·tailwind-merge·tw-animate-css·@tailwindcss/typography`.
 - **AI 는 제안만**, 승인은 사람. F010 의 `git:sync`·`sync:notion:push` 는 오너 승인 전 비노출.
 
