@@ -245,12 +245,24 @@ export async function readInboxJsonBody(request: InboxJsonRequest): Promise<Reco
 }
 
 export function isSameOriginRequest(request: Request): boolean {
-  const origin = request.headers.get("origin")
-  if (!origin) return false
   try {
     const requestUrl = new URL(request.url)
-    return LOOPBACK_HOSTNAMES.has(requestUrl.hostname)
-      && new URL(origin).origin === requestUrl.origin
+    if (!LOOPBACK_HOSTNAMES.has(requestUrl.hostname)) return false
+
+    // Next production server가 -H 127.0.0.1로 떠도 사용자는 localhost로 접속할 수 있다.
+    // request.url 내부 host보다 검증된 Host 헤더를 우선해야 브라우저가 본 origin과 일치한다.
+    const host = request.headers.get("host")
+    const expectedUrl = host ? new URL(`${requestUrl.protocol}//${host}`) : requestUrl
+    if (!LOOPBACK_HOSTNAMES.has(expectedUrl.hostname)) return false
+
+    const origin = request.headers.get("origin")
+    if (origin) return new URL(origin).origin === expectedUrl.origin
+
+    // Chromium은 같은 출처 fetch POST에서도 Origin을 생략할 수 있다. 이때는 브라우저가
+    // 제공하는 Fetch Metadata와 Referer를 둘 다 요구해 curl 등 헤더 없는 쓰기를 막는다.
+    if (request.headers.get("sec-fetch-site")?.toLowerCase() !== "same-origin") return false
+    const referer = request.headers.get("referer")
+    return Boolean(referer) && new URL(referer as string).origin === expectedUrl.origin
   } catch {
     return false
   }

@@ -1,7 +1,7 @@
 # PRD — yohan-control-tower (요한 생태계 통합 관제탑)
 
 > 유형: 웹앱(로컬 전용 대시보드) · 포트 3001 · 정본 = 파일(`yohan-brain`), 노션은 사람용 뷰(ADR-009)
-> v1 은 **v1.0(이관·통합)** 과 **v1.1(계층축)** 으로 분할한다.
+> v1 은 **v1.0(이관·통합)**, **v1.1(계층축)**, **v1.2(Calendar 세로 슬라이스)**로 분할한다.
 
 ## 1. 프로젝트 핵심
 
@@ -26,11 +26,13 @@
 | F004 | v1.1 | 미션 롤업 계기판 | 부모 미션별 프로젝트 수·Task 상태 집계 API | 홈 |
 | F005 | v1.1 | 3단 드릴다운 | 미션 → 프로젝트(레포) → Task(goals) | 프로젝트 |
 | F006 | v1.1 | 정합성 lint 엔진 | 미션 미배정 프로젝트 / `projects.yaml` 미등재 레포 / goal frontmatter 위반. **워크트리·변형 디렉토리(`vhk-privacy-v3`·`vhk-wt-drift` 등) 제외** | 프로젝트 (결함 수 배지는 홈) |
+| F011 | v1.2 | 로컬 Calendar MVP | 항목별 Markdown 원장에 일정·할 일을 기록하고 월간·목록 보기, 반복, 발생일별 완료 제공 | 홈 내부 Calendar |
 
 - **AI 규칙(F009·F005·F006)**: AI 는 분류·상태변경·초안을 **제안**만. 반영·승인은 사람.
 - **F010 오너 승인항 — 판정 완료(2026-07-28, 비노출)**: `git:sync`(= `git pull && git push`)와 `sync:notion:push` 는 RULES.md "main 직 push·발송은 사람 게이트"와 정면으로 만난다 → **둘 다 UI 비노출 + 서버 403**. `api/run` 의 `humanGate` 플래그가 거부하고, `sidebar.tsx`·`command-palette.tsx` 목록에서도 뺐다(누르면 실패할 버튼을 띄우지 않는다). 여는 방법은 플래그 1줄 제거 — 오너 판정 사항.
 - **goal status 정책**: 스키마 정본 = VHK 템플릿 4값(`NOT_STARTED|IN_PROGRESS|DONE|BLOCKED`). 단 **실측상 vhk 9건·brain 4건이 확장 어휘**를 쓴다(`DEFERRED·OBSERVING·CANCELED·PR_OPEN·ACTIVE·BACKLOG`). → F006 lint 는 4값을 하드코딩하지 말고, **템플릿 4값 = 정본 / 그 밖은 `warn`(에러 아님) + 레포별 확장 허용 목록을 설정으로 수용**한다.
 - **v1.1 구현 상태(2026-08-07)**: F004·F005·F006 완료. Home 미션 카드가 선택한 미션을 프로젝트 탭으로 전달하고, `/api/projects`·`/api/projects/[slug]`가 레포·Goal 상세를 제공한다. `/api/lint`는 자동 수정 없이 actionable 결함 수와 사람 검토 제안만 반환한다.
+- **v1.2 구현 상태(2026-08-07)**: F011 완료. `YOHAN_CALENDAR_ROOT/items/*.md`를 원장으로 쓰며 6번째 탭 없이 Home의 `개요 / 캘린더` 내부 전환으로 흡수한다. 일정·날짜형 할일은 Calendar, 프로젝트 실행 정본은 각 레포 Goal이며 자동 동기화하지 않는다.
 
 ## 4. 데이터/상태 모델
 
@@ -41,11 +43,13 @@
 | Task (Goal) | `<repo>/goals/<id>-<slug>.md` frontmatter | type, id, status, priority, title |
 | Event (실행 증거) | `<repo>/.vhk/events/*.jsonl` | ts, action, channel, guard, ran, reason, agent |
 | LintFinding (런타임) | 메모리 | rule, severity, target_path, message |
+| CalendarItem | `YOHAN_CALENDAR_ROOT/items/*.md` | kind, title, date, time, status, recurrence, completed_dates |
 | Doc | `brain/memory/**`, `brain/docs/**` | 경로, 제목, status, updated |
 
 - **L2 부모 미션 5개**: 요한 생태계 구축 / AI 1인 운영 OS / 수익 파이프라인 / 재무·투자·경영 시스템 / 삶·기반. **출처: 오너 발화(2026-07-27)** — brain `memory/core/projects.yaml` active v0.1.1에 정본화됐다(2026-08-07 재검증).
 - 코어 컨텍스트의 "4축(애착·돈·유통·학습)"과의 관계: 정찰 실측 결과 그 4축은 SoT 에 없다(idea-bank 국지 3축 애착·돈·유통만 존재, '학습' 축은 어느 파일에도 미발견). 따라서 **충돌이 아니라 미문서화 상태**다.
 - **스캔 대상 = 로컬 클론된 레포만.** registry 45 는 목표치이지 v1 대상이 아니다. 실측: `yohan-ecosystem/` 형제 레포 **13개**, `goals/` 보유 **5개**(brain·vhk·studio·voice·control-tower — 이 중 control-tower 는 `_meta.md` 뿐). 미클론 레포는 **`unknown` 표기(0 표기 금지)**. v1.1 집계 범위는 이 로컬 실재 기준으로 재선언한다.
+- **Task 경계**: Calendar `task`는 특정 날짜에 배치한 개인 실행 항목, `<repo>/goals/*.md`는 프로젝트 진행 정본이다. Goal 4에서는 링크·복제·완료 상태 동기화를 하지 않는다.
 
 ## 5. 기술 스택
 
@@ -54,7 +58,7 @@ Next.js 16.2.9 (App Router) · React 19.2.4 · TypeScript · Tailwind 4 · shadc
 ## 6. 메뉴 구조 (진입점 = 탭바)
 
 - **v1.0 (4탭)**: `프로젝트 · 문서 · 기록 · 벡터` — 기본 진입은 **문서**
-- **v1.1 (5탭·동결)**: `홈 · 프로젝트 · 문서 · 기록 · 벡터` — 기본 진입이 **홈**으로 이동. **6번째 탭 추가 금지.**
+- **v1.1+ (5탭·동결)**: `홈 · 프로젝트 · 문서 · 기록 · 벡터` — 기본 진입이 **홈**으로 이동. Calendar는 Home 내부 보기이며 **6번째 탭 추가 금지.**
 
 > 기본 진입 탭이 문서인 이유(2026-07-28 실기동 후 오너 판정): 애초 스펙은 프로젝트를 기본으로 뒀지만, v1.0 의 프로젝트 탭은 아직 brain 한 레포의 할일 목록이라 "지금 뭐 하나"에 반만 답한다. 실제로 가장 자주 여는 화면은 문서(381건)다. 홈이 들어오는 v1.1 에 기본 진입을 홈으로 옮기면 이 과도기는 끝난다.
 
@@ -62,6 +66,7 @@ Next.js 16.2.9 (App Router) · React 19.2.4 · TypeScript · Tailwind 4 · shadc
 
 - **v1.0**: 앱 실행(3001) → 기본 탭 **문서**(읽기 + 인박스 투입) → 할 일은 **프로젝트**, 무슨 일이 있었나는 **기록**, 검색 품질이 의심되면 **벡터**. 명령은 어느 탭에서나 커맨드 팔레트로.
 - **v1.1**: 기본 탭이 **홈**으로 바뀜 → 미션 롤업·정합성 결함 수를 훑고 → 미션 카드 클릭 → **프로젝트**에서 레포→Task 드릴다운.
+- **v1.2**: Home에서 **캘린더**로 전환 → 월간 날짜 선택 또는 목록 확인 → 일정·할 일 생성 → 반복 할 일은 해당 발생일만 완료.
 
 ## 8. 페이지별 상세
 
@@ -72,15 +77,15 @@ Next.js 16.2.9 (App Router) · React 19.2.4 · TypeScript · Tailwind 4 · shadc
 | 문서 | brain 문서 탐색·미리보기 + 인박스 투입 | 검색, 열람, 새 문서 초안 생성 | 탭 클릭 / Task 참조 링크 | F001, F009 |
 | 기록 | 실행 타임라인·상태 카드 | 기간 훑기, 이벤트 상세 열기 | 탭 클릭 | F002 |
 | 벡터 | Qdrant 컬렉션 상태·인제스트·질의 테스트 | 인제스트 실행, 질의 입력 | 탭 클릭 (Qdrant·Ollama 기동 시) | F003 |
-| 홈 (v1.1) | 미션 롤업·결함 수 한 눈에 | 미션 카드 클릭 → 프로젝트 | **v1.1 기본 진입 탭** | F004, F006(배지) |
+| 홈 (v1.1+) | 미션 롤업·결함 수·Calendar | 미션 카드 클릭 → 프로젝트 / 개요↔캘린더 / 일정·할일 생성·완료 | **v1.1 기본 진입 탭** | F004, F006(배지), F011 |
 
-> 구현 경로: 미션 `/api/missions`, 프로젝트 목록·상세 `/api/projects|/api/projects/[slug]`, 정합성 `/api/lint`.
+> 구현 경로: 미션 `/api/missions`, 프로젝트 목록·상세 `/api/projects|/api/projects/[slug]`, 정합성 `/api/lint`, Calendar `/api/calendar`.
 
 ## 9. v1 OUT (명시적 제외 — 스코프 크립 차단)
 
 - **AI 토큰비/재무 계기판** (구 F007) — `.vhk/events/*.jsonl`·`receipt-log.jsonl`·`drift-log.jsonl` 에 토큰·비용 필드가 **0개**라 데이터 출처 자체가 재설계 대상. 재무축은 v1 핵심 아님.
 - 스킬·멀티벤더 스택 관리축
-- 일정·캘린더축 (노션 337행 마이그레이션)
+- 기존 Notion 일정 337행 자동 마이그레이션·외부 Calendar 양방향 동기화·PWA 백그라운드 알림
 - 에이전트 자동 갱신 배선 (전역 Stop hook · GitHub Actions)
 - 모바일 원격접속 (Tailscale + PWA)
 - 노션 가계부 연결
@@ -89,6 +94,7 @@ Next.js 16.2.9 (App Router) · React 19.2.4 · TypeScript · Tailwind 4 · shadc
 
 - **로컬 전용**: Qdrant·Ollama·로컬 파일시스템 의존 → 클라우드 배포 불가. 인증 없음(로컬 바인딩 전제).
 - **`YOHAN_REPOS_ROOT` 필수**: 형제 레포 스캔의 루트 경로 env. 미설정이면 레포·Task 집계는 **하드 실패**(빈 목록으로 위장 금지).
+- **`YOHAN_CALENDAR_ROOT` 필수(Calendar 사용 시)**: 개인 일정 원장 절대경로. 미설정은 `setupRequired`, 상대경로는 거부하며 앱·Brain 위치에서 추론하지 않는다.
 - **탭 상한 5**: 6탭 + 신규가 쌓이면 "복잡해서 안 쓰게 된 상태"가 재현된다. 확장은 탭 추가가 아니라 흡수·삭제로.
 - **brain 읽기 자유 + 신규 파일 생성만**: 기존 brain 파일 수정 금지. active `ecosystem-contract.yaml` v0.3.0의 `control_tower.must_not: modify_existing_brain_files`가 강제하며 F009 인박스의 write-once 신규 파일만 허용한다.
 - **착수 전 선행 게이트 ① — 충족(2026-08-07 재검증)**: `ecosystem-contract.yaml` active v0.3.0에 Control Tower 역할·수정 금지가 반영됐고, `inheritance-registry.yaml`도 contract v0.3.0·Control Tower tier A로 일치한다.
@@ -109,4 +115,4 @@ Next.js 16.2.9 (App Router) · React 19.2.4 · TypeScript · Tailwind 4 · shadc
 
 ### 정합성 self-check (통과)
 
-① 기능→표면: F001~F006·F008~F010 **9개 전부** 페이지 매핑(§3 = §8 일치). F007 은 §9 로 이동, 잔존 참조 0. ② 표면→진입점: v1.0 은 문서(기본)·프로젝트·기록·벡터, v1.1 은 홈(기본) 추가 — 기본 진입 탭이 단계별로 정확히 1개(`page.tsx:103` 의 `useState<ViewTab>` 초기값과 일치). 전역 셸은 진입점 자체. ③ 역참조: 6개 표면 각각 기능ID ≥1 — 셸(F008·F010)·프로젝트(F002·F005·F006)·문서(F001·F009)·기록(F002)·벡터(F003)·홈(F004·F006). ④ 고아: 없음. 단계별로도 v1.0 4탭 전부 v1.0 기능 보유(프로젝트 F002·문서 F001,F009·기록 F002·벡터 F003), v1.1 신규 탭 홈은 v1.1 기능 보유.
+① 기능→표면: F001~F006·F008~F011 **10개 전부** 페이지 매핑(§3 = §8 일치). F007 은 §9 로 이동, 잔존 참조 0. ② 표면→진입점: v1.0 은 문서(기본)·프로젝트·기록·벡터, v1.1 은 홈(기본) 추가, v1.2 Calendar는 Home 내부 보기 — 기본 진입 탭이 단계별로 정확히 1개(`page.tsx`의 `useState<ViewTab>` 초기값과 일치). 전역 셸은 진입점 자체. ③ 역참조: 6개 표면 각각 기능ID ≥1 — 셸(F008·F010)·프로젝트(F002·F005·F006)·문서(F001·F009)·기록(F002)·벡터(F003)·홈(F004·F006·F011). ④ 고아: 없음. 상단 탭은 5개로 유지된다.

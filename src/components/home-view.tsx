@@ -8,8 +8,10 @@ import {
   CircleAlert,
   FolderKanban,
   Inbox,
+  LayoutDashboard,
   Loader2,
 } from "lucide-react"
+import { CalendarView } from "@/components/calendar-view"
 import type { DocFilter } from "@/lib/doc-scope"
 import type { LintResponse, MissionRollup, MissionsResponse, Stats, TodoItem, TodosResponse } from "@/lib/types"
 import type { ViewTab } from "@/components/view-tabs"
@@ -43,7 +45,7 @@ function formatToday(): string {
 
 function missionTaskSummary(mission: MissionRollup): string {
   if (mission.unit === "calendar") {
-    return mission.tasks.total > 0 ? `Goal ${mission.tasks.total}개 · 일정 중심` : "일정 중심 미션 · Calendar 연결 전"
+    return mission.tasks.total > 0 ? `Goal ${mission.tasks.total}개 · 일정 중심` : "로컬 Calendar에서 일정 관리"
   }
   if (mission.tasks.total === 0) return mission.projects.local > 0 ? "등록된 로컬 Goal 없음" : "로컬 Goal 확인 전"
 
@@ -71,6 +73,7 @@ export function HomeView({
   const [missionData, setMissionData] = useState<MissionsResponse | null>(null)
   const [missionError, setMissionError] = useState<string | null>(null)
   const [lintData, setLintData] = useState<LintResponse | null>(null)
+  const [homeMode, setHomeMode] = useState<"overview" | "calendar">("overview")
 
   useEffect(() => {
     let alive = true
@@ -144,21 +147,34 @@ export function HomeView({
               <span className="size-1.5 rounded-full bg-[#ff5c28]" aria-hidden />
               Today
             </p>
-            <h1 className="text-2xl font-semibold tracking-[-0.035em] sm:text-3xl">오늘의 관제탑</h1>
+            <h1 className="text-2xl font-semibold tracking-[-0.035em] sm:text-3xl">
+              {homeMode === "overview" ? "오늘의 관제탑" : "일정과 할 일"}
+            </h1>
             <p suppressHydrationWarning className="mt-1.5 text-sm text-muted-foreground">
-              {today} · 지금 결정할 것만 앞에 둡니다.
+              {today} · {homeMode === "overview" ? "지금 결정할 것만 앞에 둡니다." : "시간이 있는 일정과 완료할 일을 나눠 봅니다."}
             </p>
           </div>
-          <button
-            type="button"
-            onClick={onOpenInbox}
-            className="inline-flex h-9 items-center justify-center gap-2 self-start rounded-lg bg-foreground px-3.5 text-xs font-semibold text-background transition-transform hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-[#ff5c28] sm:self-auto"
-          >
-            <Inbox size={14} aria-hidden />
-            빠른 메모
-          </button>
+          <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+            <div className="flex rounded-lg bg-muted p-0.5" aria-label="Home 보기 방식">
+              <button type="button" aria-pressed={homeMode === "overview"} onClick={() => setHomeMode("overview")} className={cn("inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-[10px] font-semibold", homeMode === "overview" ? "bg-background shadow-sm" : "text-muted-foreground")}>
+                <LayoutDashboard size={12} aria-hidden /> 개요
+              </button>
+              <button type="button" aria-pressed={homeMode === "calendar"} onClick={() => setHomeMode("calendar")} className={cn("inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-[10px] font-semibold", homeMode === "calendar" ? "bg-background shadow-sm" : "text-muted-foreground")}>
+                <CalendarDays size={12} aria-hidden /> 캘린더
+              </button>
+            </div>
+            <button
+              type="button"
+              onClick={onOpenInbox}
+              className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-foreground px-3.5 text-xs font-semibold text-background transition-transform hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-[#ff5c28]"
+            >
+              <Inbox size={14} aria-hidden />
+              빠른 메모
+            </button>
+          </div>
         </header>
 
+        {homeMode === "calendar" ? <CalendarView /> : <>
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1.55fr)_minmax(280px,0.8fr)]">
           <section className="overflow-hidden rounded-2xl border border-border bg-card shadow-[0_1px_0_rgba(10,10,10,0.03)]">
             <div className="flex items-center justify-between border-b border-border px-4 py-3.5 sm:px-5">
@@ -273,7 +289,8 @@ export function HomeView({
                 attention={Boolean(dashboardError) || stats.batchStatus === "error"}
               />
               <SignalRow label="AI 실행 추적" value="설계 대기" detail="공통 Run ID · 승인 · Rollback" muted />
-              <SignalRow label="외부 원장" value="연결 대기" detail="캘린더 · 재무" muted />
+              <SignalRow label="Calendar" value="Home에서 사용" detail="로컬 원장 · 일정과 할 일" />
+              <SignalRow label="재무 원장" value="연결 대기" detail="거래 원장 계약 후 시작" muted />
             </dl>
             <button
               type="button"
@@ -335,16 +352,22 @@ export function HomeView({
           {missionData && !missionData.setupRequired && (
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
               {missionData.missions.map((mission) => (
-                <MissionCard key={mission.id} mission={mission} onClick={() => onOpenMission(mission.id)} />
+                <MissionCard
+                  key={mission.id}
+                  mission={mission}
+                  onClick={() => mission.unit === "calendar" ? setHomeMode("calendar") : onOpenMission(mission.id)}
+                />
               ))}
             </div>
           )}
 
-          <div className="mt-3 flex items-center gap-2 rounded-xl border border-dashed border-border px-3 py-2.5 text-[11px] text-muted-foreground">
+          <button type="button" onClick={() => setHomeMode("calendar")} className="mt-3 flex w-full items-center gap-2 rounded-xl border border-dashed border-border px-3 py-2.5 text-left text-[11px] text-muted-foreground transition-colors hover:border-foreground/25 hover:bg-card focus-visible:ring-2 focus-visible:ring-ring">
             <CalendarDays size={14} className="shrink-0" aria-hidden />
-            일정·반복·알림과 재무 회고는 각 원장이 연결되면 Home에 흡수합니다. 별도 여섯 번째 탭은 만들지 않습니다.
-          </div>
+            일정·할일·반복은 Home의 로컬 Calendar에서 관리합니다. PWA 알림과 재무 회고는 후속 Goal입니다.
+            <ArrowRight size={12} className="ml-auto shrink-0" aria-hidden />
+          </button>
         </section>
+        </>}
       </main>
     </div>
   )
@@ -398,7 +421,7 @@ function MissionCard({ mission, onClick }: { mission: MissionRollup; onClick: ()
         {missionTaskSummary(mission)}
       </p>
       <span className="mt-auto inline-flex items-center gap-1 pt-3 text-[10px] font-semibold">
-        프로젝트 탭 <ArrowRight size={11} className="transition-transform group-hover:translate-x-0.5" aria-hidden />
+        {mission.unit === "calendar" ? "캘린더 열기" : "프로젝트 탭"} <ArrowRight size={11} className="transition-transform group-hover:translate-x-0.5" aria-hidden />
       </span>
     </button>
   )

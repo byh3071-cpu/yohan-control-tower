@@ -204,6 +204,69 @@ export interface LintResponse {
   error?: string
 }
 
+export type CalendarItemKind = "event" | "task"
+export type CalendarItemStatus = "open" | "done" | "canceled"
+export type CalendarRecurrence = "none" | "daily" | "weekly" | "monthly"
+
+export interface CalendarItem {
+  id: string
+  kind: CalendarItemKind
+  title: string
+  date: string
+  startTime: string | null
+  endTime: string | null
+  status: CalendarItemStatus
+  recurrence: CalendarRecurrence
+  recurrenceInterval: number
+  recurrenceUntil: string | null
+  completedDates: string[]
+  notes: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface CalendarOccurrence {
+  id: string
+  sourceId: string
+  kind: CalendarItemKind
+  title: string
+  date: string
+  startTime: string | null
+  endTime: string | null
+  status: CalendarItemStatus
+  recurring: boolean
+  notes: string
+}
+
+export interface CalendarFileIssue {
+  file: string
+  message: string
+}
+
+export interface CalendarResponse {
+  ok: boolean
+  setupRequired: boolean
+  from: string
+  to: string
+  occurrences: CalendarOccurrence[]
+  sourceItems: number
+  issues: CalendarFileIssue[]
+  generatedAt: string
+  error?: string
+}
+
+export interface CalendarCreateInput {
+  kind: CalendarItemKind
+  title: string
+  date: string
+  startTime?: string | null
+  endTime?: string | null
+  recurrence?: CalendarRecurrence
+  recurrenceInterval?: number
+  recurrenceUntil?: string | null
+  notes?: string
+}
+
 export interface DocFull extends DocMeta {
   content: string
   frontmatter: Record<string, unknown>
