@@ -52,15 +52,14 @@ Goal: `goals/2-ecosystem-home-mvp.md`
 
 ## 다음 세션 인계
 
-1. GitHub 쓰기 권한이 있는 환경에서 `agent/control-tower-mvp` 브랜치를 push하고 Draft PR을 연다.
-2. Draft PR 체크아웃 후 `YOHAN_OS_ROOT`를 실제 brain에 연결한다.
-3. 데스크톱 1440×900, 모바일 390×844에서 Home 첫 화면, 프로젝트 이동, 문서 이동, 빠른 메모/승인 큐를 확인한다.
-4. 계약 감사의 P0 세 항목을 승인·정본화한다.
-5. F004 읽기 전용 미션 집계를 구현해 Home의 임시 생태계 카드를 실제 미션 데이터로 교체한다.
+1. Draft PR #30 체크아웃 후 `YOHAN_OS_ROOT`를 실제 brain에 연결한다.
+2. 데스크톱 1440×900, 모바일 390×844에서 Home 첫 화면, 프로젝트 이동, 문서 이동, 빠른 메모/승인 큐를 확인한다.
+3. 계약 감사의 P0 세 항목을 승인·정본화한다.
+4. F004 읽기 전용 미션 집계를 구현해 Home의 임시 생태계 카드를 실제 미션 데이터로 교체한다.
 
 ## 원격 게시 상태
 
-로컬 커밋은 생성했지만 연결된 GitHub App이 브랜치 생성에 `403 Resource not accessible by integration`을 반환했고, 이 환경의 Git remote에도 사용자 인증이 없어 push가 중단됐다. 변경은 로컬 브랜치와 별도 `git format-patch` 파일로 보존한다.
+초기에는 연결된 GitHub App이 브랜치 생성에 `403 Resource not accessible by integration`을 반환했다. GitHub의 `ChatGPT Codex Connector`를 `yohan-control-tower` 저장소에 설치한 뒤 권한이 반영됐고, `agent/control-tower-mvp` 브랜치와 Draft PR #30을 생성했다.
 
 ## Notion Dev Log
 

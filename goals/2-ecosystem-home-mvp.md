@@ -37,5 +37,4 @@ priority: P0
 
 - 현재 실행 환경의 클라우드 브라우저가 로컬 Next.js 미리보기에 연결되지 않았다.
 - brain이 이 체크아웃에 없어서 `ecosystem-contract.yaml` 개정 및 `projects.yaml` 정본화를 검증할 수 없다.
-- 연결된 GitHub App에 브랜치 쓰기 권한이 없어 원격 Draft PR을 생성할 수 없다.
 - 세부 내용: `docs/ECOSYSTEM-CONTRACT-AUDIT.md`
