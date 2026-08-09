@@ -10,7 +10,13 @@ import type {
 } from "@/lib/types"
 
 const REVIEW_STATUSES = new Set<KnowledgeReviewStatus>(["review_required", "completed", "held", "rejected"])
-const REVIEW_DECISIONS = new Set<KnowledgeReviewDecision>(["approve", "approve_after_edit", "hold", "reject"])
+const REVIEW_DECISIONS = new Set<KnowledgeReviewDecision>([
+  "approve",
+  "approve_after_edit",
+  "hold",
+  "reject",
+  "reprocess_required",
+])
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 export const MAX_KNOWLEDGE_REVIEW_BODY_BYTES = 16 * 1024
 const MAX_REVIEW_NOTE_CHARS = 4_000
@@ -50,6 +56,18 @@ function stringArray(value: unknown, field: string): string[] {
     throw new KnowledgeReviewInputError(`${field} 값이 올바르지 않습니다.`)
   }
   return value.map((entry) => entry.trim()).filter(Boolean)
+}
+
+function requiredBoolean(value: unknown, field: string): boolean {
+  if (typeof value !== "boolean") throw new KnowledgeReviewInputError(`${field} 값이 올바르지 않습니다.`)
+  return value
+}
+
+function nonNegativeInteger(value: unknown, field: string): number {
+  if (typeof value !== "number" || !Number.isSafeInteger(value) || value < 0) {
+    throw new KnowledgeReviewInputError(`${field} 값이 올바르지 않습니다.`)
+  }
+  return value
 }
 
 function resolveKnowledgeCliRuntime(deps: KnowledgeReviewDependencies): { executable: string; script: string; cwd: string } {
@@ -111,6 +129,11 @@ function normalizeItem(value: unknown): KnowledgeReviewItem {
     claims,
     category: optionalString(value.category) ?? "YT · 미분류 · Inbox",
     qualityWarnings: stringArray(value.qualityWarnings ?? value.quality_warnings ?? [], "품질 경고"),
+    approvalReady: requiredBoolean(value.approvalReady ?? value.approval_ready, "승인 가능 여부"),
+    approvalBlockers: stringArray(value.approvalBlockers ?? value.approval_blockers ?? [], "승인 차단 사유"),
+    reprocessEligible: requiredBoolean(value.reprocessEligible ?? value.reprocess_eligible, "재처리 가능 여부"),
+    reprocessBlockers: stringArray(value.reprocessBlockers ?? value.reprocess_blockers ?? [], "재처리 차단 사유"),
+    attemptCount: nonNegativeInteger(value.attemptCount ?? value.attempt_count, "처리 시도 횟수"),
     ...(typeof value.updatedAt === "string" ? { updatedAt: value.updatedAt } : {}),
   }
 }
@@ -181,6 +204,7 @@ export function parseKnowledgeReviewDecision(value: unknown): { id: string; deci
   const note = value.note === undefined ? undefined : requiredString(value.note, "수정 메모")
   if (note && note.length > MAX_REVIEW_NOTE_CHARS) throw new KnowledgeReviewInputError("수정 메모는 4,000자 이하여야 합니다.")
   if (decision === "approve_after_edit" && !note) throw new KnowledgeReviewInputError("메모와 함께 승인에는 승인 메모가 필요합니다.")
+  if (decision === "reprocess_required" && note) throw new KnowledgeReviewInputError("재처리 전환에는 메모를 추가할 수 없습니다.")
   return { id, decision, ...(note ? { note } : {}) }
 }
 
@@ -192,6 +216,7 @@ export async function submitKnowledgeReview(
   let stdin: string | undefined
   if (input.decision === "hold") args = ["defer", input.id]
   else if (input.decision === "reject") args = ["reject", input.id]
+  else if (input.decision === "reprocess_required") args = ["invalidate-review", input.id]
   else {
     args = ["approve", input.id, "--stdin"]
     stdin = JSON.stringify({ humanNote: input.note ?? "" })

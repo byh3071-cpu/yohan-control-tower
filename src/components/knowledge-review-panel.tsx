@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useState } from "react"
-import { AlertTriangle, CheckCircle2, ExternalLink, Loader2, RefreshCw } from "lucide-react"
+import { AlertTriangle, CheckCircle2, ExternalLink, Loader2, RefreshCw, RotateCcw } from "lucide-react"
 
 import type { KnowledgeReviewDecision, KnowledgeReviewItem } from "@/lib/types"
 
@@ -12,6 +12,13 @@ const DECISIONS: Array<{ value: KnowledgeReviewDecision; label: string }> = [
   { value: "hold", label: "보류" },
   { value: "reject", label: "거절" },
 ]
+const DECISION_LABELS: Record<KnowledgeReviewDecision, string> = {
+  approve: "승인",
+  approve_after_edit: "메모와 함께 승인",
+  hold: "보류",
+  reject: "거절",
+  reprocess_required: "재처리 필요로 전환",
+}
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value)
@@ -65,7 +72,7 @@ export function KnowledgeReviewPanel() {
       } else if (!response.ok) {
         throw new Error(isRecord(value) && typeof value.error === "string" ? value.error : "결정을 저장하지 못했습니다.")
       } else {
-        setMessage(`${DECISIONS.find((entry) => entry.value === decision)?.label ?? "결정"}했습니다.`)
+        setMessage(`${DECISION_LABELS[decision]}했습니다.`)
       }
       await refresh()
     } catch (decisionError) {
@@ -93,7 +100,7 @@ export function KnowledgeReviewPanel() {
       <div className="space-y-2">
         {items?.map((item) => {
           const open = expanded === item.id
-          const evidenceReady = item.claims.length > 0 && item.claims.every((claim) => Boolean(claim.timestamp))
+          const evidenceReady = item.approvalReady
           const note = notes[item.id]?.trim() ?? ""
           return <article key={item.id} className="rounded-lg border border-border bg-background/70">
             <button type="button" onClick={() => setExpanded(open ? null : item.id)} aria-expanded={open} className="min-h-11 w-full px-3 py-2.5 text-left hover:bg-accent/40 focus-visible:ring-2 focus-visible:ring-ring">
@@ -107,7 +114,7 @@ export function KnowledgeReviewPanel() {
               </div>
               <p><span className="font-medium">요약: </span>{item.summary}</p>
               <div><p className="font-medium">주장과 타임스탬프</p>{item.claims.length ? <ul className="mt-1 list-disc space-y-1 pl-4">{item.claims.map((claim, index) => <li key={`${claim.claim}-${index}`}>{claim.claim}{claim.timestamp ? <span className="text-muted-foreground"> · {claim.timestamp}</span> : null}</li>)}</ul> : <p className="text-muted-foreground">추출된 주장이 없습니다.</p>}</div>
-              {!evidenceReady && <div className="rounded-md border border-red-500/30 bg-red-500/10 p-2 text-red-800 dark:text-red-200"><p className="font-medium">승인할 수 없는 근거 상태</p><p>모든 주장에 검증된 타임스탬프가 있어야 승인할 수 있습니다. 보류 또는 거절은 가능합니다.</p></div>}
+              {!evidenceReady && <div className="space-y-2 rounded-md border border-red-500/30 bg-red-500/10 p-2 text-red-800 dark:text-red-200"><div><p className="font-medium">승인할 수 없는 근거 상태</p>{item.approvalBlockers.length > 0 ? <ul className="list-disc pl-4">{item.approvalBlockers.map((blocker) => <li key={blocker}>{blocker}</li>)}</ul> : <p>현재 산출물이 승인 계약을 충족하지 않습니다.</p>}{item.reprocessEligible ? <><p>기존 NotebookLM source를 보존한 채 재처리 대상으로 전환할 수 있습니다.</p>{item.attemptCount === 3 && <p>이 레거시 항목은 중복 방지 marker를 남기고 1회 한정 교정 시도를 사용합니다.</p>}</> : item.reprocessBlockers.length > 0 && <div className="mt-1"><p className="font-medium">자동 재처리 전환 불가 · 시도 {item.attemptCount}/3</p><ul className="list-disc pl-4">{item.reprocessBlockers.map((blocker) => <li key={blocker}>{blocker}</li>)}</ul></div>}</div>{item.reprocessEligible && <button type="button" disabled={pending !== null} onClick={() => void decide(item, "reprocess_required")} className="inline-flex min-h-11 w-full items-center justify-center gap-1.5 rounded-md border border-red-500/40 bg-background/70 px-3 py-2 text-[11px] font-medium hover:bg-background disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-ring">{pending === item.id ? <Loader2 size={13} className="animate-spin" /> : <RotateCcw size={13} />}재처리 필요로 전환</button>}</div>}
               {item.qualityWarnings.length > 0 && <div className="rounded-md border border-amber-500/30 bg-amber-500/10 p-2 text-amber-900 dark:text-amber-100"><p className="font-medium">품질 경고</p><ul className="list-disc pl-4">{item.qualityWarnings.map((warning) => <li key={warning}>{warning}</li>)}</ul></div>}
               <label className="block"><span className="text-[10px] font-medium">승인 메모 (선택)</span><textarea value={notes[item.id] ?? ""} onChange={(event) => setNotes((current) => ({ ...current, [item.id]: event.target.value }))} maxLength={REVIEW_NOTE_MAX_CHARS} rows={2} className="mt-1 w-full rounded-md border border-border bg-background px-2 py-1.5 text-xs outline-none focus:ring-2 focus:ring-ring" /></label>
               <div className="sticky bottom-0 z-10 -mx-3 -mb-3 flex flex-wrap gap-2 border-t border-border bg-background/95 p-3 shadow-[0_-8px_24px_rgba(0,0,0,0.08)] backdrop-blur supports-[backdrop-filter]:bg-background/85">{DECISIONS.map((entry) => {

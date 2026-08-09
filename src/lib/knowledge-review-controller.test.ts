@@ -15,7 +15,9 @@ const JOB_ID = "11111111-1111-4111-8111-111111111111"
 const item = {
   jobId: JOB_ID, status: "review_required", title: "테스트 자료", sourceUrl: "https://example.com/video",
   notebookId: "nb1", notebookSourceId: "source-1", summary: "요약", claims: [{ statement: "주장", citation: "01:02" }],
-  category: "기술", qualityWarnings: ["근거 확인 필요"],
+  category: "기술", qualityWarnings: ["근거 확인 필요"], approvalReady: false,
+  approvalBlockers: ["사실 주장 타임스탬프가 없습니다."], reprocessEligible: true,
+  reprocessBlockers: [], attemptCount: 1,
 }
 
 test("Control Tower dev/start scripts bind only to IPv4 loopback", () => {
@@ -30,14 +32,31 @@ test("yohan-mcp 검토 목록은 review_required 항목만 정규화한다", asy
   assert.equal(result.items.length, 1)
   assert.equal(result.items[0]?.notebookLmSource, "nb1 / source-1")
   assert.deepEqual(result.items[0]?.claims, [{ claim: "주장", timestamp: "01:02" }])
+  assert.equal(result.items[0]?.approvalReady, false)
+  assert.equal(result.items[0]?.reprocessEligible, true)
+  assert.equal(result.items[0]?.attemptCount, 1)
 })
 
 test("검토 결정은 UUID·enum allowlist와 메모 길이를 검증한다", () => {
   assert.deepEqual(parseKnowledgeReviewDecision({ id: JOB_ID, decision: "approve_after_edit", note: "표현 수정" }), { id: JOB_ID, decision: "approve_after_edit", note: "표현 수정" })
+  assert.deepEqual(parseKnowledgeReviewDecision({ id: JOB_ID, decision: "reprocess_required" }), { id: JOB_ID, decision: "reprocess_required" })
   assert.throws(() => parseKnowledgeReviewDecision({ id: JOB_ID, decision: "publish" }), KnowledgeReviewInputError)
   assert.throws(() => parseKnowledgeReviewDecision({ id: "not-a-uuid", decision: "approve" }), KnowledgeReviewInputError)
   assert.throws(() => parseKnowledgeReviewDecision({ id: JOB_ID, decision: "approve_after_edit" }), KnowledgeReviewInputError)
   assert.throws(() => parseKnowledgeReviewDecision({ id: JOB_ID, decision: "approve", note: "가".repeat(4_001) }), KnowledgeReviewInputError)
+  assert.throws(() => parseKnowledgeReviewDecision({ id: JOB_ID, decision: "reprocess_required", note: "임의 사유" }), KnowledgeReviewInputError)
+})
+
+test("근거가 불완전한 레거시 검토는 고정 invalidate-review 명령만 호출한다", async () => {
+  let observedArgs: string[] = []
+  let observedStdin: string | undefined
+  const result = await submitKnowledgeReview(
+    parseKnowledgeReviewDecision({ id: JOB_ID, decision: "reprocess_required" }),
+    { runCli: async (args, stdin) => { observedArgs = args; observedStdin = stdin; return { ok: true, status: "action_required" } } },
+  )
+  assert.equal(result.status, 200)
+  assert.deepEqual(observedArgs, ["invalidate-review", JOB_ID])
+  assert.equal(observedStdin, undefined)
 })
 
 test("완료 항목 재승인은 409을 보존하고 메모는 stdin으로만 전달한다", async () => {

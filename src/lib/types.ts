@@ -505,7 +505,7 @@ export interface InboxDashboardResponse {
   error?: string
 }
 
-export type KnowledgeReviewDecision = "approve" | "approve_after_edit" | "hold" | "reject"
+export type KnowledgeReviewDecision = "approve" | "approve_after_edit" | "hold" | "reject" | "reprocess_required"
 
 export type KnowledgeReviewStatus = "review_required" | "completed" | "held" | "rejected"
 
@@ -525,6 +525,11 @@ export interface KnowledgeReviewItem {
   claims: KnowledgeReviewClaim[]
   category: string
   qualityWarnings: string[]
+  approvalReady: boolean
+  approvalBlockers: string[]
+  reprocessEligible: boolean
+  reprocessBlockers: string[]
+  attemptCount: number
   updatedAt?: string
 }
 
