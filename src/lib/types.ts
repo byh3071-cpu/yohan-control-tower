@@ -504,3 +504,32 @@ export interface InboxDashboardResponse {
   generatedAt: string
   error?: string
 }
+
+export type KnowledgeReviewDecision = "approve" | "approve_after_edit" | "hold" | "reject"
+
+export type KnowledgeReviewStatus = "review_required" | "completed" | "held" | "rejected"
+
+export interface KnowledgeReviewClaim {
+  claim: string
+  timestamp?: string
+}
+
+/** Focus Feed가 사람 검토를 요청한 표시 전용 항목 계약입니다. */
+export interface KnowledgeReviewItem {
+  id: string
+  status: KnowledgeReviewStatus
+  title: string
+  originalUrl: string
+  notebookLmSource?: string
+  summary: string
+  claims: KnowledgeReviewClaim[]
+  category: string
+  qualityWarnings: string[]
+  updatedAt?: string
+}
+
+export interface KnowledgeReviewListResponse {
+  ok: boolean
+  items: KnowledgeReviewItem[]
+  source: "yohan-mcp"
+}

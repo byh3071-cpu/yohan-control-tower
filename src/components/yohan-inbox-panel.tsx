@@ -13,6 +13,7 @@ import {
 } from "lucide-react"
 
 import { SotDraftPanel } from "@/components/sot-draft-panel"
+import { KnowledgeReviewPanel } from "@/components/knowledge-review-panel"
 import { CAPTURE_CONTENT_MAX_CHARS, CAPTURE_NOTE_MAX_CHARS } from "@/lib/inbox-limits"
 import type {
   InboxDashboardResponse,
@@ -523,6 +524,15 @@ export function YohanInboxPanel({ onSaved }: Props) {
           </div>
         </section>
       </div>
+
+      <details className="border-t border-border" open>
+        <summary className="cursor-pointer px-4 py-2 text-[10px] text-muted-foreground hover:bg-accent/30">
+          Focus Feed 지식 검토
+        </summary>
+        <div className="p-4 pt-1">
+          <KnowledgeReviewPanel />
+        </div>
+      </details>
 
       <details className="border-t border-border">
         <summary className="cursor-pointer px-4 py-2 text-[10px] text-muted-foreground hover:bg-accent/30">

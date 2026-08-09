@@ -119,8 +119,16 @@ export default function DashboardPage() {
     const url = fresh ? `/api/docs?fresh=1&t=${Date.now()}` : `/api/docs?t=${Date.now()}`
     try {
       const r = await fetch(url, { cache: "no-store" })
-      const data = await r.json()
-      if (!r.ok) throw new Error(data.error ?? `HTTP ${r.status}`)
+      const raw = await r.text()
+      const data = raw ? JSON.parse(raw) : {}
+      if (!r.ok) {
+        const message = typeof data.error === "string" ? data.error : `HTTP ${r.status}`
+        if (data.setupRequired === true) {
+          setDashboardError(message)
+          return
+        }
+        throw new Error(message)
+      }
       setDocs(data.docs ?? [])
       setStats((prev) => data.stats ?? prev)
       setCharts((prev) => data.charts ?? prev)
