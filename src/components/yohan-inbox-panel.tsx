@@ -233,8 +233,8 @@ export function YohanInboxPanel({ onSaved }: Props) {
   }
 
   return (
-    <div className="overflow-hidden rounded-xl border border-border bg-card/40">
-      <div className="grid gap-0 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.4fr)]">
+    <div className="flex flex-col overflow-hidden rounded-xl border border-border bg-card/40">
+      <div className="order-2 grid gap-0 lg:order-1 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.4fr)]">
         <section className="space-y-3 border-b border-border p-4 lg:border-b-0 lg:border-r">
           <div className="flex items-start gap-2">
             <div className="mt-0.5 rounded-lg bg-foreground p-1.5 text-background">
@@ -525,8 +525,8 @@ export function YohanInboxPanel({ onSaved }: Props) {
         </section>
       </div>
 
-      <details className="border-t border-border" open>
-        <summary className="cursor-pointer px-4 py-2 text-[10px] text-muted-foreground hover:bg-accent/30">
+      <details className="order-1 border-b border-border lg:order-2 lg:border-b-0 lg:border-t" open>
+        <summary className="flex min-h-11 cursor-pointer items-center px-4 text-[10px] text-muted-foreground hover:bg-accent/30">
           Focus Feed 지식 검토
         </summary>
         <div className="p-4 pt-1">
@@ -534,8 +534,8 @@ export function YohanInboxPanel({ onSaved }: Props) {
         </div>
       </details>
 
-      <details className="border-t border-border">
-        <summary className="cursor-pointer px-4 py-2 text-[10px] text-muted-foreground hover:bg-accent/30">
+      <details className="order-3 border-t border-border">
+        <summary className="flex min-h-11 cursor-pointer items-center px-4 text-[10px] text-muted-foreground hover:bg-accent/30">
           기존 SoT 초안 도구
         </summary>
         <SotDraftPanel onSaved={onSaved} />
