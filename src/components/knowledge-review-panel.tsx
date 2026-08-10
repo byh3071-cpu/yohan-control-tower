@@ -19,6 +19,11 @@ const DECISION_LABELS: Record<KnowledgeReviewDecision, string> = {
   reject: "거절",
   reprocess_required: "재처리 필요로 전환",
 }
+const CLAIM_TYPE_LABELS = {
+  fact: "사실",
+  interpretation: "해석",
+  recommendation: "제안",
+} as const
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value)
@@ -110,10 +115,32 @@ export function KnowledgeReviewPanel() {
             {open && <div className="space-y-3 border-t border-border px-3 py-3 text-[11px] leading-relaxed">
               <div className="flex flex-wrap items-center gap-2">
                 <a href={item.originalUrl} target="_blank" rel="noreferrer" className="inline-flex min-h-11 max-w-full items-center gap-1 rounded-md border border-border px-3 text-blue-700 hover:bg-accent hover:underline dark:text-blue-300"><ExternalLink size={14} /><span className="truncate">원본 영상 열기</span></a>
-                {item.notebookLmSource && <details className="text-muted-foreground"><summary className="cursor-pointer py-2 text-[10px]">NotebookLM 원문 연결됨</summary><p className="max-w-full break-all rounded bg-muted px-2 py-1 font-mono text-[9px]">{item.notebookLmSource}</p></details>}
+                {item.notebookLmSource && <details className="text-muted-foreground"><summary className="flex min-h-11 cursor-pointer items-center py-2 text-[10px]">NotebookLM 원문 연결됨</summary><p className="max-w-full break-all rounded bg-muted px-2 py-1 font-mono text-[9px]">{item.notebookLmSource}</p></details>}
               </div>
               <p><span className="font-medium">요약: </span>{item.summary}</p>
-              <div><p className="font-medium">주장과 타임스탬프</p>{item.claims.length ? <ul className="mt-1 list-disc space-y-1 pl-4">{item.claims.map((claim, index) => <li key={`${claim.claim}-${index}`}>{claim.claim}{claim.timestamp ? <span className="text-muted-foreground"> · {claim.timestamp}</span> : null}</li>)}</ul> : <p className="text-muted-foreground">추출된 주장이 없습니다.</p>}</div>
+              <div>
+                <p className="font-medium">핵심 요점</p>
+                {item.keyPoints.length ? <ul className="mt-1 list-disc space-y-1 pl-4">{item.keyPoints.map((point, index) => <li key={`${point}-${index}`}>{point}</li>)}</ul> : <p className="text-muted-foreground">추출된 핵심 요점이 없습니다.</p>}
+              </div>
+              <div>
+                <p className="font-medium">주장과 근거</p>
+                {item.claims.length ? <ul className="mt-1 space-y-2">{item.claims.map((claim, index) => {
+                  const verifiedFact = claim.type === "fact" && claim.citationVerified && Boolean(claim.timestamp && claim.evidenceQuote)
+                  const needsJudgment = claim.type !== "fact" || claim.requiresCrosscheck
+                  return <li key={`${claim.claim}-${index}`} className="rounded-md border border-border bg-muted/30 p-2">
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium">{CLAIM_TYPE_LABELS[claim.type]}</span>
+                      {verifiedFact ? <span className="rounded bg-emerald-500/10 px-1.5 py-0.5 text-[10px] text-emerald-800 dark:text-emerald-200">검증된 타임스탬프 {claim.timestamp}</span> : null}
+                      {claim.type === "fact" && !verifiedFact ? <span className="rounded bg-amber-500/10 px-1.5 py-0.5 text-[10px] text-amber-800 dark:text-amber-200">사실 근거 미검증</span> : null}
+                      {needsJudgment ? <span className="rounded bg-blue-500/10 px-1.5 py-0.5 text-[10px] text-blue-800 dark:text-blue-200">판단 필요{claim.requiresCrosscheck ? " · 교차 검증" : ""}</span> : null}
+                    </div>
+                    <p className="mt-1">{claim.claim}</p>
+                    {verifiedFact && claim.evidenceQuote ? <blockquote className="mt-1 border-l-2 border-emerald-500/50 pl-2 text-muted-foreground">“{claim.evidenceQuote}”</blockquote> : null}
+                  </li>
+                })}</ul> : <p className="text-muted-foreground">추출된 주장이 없습니다.</p>}
+              </div>
+              {item.uncertainties.length > 0 && <div className="rounded-md border border-blue-500/30 bg-blue-500/10 p-2 text-blue-900 dark:text-blue-100"><p className="font-medium">판단 전에 확인할 점</p><ul className="mt-1 list-disc pl-4">{item.uncertainties.map((uncertainty, index) => <li key={`${uncertainty}-${index}`}>{uncertainty}</li>)}</ul></div>}
+              <p className={evidenceReady ? "rounded-md border border-emerald-500/30 bg-emerald-500/10 p-2 text-emerald-800 dark:text-emerald-200" : "rounded-md border border-amber-500/30 bg-amber-500/10 p-2 text-amber-800 dark:text-amber-200"}>{evidenceReady ? "백엔드 승인 계약 검증을 통과했습니다. 최종 판단은 검토자가 합니다." : "백엔드 승인 계약을 통과하지 않았습니다. 아래 차단 사유를 먼저 확인하세요."}</p>
               {!evidenceReady && <div className="space-y-2 rounded-md border border-red-500/30 bg-red-500/10 p-2 text-red-800 dark:text-red-200"><div><p className="font-medium">승인할 수 없는 근거 상태</p>{item.approvalBlockers.length > 0 ? <ul className="list-disc pl-4">{item.approvalBlockers.map((blocker) => <li key={blocker}>{blocker}</li>)}</ul> : <p>현재 산출물이 승인 계약을 충족하지 않습니다.</p>}{item.reprocessEligible ? <><p>기존 NotebookLM source를 보존한 채 재처리 대상으로 전환할 수 있습니다.</p>{item.attemptCount === 3 && <p>이 레거시 항목은 중복 방지 marker를 남기고 1회 한정 교정 시도를 사용합니다.</p>}</> : item.reprocessBlockers.length > 0 && <div className="mt-1"><p className="font-medium">자동 재처리 전환 불가 · 시도 {item.attemptCount}/3</p><ul className="list-disc pl-4">{item.reprocessBlockers.map((blocker) => <li key={blocker}>{blocker}</li>)}</ul></div>}</div>{item.reprocessEligible && <button type="button" disabled={pending !== null} onClick={() => void decide(item, "reprocess_required")} className="inline-flex min-h-11 w-full items-center justify-center gap-1.5 rounded-md border border-red-500/40 bg-background/70 px-3 py-2 text-[11px] font-medium hover:bg-background disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-ring">{pending === item.id ? <Loader2 size={13} className="animate-spin" /> : <RotateCcw size={13} />}재처리 필요로 전환</button>}</div>}
               {item.qualityWarnings.length > 0 && <div className="rounded-md border border-amber-500/30 bg-amber-500/10 p-2 text-amber-900 dark:text-amber-100"><p className="font-medium">품질 경고</p><ul className="list-disc pl-4">{item.qualityWarnings.map((warning) => <li key={warning}>{warning}</li>)}</ul></div>}
               <label className="block"><span className="text-[10px] font-medium">승인 메모 (선택)</span><textarea value={notes[item.id] ?? ""} onChange={(event) => setNotes((current) => ({ ...current, [item.id]: event.target.value }))} maxLength={REVIEW_NOTE_MAX_CHARS} rows={2} className="mt-1 w-full rounded-md border border-border bg-background px-2 py-1.5 text-xs outline-none focus:ring-2 focus:ring-ring" /></label>
