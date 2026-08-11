@@ -3,6 +3,7 @@
 > 웹앱(로컬 전용 대시보드) · 포트 3001 · **`yohan-brain/dashboard/src` 60파일 이관 후의 목표 구조**(현재 상태 아님).
 > 규칙은 [`RULES.md`](../RULES.md), 기능ID·단계는 [`PRD.md`](./PRD.md) §3 이 SoT — 복제하지 않는다.
 > **단계**: v1.0 = F001·F002·F003·F008·F009·F010(이관·통합, **4탭**) / v1.1 = F004·F005·F006(계층축, 홈 추가 → **5탭 동결**) / v1.2 = F011(Home 내부 Calendar). F007 = v1 OUT.
+> Notion을 캡처·편집면으로 연결하는 후속 구조는 [`RFC 0001`](./rfc/0001-notion-backed-common-workbench.md)이며 아직 현행 모듈 계약이 아니다.
 
 **표기** · `(이관)` = `yohan-brain/dashboard/<동일 상대경로>`에서 이동, import 무수정 · `(이동)` = 이 레포 파일 재배치 — **import 경로 + fetch URL 재작성 포함** · `(개조)` = 코드 변경 필수 · `(신규)`.
 **`src/` 채택** — dashboard paths `@/* → ./src/*` vs 이 레포 `@/* → ./*`. 60 vs 37 이라 다수를 안 건드린다: 이 레포 `tsconfig.json` paths 만 바꾸고 37파일을 `src/**/vector/` 로 옮긴다. **전제 = deps 15개 선설치**(목록 PRD §10) — 미설치면 "import 무수정"이 거짓이 된다.
