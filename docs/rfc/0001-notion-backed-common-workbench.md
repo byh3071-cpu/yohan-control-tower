@@ -8,7 +8,7 @@
 
 따라서 관제탑과 Notion을 대체 관계로 보지 않는다. 관제탑은 운영 프론트, Notion은 사람용 캡처·편집·문서 미러, Yohan Brain/Git은 확정 지식의 정본으로 나눈다.
 
-디자인 기준은 yohan-brain의 [`요한 워크스페이스 — Notion·관제탑 통합 화면 시안`](https://github.com/byh3071-cpu/yohan-brain/blob/feat/html-design-context/docs/reference/websites/yohan-workspace-notion-control-tower-concepts.md)이다. 화면 골격은 [캡처 중심 시안](https://github.com/byh3071-cpu/yohan-brain/blob/feat/html-design-context/docs/reference/websites/assets/yohan-control-tower-capture-first-concept.png), 선택 상태는 [최종 채택 시안](https://github.com/byh3071-cpu/yohan-brain/blob/feat/html-design-context/docs/reference/websites/assets/yohan-control-tower-capture-context-peek-approved.png)을 구현 기준으로 사용한다.
+디자인 기준은 yohan-brain의 [`요한 워크스페이스 — Notion·관제탑 통합 화면 시안`](https://github.com/byh3071-cpu/yohan-brain/blob/master/docs/reference/websites/yohan-workspace-notion-control-tower-concepts.md)이다. 화면 골격은 [캡처 중심 시안](https://github.com/byh3071-cpu/yohan-brain/blob/master/docs/reference/websites/assets/yohan-control-tower-capture-first-concept.png), 선택 상태는 [최종 채택 시안](https://github.com/byh3071-cpu/yohan-brain/blob/master/docs/reference/websites/assets/yohan-control-tower-capture-context-peek-approved.png)을 구현 기준으로 사용한다.
 
 ## 2. 목표
 
