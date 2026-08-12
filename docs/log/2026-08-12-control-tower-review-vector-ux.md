@@ -2,7 +2,7 @@
 date: 2026-08-12
 work: 지식 검토 동선과 벡터 화면 정리
 branch: byh3071-cpu/knowledge-p0-control-tower-r2
-pull_request: null
+pull_request: https://github.com/byh3071-cpu/yohan-control-tower/pull/31
 ---
 
 # 지식 검토 동선과 벡터 화면 정리
