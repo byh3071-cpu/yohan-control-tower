@@ -4,11 +4,15 @@ import { ALL_COLLECTIONS, SOURCES } from '@/lib/vector/sources'
 import { countPoints, qdrantVersion, getMaxLastEditedTime } from '@/lib/vector/qdrant'
 import { ollamaStatus } from '@/lib/vector/ollama'
 import { notionConfigured } from '@/lib/vector/notion'
+import { isLocalReadRequest } from '@/lib/inbox-controller'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
-export async function GET(): Promise<Response> {
+export async function GET(request: Request): Promise<Response> {
+  if (!isLocalReadRequest(request)) {
+    return Response.json({ error: '로컬 조회만 허용합니다.' }, { status: 403 })
+  }
   const collections = Object.fromEntries(
     ALL_COLLECTIONS.map((c) => [c, 0]),
   ) as Record<CollectionName, number>

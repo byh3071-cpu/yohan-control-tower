@@ -15,7 +15,7 @@ export type ViewTab = "home" | "projects" | "docs" | "records" | "vector"
 const TABS: { id: ViewTab; label: string; icon: React.ReactNode }[] = [
   { id: "home", label: "홈", icon: <House size={14} /> },
   { id: "projects", label: "프로젝트", icon: <FolderKanban size={14} /> },
-  { id: "docs", label: "문서", icon: <Table2 size={14} /> },
+  { id: "docs", label: "문서·검토", icon: <Table2 size={14} /> },
   { id: "records", label: "기록", icon: <Clock size={14} /> },
   { id: "vector", label: "벡터", icon: <Database size={14} /> },
 ]

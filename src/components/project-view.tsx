@@ -141,9 +141,9 @@ export function ProjectView({ initialMissionId = null }: ProjectViewProps) {
     return (
       <div className="mx-auto mt-10 max-w-xl rounded-2xl border border-amber-300/70 bg-amber-50/60 p-6 text-center dark:bg-amber-950/20">
         <CircleAlert size={20} className="mx-auto text-amber-600" aria-hidden />
-        <h1 className="mt-3 text-sm font-semibold">프로젝트 원장 연결을 확인하세요.</h1>
-        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{error}</p>
-        <button type="button" onClick={reload} className="mt-4 inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-2 text-xs font-semibold">
+        <h1 className="mt-3 text-sm font-semibold">프로젝트 지도를 불러오지 못했습니다.</h1>
+        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">원장을 확인한 뒤 다시 시도해 주세요.</p>
+        <button type="button" onClick={reload} className="mt-4 inline-flex min-h-11 items-center gap-1.5 rounded-lg border border-border bg-background px-4 py-2 text-xs font-semibold">
           <RefreshCw size={12} aria-hidden /> 다시 읽기
         </button>
       </div>

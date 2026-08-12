@@ -1,4 +1,5 @@
 'use client'
+import { Search } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import type { CollectionName, QueryResponse } from '@/lib/vector/types'
 import { ALL_COLLECTIONS } from '@/lib/vector/sources'
@@ -7,82 +8,68 @@ interface Props {
   onSearch: (collection: CollectionName, query: string, topK: number) => Promise<void>
   result: QueryResponse | null
   searching: boolean
+  disabled?: boolean
   error?: string
 }
 
-export default function QueryTester({ onSearch, result, searching, error }: Props) {
+export default function QueryTester({ onSearch, result, searching, disabled = false, error }: Props) {
   const [collection, setCollection] = useState<CollectionName>('knowledge_base')
   const [query, setQuery] = useState('')
   const [topK, setTopK] = useState(5)
 
-  const submit = (e: FormEvent) => {
-    e.preventDefault()
-    const q = query.trim()
-    if (q) void onSearch(collection, q, topK)
+  const submit = (event: FormEvent) => {
+    event.preventDefault()
+    const value = query.trim()
+    if (value && !disabled) void onSearch(collection, value, topK)
   }
 
+  const fieldClass = 'min-h-11 rounded-lg border border-border bg-background px-3 text-xs text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50'
+
   return (
-    <div className="rounded-md border border-zinc-800 bg-zinc-900/40 p-4">
-      <form onSubmit={submit} className="flex flex-wrap items-center gap-2">
-        <select
-          value={collection}
-          onChange={(e) => setCollection(e.target.value as CollectionName)}
-          className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1 text-xs text-zinc-100"
-        >
-          {ALL_COLLECTIONS.map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
-          ))}
+    <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
+      <form onSubmit={submit} className="grid gap-2 sm:grid-cols-[minmax(9rem,0.8fr)_minmax(14rem,2fr)_5.5rem_auto]">
+        <select value={collection} onChange={(event) => setCollection(event.target.value as CollectionName)} disabled={disabled} className={fieldClass}>
+          {ALL_COLLECTIONS.map((item) => <option key={item} value={item}>{item}</option>)}
         </select>
         <input
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="질문 입력 (예: 온톨로지와 비슷한 개념)"
-          className="min-w-[260px] flex-1 rounded border border-zinc-700 bg-zinc-900 px-2 py-1 text-xs text-zinc-100 placeholder:text-zinc-600"
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder="지식에서 찾을 내용을 입력하세요"
+          disabled={disabled}
+          className={fieldClass}
         />
-        <select
-          value={topK}
-          onChange={(e) => setTopK(Number(e.target.value))}
-          className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1 text-xs text-zinc-100"
-        >
-          {[3, 5, 10].map((k) => (
-            <option key={k} value={k}>
-              Top {k}
-            </option>
-          ))}
+        <select value={topK} onChange={(event) => setTopK(Number(event.target.value))} disabled={disabled} className={fieldClass}>
+          {[3, 5, 10].map((value) => <option key={value} value={value}>상위 {value}</option>)}
         </select>
         <button
           type="submit"
-          disabled={searching || !query.trim()}
-          className="rounded bg-emerald-700 px-3 py-1 text-xs font-medium text-white hover:bg-emerald-600 disabled:opacity-40"
+          disabled={disabled || searching || !query.trim()}
+          className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-lg bg-foreground px-4 text-xs font-semibold text-background transition-opacity hover:opacity-85 disabled:opacity-40"
         >
-          {searching ? '검색중…' : '검색'}
+          <Search size={14} aria-hidden /> {searching ? '검색 중' : '검색'}
         </button>
       </form>
 
-      {error ? <div className="mt-3 text-xs text-red-400">⚠ {error}</div> : null}
+      {disabled ? <p className="mt-3 text-xs text-muted-foreground">벡터 저장소와 검색 모델이 연결되면 사용할 수 있습니다.</p> : null}
+      {error ? <p className="mt-3 text-xs text-destructive">검색하지 못했습니다. 연결 상태를 확인해 주세요.</p> : null}
 
-      <div className="mt-3 space-y-2">
-        {result?.hits.map((h, i) => (
-          <div key={String(h.id)} className="rounded border border-zinc-800 bg-black/40 p-2">
-            <div className="flex items-center justify-between">
-              <div className="text-sm text-zinc-100">
-                {i + 1}. {h.payload.title}
+      {result ? (
+        <div className="mt-4 space-y-2 border-t border-border pt-4">
+          {result.hits.length === 0 && !searching ? <p className="text-xs text-muted-foreground">검색 결과가 없습니다.</p> : null}
+          {result.hits.map((hit, index) => (
+            <article key={String(hit.id)} className="rounded-lg border border-border bg-background p-3">
+              <div className="flex items-start justify-between gap-3">
+                <h3 className="text-sm font-semibold text-foreground">{index + 1}. {hit.payload.title}</h3>
+                <span className="shrink-0 text-xs font-medium tabular-nums text-emerald-700 dark:text-emerald-300">{hit.score.toFixed(3)}</span>
               </div>
-              <div className="text-xs tabular-nums text-emerald-400">{h.score.toFixed(3)}</div>
-            </div>
-            <div className="mt-0.5 text-[11px] text-zinc-500">
-              [{h.payload.source_db}] {h.payload.category ?? ''}
-              {h.payload.section ? ` · ${h.payload.section}` : ''}
-            </div>
-            <div className="mt-1 line-clamp-3 text-xs text-zinc-400">{h.payload.text}</div>
-          </div>
-        ))}
-        {result && result.hits.length === 0 && !searching ? (
-          <div className="text-xs text-zinc-600">결과 없음</div>
-        ) : null}
-      </div>
+              <p className="mt-1 text-[11px] text-muted-foreground">
+                {hit.payload.source_db}{hit.payload.category ? ` · ${hit.payload.category}` : ''}{hit.payload.section ? ` · ${hit.payload.section}` : ''}
+              </p>
+              <p className="mt-2 line-clamp-3 text-xs leading-relaxed text-foreground/80">{hit.payload.text}</p>
+            </article>
+          ))}
+        </div>
+      ) : null}
     </div>
   )
 }

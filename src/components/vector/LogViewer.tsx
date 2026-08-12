@@ -6,20 +6,21 @@ export default function LogViewer({ lines }: { lines: string[] }) {
   useEffect(() => {
     if (ref.current) ref.current.scrollTop = ref.current.scrollHeight
   }, [lines])
+
+  if (lines.length === 0) return null
+
   return (
-    <div
-      ref={ref}
-      className="h-64 overflow-y-auto rounded-md border border-zinc-800 bg-black/60 p-3 text-xs leading-relaxed"
-    >
-      {lines.length === 0 ? (
-        <div className="text-zinc-600">로그가 여기 표시됩니다…</div>
-      ) : (
-        lines.map((l, i) => (
-          <div key={i} className="whitespace-pre-wrap text-zinc-300">
-            {l}
+    <details className="rounded-xl border border-border bg-card">
+      <summary className="flex min-h-11 cursor-pointer items-center px-4 text-xs font-semibold text-foreground">
+        작업 기록 <span className="ml-2 text-muted-foreground">{lines.length}줄</span>
+      </summary>
+      <div ref={ref} className="max-h-52 overflow-y-auto border-t border-border bg-muted/35 p-3 font-mono text-[11px] leading-relaxed">
+        {lines.map((line, index) => (
+          <div key={`${index}-${line}`} className="whitespace-pre-wrap text-foreground/80">
+            {line}
           </div>
-        ))
-      )}
-    </div>
+        ))}
+      </div>
+    </details>
   )
 }

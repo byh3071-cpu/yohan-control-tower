@@ -48,7 +48,12 @@ function requiredRecord(parent: Record<string, unknown>, key: string): Record<st
 }
 
 export function parseProjectsDocument(text: string): ProjectsDocument {
-  const value: unknown = parse(text)
+  let value: unknown
+  try {
+    value = parse(text)
+  } catch {
+    throw new Error("프로젝트 원장 YAML 문법 오류입니다. Brain의 memory/core/projects.yaml을 확인하세요.")
+  }
   if (!isRecord(value)) throw new Error("projects.yaml 최상위 구조가 객체가 아닙니다.")
   if (value.schema !== "projects" || value.schema_version !== 1) {
     throw new Error("projects.yaml schema 또는 schema_version을 지원하지 않습니다.")
@@ -144,7 +149,23 @@ export async function readGoalRecords(repoRoot: string): Promise<GoalReadResult>
   for (const entry of entries.sort((a, b) => a.name.localeCompare(b.name))) {
     if (!entry.isFile() || !entry.name.endsWith(".md") || entry.name === "_meta.md") continue
     const source = await readFile(join(/* turbopackIgnore: true */ goalsDir, entry.name), "utf8")
-    const parsed = matter(source)
+    let parsed: ReturnType<typeof matter>
+    try {
+      parsed = matter(source)
+    } catch {
+      goals.push({
+        file: entry.name,
+        type: "goal",
+        id: null,
+        title: entry.name.replace(/\.md$/, ""),
+        titleDeclared: false,
+        status: "INVALID",
+        priority: null,
+        completed: null,
+        checks: { total: 0, done: 0 },
+      })
+      continue
+    }
     const idValue = normalizeScalar(parsed.data.id)
     const numericId = idValue && /^\d+$/.test(idValue) ? Number(idValue) : null
     const title = normalizeScalar(parsed.data.title)

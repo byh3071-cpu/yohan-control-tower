@@ -104,7 +104,7 @@ export default function DashboardPage() {
   const [activeView, setActiveView] = useState<ViewTab>("home")
   const [projectMission, setProjectMission] = useState<string | null>(null)
   const [docsMode, setDocsMode] = useState<DocsMode>("card")
-  const [inboxOpen, setInboxOpen] = useState(false)
+  const [inboxOpen, setInboxOpen] = useState(true)
   const [cmdOpen, setCmdOpen] = useState(false)
   const [loading, setLoading] = useState(true)
   const [dashboardError, setDashboardError] = useState<string | null>(null)
@@ -119,8 +119,16 @@ export default function DashboardPage() {
     const url = fresh ? `/api/docs?fresh=1&t=${Date.now()}` : `/api/docs?t=${Date.now()}`
     try {
       const r = await fetch(url, { cache: "no-store" })
-      const data = await r.json()
-      if (!r.ok) throw new Error(data.error ?? `HTTP ${r.status}`)
+      const raw = await r.text()
+      const data = raw ? JSON.parse(raw) : {}
+      if (!r.ok) {
+        const message = typeof data.error === "string" ? data.error : `HTTP ${r.status}`
+        if (data.setupRequired === true) {
+          setDashboardError(message)
+          return
+        }
+        throw new Error(message)
+      }
       setDocs(data.docs ?? [])
       setStats((prev) => data.stats ?? prev)
       setCharts((prev) => data.charts ?? prev)
@@ -310,6 +318,10 @@ export default function DashboardPage() {
     <div className="h-screen flex flex-col overflow-hidden">
       <Header
         onOpenSearch={() => setCmdOpen(true)}
+        onOpenKnowledgeReview={() => {
+          setActiveView("docs")
+          setInboxOpen(true)
+        }}
         onOpenMobileNav={() => setMobileNavOpen(true)}
         stats={stats}
         gaps={scopeCounts.gaps}
@@ -397,16 +409,18 @@ export default function DashboardPage() {
                   onClick={() => setInboxOpen((v) => !v)}
                   aria-pressed={inboxOpen}
                   className={cn(
-                    "ml-auto rounded-md border border-border px-2.5 py-1 text-[11px] font-medium transition-colors",
-                    inboxOpen ? "bg-foreground/10 text-foreground" : "text-muted-foreground hover:text-foreground"
+                    "ml-auto inline-flex min-h-11 items-center rounded-lg border px-3 text-xs font-semibold transition-colors",
+                    inboxOpen
+                      ? "border-foreground bg-foreground text-background"
+                      : "border-border bg-card text-foreground hover:bg-muted"
                   )}
                 >
-                  인박스
+                  {inboxOpen ? "지식 검토 닫기" : "지식 검토 열기"}
                 </button>
               </div>
 
               {inboxOpen && (
-                <div className="shrink-0 border-b border-border/60 px-3 py-3">
+                <div id="knowledge-review" className="max-h-[calc(100dvh-7.5rem)] shrink-0 scroll-mt-4 overflow-y-auto border-b border-border/60 px-3 py-3">
                   <div className="mx-auto max-w-5xl">
                     <YohanInboxPanel onSaved={() => void loadDashboard(true)} />
                   </div>
@@ -588,7 +602,12 @@ export default function DashboardPage() {
           {/* ── 벡터 ── 노션 → Qdrant 인제스트·검색. /vector 주소와 같은 컴포넌트 */}
           {activeView === "vector" && (
             <ScrollArea className="flex-1 min-h-0">
-              <VectorPanel />
+              <VectorPanel
+                onOpenReview={() => {
+                  setActiveView("docs")
+                  setInboxOpen(true)
+                }}
+              />
             </ScrollArea>
           )}
         </div>
