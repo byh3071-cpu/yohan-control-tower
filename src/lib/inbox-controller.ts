@@ -185,14 +185,17 @@ export function buildHumanDecision(input: InboxDecisionInput): Record<string, un
 }
 
 /** NextRequest 가 구조적으로 만족하는 최소 표면 — 테스트에서 mock 으로 대체 가능. */
-type InboxJsonRequest = Pick<Request, "headers" | "text"> & {
+export type InboxJsonRequest = Pick<Request, "headers" | "text"> & {
   body?: ReadableStream<Uint8Array> | null
 }
 
-async function readRequestTextWithinLimit(request: InboxJsonRequest): Promise<string> {
+export async function readRequestTextWithinLimit(
+  request: InboxJsonRequest,
+  maxBytes = MAX_REQUEST_BYTES,
+): Promise<string> {
   if (!request.body) {
     const raw = await request.text()
-    if (Buffer.byteLength(raw, "utf8") > MAX_REQUEST_BYTES) {
+    if (Buffer.byteLength(raw, "utf8") > maxBytes) {
       throw new InboxInputError("요청 본문이 너무 큽니다.")
     }
     return raw
@@ -207,7 +210,7 @@ async function readRequestTextWithinLimit(request: InboxJsonRequest): Promise<st
       if (done) break
       if (!value) continue
       totalBytes += value.byteLength
-      if (totalBytes > MAX_REQUEST_BYTES) {
+      if (totalBytes > maxBytes) {
         await reader.cancel().catch(() => undefined)
         throw new InboxInputError("요청 본문이 너무 큽니다.")
       }
@@ -276,9 +279,12 @@ export function isLocalReadRequest(request: Request): boolean {
   try {
     const requestUrl = new URL(request.url)
     if (!LOOPBACK_HOSTNAMES.has(requestUrl.hostname)) return false
+    const host = request.headers.get("host")
+    const expectedUrl = host ? new URL(`${requestUrl.protocol}//${host}`) : requestUrl
+    if (!LOOPBACK_HOSTNAMES.has(expectedUrl.hostname)) return false
     if (request.headers.get("sec-fetch-site")?.toLowerCase() === "cross-site") return false
     const origin = request.headers.get("origin")
-    return !origin || new URL(origin).origin === requestUrl.origin
+    return !origin || new URL(origin).origin === expectedUrl.origin
   } catch {
     return false
   }

@@ -18,15 +18,16 @@
 
 | 항목 | 상태 | 조치 |
 |---|---|---|
-| Docker + Qdrant | 🟢 가동 중 (localhost:6333, v1.17.1) | — |
-| 컬렉션 4개 | 🟢 생성됨 | — |
+| Docker + Qdrant | ⚪ 이 PC에서 미가동 | 벡터 검색이 필요할 때만 선택 설치 |
+| 컬렉션 4개 | ⚪ Qdrant 미가동으로 확인 불가 | Qdrant 연결 후 `npm run init:collections` |
 | Node / 빌드 / 타입 / 린트 | 🟢 통과 | — |
-| **Ollama** | 🔴 **이 PC 미설치** | **아래 1번** 설치 + 모델 pull 필요 |
+| **Ollama** | ⚪ 이 PC에서 미가동 또는 미설치 | 벡터 검색이 필요할 때만 아래 1번 확인 |
 | **YOHAN_OS_ROOT / YOHAN_REPOS_ROOT / YOHAN_CALENDAR_ROOT** | 🔴 PC별 설정 필요 | **아래 2번** `.env.local` 에 절대경로 입력 |
 | **NOTION_TOKEN** | 🔴 미설정 | **아래 2번** `.env.local` 채우기 |
 
 > 인제스트(버튼 실행)는 **Ollama 와 NOTION_TOKEN 이 모두 준비된 뒤** 동작한다.
 > 이 두 가지는 의도적으로 자동 처리하지 않았다(소프트웨어 설치·비밀 토큰은 사용자 영역).
+> Qdrant·Ollama가 없어도 Focus Feed → NotebookLM → 지식 검토 → Brain 적재 흐름은 정상 사용 가능하다. 벡터 검색은 선택 기능이다.
 
 ---
 
@@ -51,12 +52,13 @@ Ollama 설치 후 서버는 자동으로 `localhost:11434` 에서 뜬다.
 4. **인제스트 대상 12개 DB/페이지를 그 통합과 공유** (각 DB 우상단 ··· → 연결 추가 → 통합 선택)
    - 대상 목록·ID 는 `lib/sources.ts` 참고 (AI 사전·PROTOCOL·RULEBOOK·SUMMARY·지식허브·인물·키워드·헌법·취향·EXEC LOG·RETROSPECT·RESOURCE)
 
-### 3. 인프라 (이미 완료 — 재기동 시 참고)
+### 3. 선택 인프라 (벡터 검색을 사용할 때만)
 
 ```powershell
-# Qdrant 가 꺼져 있으면:
+# Docker와 기존 qdrant 컨테이너가 있는 경우:
 docker start qdrant
-# 최초 1회였다면: docker run -d --name qdrant -p 6333:6333 -p 6334:6334 -v qdrant_data:/qdrant/storage qdrant/qdrant
+# 최초 1회라면 Docker 설치 후:
+# docker run -d --name qdrant -p 6333:6333 -p 6334:6334 -v qdrant_data:/qdrant/storage qdrant/qdrant
 
 npm install                 # 의존성 (이미 완료)
 npm run init:collections    # 컬렉션 4개 보장 (멱등, 이미 완료)
@@ -101,15 +103,15 @@ npm run vhk -- goal list
 
 | # | 항목 | 상태 |
 |---|---|---|
-| 1 | Qdrant localhost:6333 응답 | 🟢 통과 |
-| 2 | 컬렉션 4개 생성 | 🟢 통과 |
+| 1 | Qdrant localhost:6333 응답 | ⚪ 현재 미가동 |
+| 2 | 컬렉션 4개 생성 | ⚪ Qdrant 연결 후 확인 |
 | 3 | bge-m3 1024차원 | ⏳ Ollama 설치 후 |
 | 4 | localhost:3001 대시보드 렌더 | 🟢 통과 |
 | 5 | AI 사전 인제스트(버튼) | ⏳ Ollama+토큰 후 |
 | 6 | "온톨로지와 비슷한 개념" 검색 ≥3 | ⏳ 인제스트 후 |
 | 7 | PROTOCOL → system_rules | ⏳ Ollama+토큰 후 |
 | 8 | "코드 작성 규칙" 검색 | ⏳ 인제스트 후 |
-| 9 | 4 컬렉션 건수 실시간 표시 | 🟢 통과 |
+| 9 | 4 컬렉션 건수 실시간 표시 | ⚪ Qdrant 연결 후 확인 |
 | 10 | Notion 실패 시 중단 없이 계속 | 🟢 통과 (엔진 레코드별 try/catch + status graceful) |
 
 ---

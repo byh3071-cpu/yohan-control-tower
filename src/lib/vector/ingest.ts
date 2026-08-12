@@ -35,6 +35,7 @@ import {
   getMaxLastEditedTime,
 } from './qdrant'
 import { getProducer } from './producers'
+import { isSameOriginRequest } from '@/lib/inbox-controller'
 
 /** 한 레코드에서 나오는 의미 단위. 각 piece 가 청킹되어 1개 이상의 sub-chunk 가 된다. */
 export interface IngestUnit {
@@ -286,7 +287,10 @@ export async function ingestAllIncremental(
 
 /** 라우트 핸들러 팩토리: POST → 단일 소스 인제스트. */
 export function ingestHandler(slug: string) {
-  return async function POST(): Promise<Response> {
+  return async function POST(request: Request): Promise<Response> {
+    if (!isSameOriginRequest(request)) {
+      return Response.json({ error: '로컬 same-origin 요청만 허용합니다.' }, { status: 403 })
+    }
     try {
       const summary = await ingestBySlug(slug)
       return Response.json(summary)
@@ -299,7 +303,10 @@ export function ingestHandler(slug: string) {
 
 /** 라우트 핸들러 팩토리: POST → Tier 전체 인제스트(순차). */
 export function ingestTierHandler(tier: 1 | 2 | 3) {
-  return async function POST(): Promise<Response> {
+  return async function POST(request: Request): Promise<Response> {
+    if (!isSameOriginRequest(request)) {
+      return Response.json({ error: '로컬 same-origin 요청만 허용합니다.' }, { status: 403 })
+    }
     const results: IngestSummary[] = []
     for (const cfg of sourcesByTier(tier)) {
       try {
