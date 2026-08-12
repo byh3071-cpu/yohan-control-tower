@@ -525,9 +525,11 @@ export function YohanInboxPanel({ onSaved }: Props) {
         </section>
       </div>
 
-      <details className="order-1 border-b border-border lg:order-2 lg:border-b-0 lg:border-t" open>
-        <summary className="flex min-h-11 cursor-pointer items-center px-4 text-[10px] text-muted-foreground hover:bg-accent/30">
-          Focus Feed 지식 검토
+      <details className="order-1 border-b border-border bg-background/55 lg:order-2 lg:border-b-0 lg:border-t" open>
+        <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 px-4 text-sm font-semibold text-foreground hover:bg-accent/40">
+          <Inbox size={15} aria-hidden />
+          <span>지식 검토</span>
+          <span className="ml-auto text-[10px] font-normal text-muted-foreground">Focus Feed에서 담은 자료</span>
         </summary>
         <div className="p-4 pt-1">
           <KnowledgeReviewPanel />

@@ -1,3 +1,5 @@
+import { Loader2, Play } from 'lucide-react'
+
 interface Props {
   label: string
   collection: string
@@ -5,15 +7,7 @@ interface Props {
   running: boolean
   disabled: boolean
   onRun: () => void
-  /** Qdrant max(last_edited_time) — 마지막 인제스트 시각 프록시. */
   lastEditedTime?: string | null
-}
-
-const COLLECTION_COLOR: Record<string, string> = {
-  knowledge_base: 'text-sky-400',
-  system_rules: 'text-amber-400',
-  semantic_cache: 'text-fuchsia-400',
-  execution_history: 'text-emerald-400',
 }
 
 export default function IngestButton({
@@ -26,22 +20,20 @@ export default function IngestButton({
   lastEditedTime = null,
 }: Props) {
   return (
-    <div className="flex flex-col justify-between rounded-md border border-zinc-800 bg-zinc-900/60 p-3">
+    <div className="flex flex-col justify-between rounded-xl border border-border bg-card p-4 shadow-sm">
       <div>
-        <div className="text-sm font-semibold text-zinc-100">{label}</div>
-        <div className="mt-0.5 text-[11px] text-zinc-500">{expected}건 예상</div>
-        <div className={`mt-0.5 text-[10px] ${COLLECTION_COLOR[collection] ?? 'text-zinc-400'}`}>{collection}</div>
-        <div className="mt-0.5 text-[10px] text-zinc-600">
-          마지막 인제스트: {lastEditedTime ?? '—'}
-        </div>
+        <div className="text-sm font-semibold text-foreground">{label}</div>
+        <div className="mt-1 text-[11px] text-muted-foreground">예상 {expected}건 · {collection}</div>
+        <div className="mt-1 text-[10px] text-muted-foreground">마지막 동기화 {lastEditedTime ?? '없음'}</div>
       </div>
       <button
         type="button"
         onClick={onRun}
         disabled={disabled || running}
-        className="mt-2 rounded bg-zinc-800 px-2 py-1 text-xs font-medium text-zinc-100 transition hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-40"
+        className="mt-4 inline-flex min-h-11 items-center justify-center gap-1.5 rounded-lg border border-border bg-background px-3 text-xs font-semibold text-foreground transition hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
       >
-        {running ? '⏳ 진행중...' : '실행'}
+        {running ? <Loader2 size={13} className="animate-spin" aria-hidden /> : <Play size={13} aria-hidden />}
+        {running ? '진행 중' : '실행'}
       </button>
     </div>
   )

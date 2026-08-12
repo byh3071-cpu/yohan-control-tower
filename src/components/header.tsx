@@ -1,6 +1,6 @@
 "use client"
 
-import { Moon, Sun, Command, Search, PanelLeft } from "lucide-react"
+import { Moon, Sun, Command, Search, PanelLeft, Inbox } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useTheme } from "@/components/theme-provider"
 import { cn } from "@/lib/utils"
@@ -8,13 +8,14 @@ import type { Stats } from "@/lib/types"
 
 interface HeaderProps {
   onOpenSearch: () => void
+  onOpenKnowledgeReview?: () => void
   onOpenMobileNav?: () => void
   stats: Stats
-  /** 관리 대상인데 status가 빈 문서 수. 0이면 표시하지 않는다 */
+  /** 아직 상태가 지정되지 않은 관리 문서 수. 0이면 표시하지 않는다. */
   gaps?: number
 }
 
-export function Header({ onOpenSearch, onOpenMobileNav, stats, gaps = 0 }: HeaderProps) {
+export function Header({ onOpenSearch, onOpenKnowledgeReview, onOpenMobileNav, stats, gaps = 0 }: HeaderProps) {
   const { theme, toggle } = useTheme()
 
   // 헤더 한 줄에 상주하는 지표. 카드 5장을 한 줄로 접었다 — 문서 목록에 세로 공간을 준다.
@@ -71,13 +72,26 @@ export function Header({ onOpenSearch, onOpenMobileNav, stats, gaps = 0 }: Heade
                 "flex items-baseline gap-1.5 whitespace-nowrap",
                 "text-amber-600 dark:text-amber-400"
               )}
-              title="관리 문서 status 미기입"
+              title="상태를 지정해야 하는 관리 문서"
             >
-              <span>status 구멍</span>
+              <span>정리 필요</span>
               <span className="font-semibold tabular-nums tracking-tight">{gaps}</span>
             </span>
           )}
         </div>
+        {onOpenKnowledgeReview ? (
+          <Button
+            type="button"
+            variant="ghost"
+            className="h-11 gap-1.5 px-2 text-xs sm:px-3"
+            onClick={onOpenKnowledgeReview}
+            aria-label="지식 검토 열기"
+            title="Focus Feed에서 담은 지식 검토"
+          >
+            <Inbox size={16} />
+            <span className="hidden min-[430px]:inline">지식 검토</span>
+          </Button>
+        ) : null}
         <Button
           variant="ghost"
           size="icon"

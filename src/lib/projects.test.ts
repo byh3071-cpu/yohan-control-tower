@@ -4,6 +4,7 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import test from "node:test"
 
+import { parseProjectsDocument } from "./ecosystem-projects"
 import { buildProjectDetail, buildProjectsPayload } from "./projects"
 
 async function fixture() {
@@ -28,6 +29,39 @@ projects:
   beta: { mission: ecosystem, status: planned }
   undecided: { mission: unassigned, reason: needs_owner_decision }
 `
+
+test("프로젝트 원장 YAML 오류는 파서 내부 위치를 노출하지 않는다", () => {
+  assert.throws(
+    () => parseProjectsDocument(`
+schema: projects
+schema_version: 1
+status: active
+missions:
+  life: { label_ko: "삶", unit: task }
+projects:
+  broken:{ mission: life, status: active, role_ko: "테스트" }
+`),
+    (error: unknown) => {
+      assert.ok(error instanceof Error)
+      assert.equal(error.message, "프로젝트 원장 YAML 문법 오류입니다. Brain의 memory/core/projects.yaml을 확인하세요.")
+      assert.doesNotMatch(error.message, /line|column|Nested mappings/i)
+      return true
+    },
+  )
+})
+
+test("한 Goal의 잘못된 frontmatter가 프로젝트 지도 전체를 막지 않는다", async (t) => {
+  const dirs = await fixture()
+  t.after(() => rm(dirs.root, { recursive: true, force: true }))
+  await writeFile(join(dirs.brain, "memory", "core", "projects.yaml"), TAXONOMY, "utf8")
+  await mkdir(join(dirs.repos, "alpha", "goals"), { recursive: true })
+  await writeFile(join(dirs.repos, "alpha", "goals", "broken.md"), "---\ntype: goal\ntitle: [broken\n---\n", "utf8")
+
+  const payload = await buildProjectsPayload(dirs.brain, dirs.repos)
+  const alpha = payload.missions.flatMap((mission) => mission.projects).find((project) => project.name === "alpha")
+  assert.equal(payload.ok, true)
+  assert.equal(alpha?.tasks.byStatus.INVALID, 1)
+})
 
 test("미션→프로젝트 목록은 로컬·미클론과 Goal 집계를 구분한다", async (t) => {
   const dirs = await fixture()
