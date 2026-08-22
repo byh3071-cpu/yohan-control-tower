@@ -1,8 +1,8 @@
 # DesignContext: 요한 관제탑 vNext
 
-- Context version: 0.1
-- State: exploring
-- Owner repository and branch/ref: `yohan-control-tower@cf61612c6b1cdfaa531669d21ddfe14c96dc07e4`, branch `codex/control-tower-design-direction`
+- Context version: 0.2
+- State: selected
+- Owner repository and branch/ref: `yohan-control-tower@d3f33ec0f0b41bfc295c6f895b3fcc697ff05c28`, branch `codex/control-tower-design-direction`
 - Last verified at: 2026-08-22 (Asia/Seoul)
 - Design owner / final approver: 사용자
 
@@ -10,6 +10,7 @@
 
 - **Observed** — 제품의 한 줄 목적은 Yohan Brain을 읽어 미션·프로젝트·Goal·문서·벡터를 관제하는 로컬 전용 운영 프론트다.
 - **Approved** — 새 디자인은 생태계와 현재 자산을 먼저 조사하고, 사용자가 세 시안 중 방향을 정한 뒤 구현한다.
+- **Approved** — 세 시안 중 3안의 `어두운 셸 + 밝은 작업면 + 명확한 도구 아이콘`을 기본 방향으로 사용하고 2안의 문서 관계 표현을 결합한다.
 - **Proposed** — 첫 화면은 “지금 무엇을 이어가고, 무엇을 승인하고, 어디가 막혔는가”를 한 번에 결정하게 한다.
 - **Non-goal** — Notion이나 Brain을 대체하거나, 클라우드 배포 제품을 만들거나, 원시 벡터 운영 정보를 기본 홈에 노출하지 않는다.
 - **Non-goal** — 시각 방향 선택 전 production UI를 수정하지 않는다.
@@ -42,6 +43,8 @@
 - **Observed** — 현재 Home과 문서 도구에서 10–13px 텍스트를 광범위하게 사용한다.
 - **Observed** — 공통 디자인 규칙은 본문 16px 이상, 보조 문구 14px 이상, line-height 1.6 이상을 요구한다. 현재 구현과 충돌한다.
 - **Inferred** — 제품 기능은 충분하지만 Home, 전역 탭, 문서 사이드바, 명령 실행이 서로 다른 우선순위를 동시에 요구해 인지 비용이 커졌다.
+- **Approved** — 새 상위 탐색은 `지금 / 프로젝트 / 지식·자산 / 스킬·도구 / 운영 기록` 다섯 개로 구성하고, Vector·명령 실행은 `시스템 상태`와 명령 팔레트로 내린다.
+- **Approved** — 항목 선택 시 우측 `작업 맥락`은 화면 위에 뜨는 임시 서랍이 아니라 본문과 같은 시작선·세로 구분선·스크롤 규칙을 쓰는 전용 검사 열로 구성한다.
 
 ## Existing design system and assets
 
@@ -50,6 +53,7 @@
 - **Observed** — 과거 승인 시안은 저채도 다크 배경, 얇은 구분선, 넓은 여백, 파란 선택 강조, 임시 우측 context peek를 사용한다.
 - **Observed** — 과거 승인 문서는 캡처 중심 화면을 기본 홈으로 정했지만 현재 PRD와 코드는 오늘의 행동·미션 관제로 진화했다.
 - **Proposed** — 과거 시안은 시각 언어와 선택 시 context peek 패턴의 참고 자산으로 사용하고, 현재 홈 구조의 복제 대상으로 사용하지 않는다.
+- **Approved** — 3안의 선명한 Lucide 계열 항목 아이콘과 실제 도구 브랜드 아이콘을 유지한다. 이모지·텍스트 기호·임의 SVG는 사용하지 않는다.
 
 ## Information and content contracts
 
@@ -57,6 +61,8 @@
 - **Observed** — Brain은 정본이고 Notion은 사람용 뷰·모바일 인박스다. Qdrant는 파생 벡터 인프라다.
 - **Observed** — 상태 숫자는 출처, 소유자, 마지막 갱신 또는 unknown을 함께 표현해야 한다.
 - **Proposed** — Home의 우선순위는 `결정/승인 → 이어가기 → 막힘 → 오늘 일정 → 미션 지평선 → 시스템 이상` 순으로 구성한다.
+- **Approved** — `design-team` 같은 복합 스킬은 전체 프롬프트 대신 역할·사용 스킬·참조 문서·최근 근거·관계·다음 일정만 요약한다.
+- **Approved** — 문서 라이브러리, 디자인 지식, 스킬·에이전트, 시안, 결정, 일정은 별도 복제본이 아니라 관계와 역링크로 연결한다.
 
 ## Technical and operational constraints
 
@@ -92,22 +98,27 @@
 
 - **Approved 2026-08-22** — 디자인 조사·시안·토큰·UX·기술 명세를 독립 worktree에서 진행한다.
 - **Approved 2026-08-22** — 범용 Design Team 방식으로 프로젝트 컨텍스트를 먼저 만들고 사용자 선택 전 구현하지 않는다.
+- **Approved 2026-08-22** — 시각 방향은 3안을 기본으로 하고 2안의 문서·관계 표현을 결합한다.
+- **Approved 2026-08-22** — 우측 `작업 맥락`의 과도한 상단 여백과 overlay 느낌을 제거하고 본문과 정렬된 전용 검사 열로 다듬는다.
+- **Approved 2026-08-22** — 에이전트와 스킬은 내부 프롬프트를 노출하지 않고 `무엇을 맡는가 / 무엇을 사용했는가 / 무엇을 남겼는가`만 표현한다.
 - **Observed** — Home은 한 화면, 상위 탭은 다섯 개 이하, AI 행동은 제안과 사람 승인을 분리한다.
 
 ## Rejected or deferred decisions
 
-- **Deferred** — 과거 캡처 중심 승인 시안을 현재 Home의 최종안으로 그대로 사용하지 않는다. 새 비교안 선택 후 supersede 여부를 결정한다.
+- **Deferred** — 과거 캡처 중심 승인 시안을 현재 Home의 최종안으로 그대로 사용하지 않는다. 시각 언어와 선택 상태 패턴만 계승한다.
 - **Deferred** — Vector를 상위 탭에서 제거할지는 사용 빈도 증거가 부족하므로 먼저 고급 진단으로 숨기는 방향을 비교한다.
 - **Rejected** — 출처 없는 생산성 수치, 장식용 차트, 여섯 번째 상위 탭, 화면마다 중복되는 빠른 실행 목록.
+- **Rejected** — 전체 시스템 프롬프트, 비밀 설정, 장문의 에이전트 컨텍스트를 상세 패널에 그대로 노출하는 구성.
+- **Rejected** — 우측 패널이 전역 헤더 아래에서 어색하게 시작하거나 본문 위를 덮어 선택 행과 관계가 끊기는 구성.
 
 ## Open questions and contradictions
 
-- **Open** — 홈의 주인공을 단일 `이어가기` 행동으로 할지, 승인 큐를 동급으로 둘지 사용자가 시안에서 선택해야 한다.
-- **Open** — 기본 테마가 과거 승인 다크인지, 현재 구현 라이트인지 선택이 필요하다.
-- **Open** — 높은 정보 밀도와 16/14px 가독성 사이의 균형을 시안으로 비교해야 한다.
-- **Contradiction** — 과거 승인 문서의 capture-first와 현재 PRD의 “지금 뭐 하나”가 충돌한다. 현재 요청은 새 탐색을 승인했으므로 둘을 별도 방향으로 비교한다.
+- **Open** — 우측 검사 열의 기본 폭을 360px로 고정할지 344–400px 범위에서 사용자가 조절하게 할지 구현 전 확인한다.
+- **Open** — 캘린더 전체 화면의 기본 보기를 주간으로 할지 월간으로 할지 실제 일정 밀도로 검증한다.
+- **Open** — 관계는 목록형 경로를 기본으로 하고, 작은 그래프 보기를 보조 기능으로 둘지 사용성 검증이 필요하다.
+- **Contradiction** — 과거 승인 문서의 capture-first와 현재 PRD의 “지금 뭐 하나”가 충돌한다. 새 방향은 Home에서는 “지금 뭐 하나”를 우선하고 capture는 전역 입력으로 축소한다.
 - **Unknown** — 실제 최근 일주일의 탭 사용 빈도와 불필요 화면 데이터는 없다. 삭제보다 hide/defer를 우선한다.
 
 ## Freshness and next verification
 
-세 시각 방향은 같은 1440×1024 viewport, 동일한 실제형 데이터, 동일한 핵심 과업을 사용한다. 사용자가 방향을 선택하면 이 문서의 상태를 `selected`로 바꾸고 결정 로그를 append한 뒤 상세 명세와 구현 파일 매핑을 시작한다.
+선택 방향을 반영한 단일 수정 시안을 1440×1024에서 다시 검토한다. 다음 사람 게이트는 우측 검사 열의 밀도·구성·관계 표현 승인이다. 승인 뒤에만 `handoff.md`와 구현 파일 매핑을 작성한다.
