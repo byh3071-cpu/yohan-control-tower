@@ -7,6 +7,7 @@ import type {
   KnowledgeReviewItem,
   KnowledgeReviewListResponse,
   KnowledgeReviewClaimType,
+  KnowledgeReviewDecisionReceipt,
   KnowledgeReviewStatus,
 } from "@/lib/types"
 
@@ -300,7 +301,7 @@ export function parseKnowledgeReviewDecision(value: unknown): { id: string; deci
 export async function submitKnowledgeReview(
   input: ReturnType<typeof parseKnowledgeReviewDecision>,
   deps: KnowledgeReviewDependencies = {},
-): Promise<{ status: number; body: Record<string, unknown> }> {
+): Promise<{ status: number; body: { ok: true; receipt: KnowledgeReviewDecisionReceipt } | { ok: false; error: string } }> {
   let args: string[]
   let stdin: string | undefined
   if (input.decision === "hold") args = ["defer", input.id]
@@ -313,5 +314,26 @@ export async function submitKnowledgeReview(
   const payload = await runKnowledgeCli(args, stdin, deps)
   assertCliSuccess(payload, "지식 검토 결정")
   if (payload.idempotent === true) return { status: 409, body: { ok: false, error: "이미 처리된 검토 항목입니다." } }
-  return { status: 200, body: { ok: true } }
+  const approved = input.decision === "approve" || input.decision === "approve_after_edit"
+  const outcome: KnowledgeReviewDecisionReceipt["outcome"] = approved
+    ? "approved"
+    : input.decision === "hold"
+      ? "held"
+      : input.decision === "reject"
+        ? "rejected"
+        : "reprocess_required"
+  return {
+    status: 200,
+    body: {
+      ok: true,
+      receipt: {
+        decision: input.decision,
+        outcome,
+        artifacts: {
+          resource: approved && typeof payload.resource_path === "string" && Boolean(payload.resource_path.trim()),
+          summary: approved && typeof payload.insight_path === "string" && Boolean(payload.insight_path.trim()),
+        },
+      },
+    },
+  }
 }

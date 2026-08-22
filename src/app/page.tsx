@@ -1,7 +1,8 @@
 "use client"
 
 import dynamic from "next/dynamic"
-import { useEffect, useState, useMemo, useCallback, useDeferredValue } from "react"
+import { useEffect, useState, useMemo, useCallback, useDeferredValue, useRef } from "react"
+import { X } from "lucide-react"
 import { Header } from "@/components/header"
 import { Sidebar } from "@/components/sidebar"
 import { DocCard } from "@/components/doc-card"
@@ -18,7 +19,7 @@ import { HomeView } from "@/components/home-view"
 import { ProjectView } from "@/components/project-view"
 import { VectorPanel } from "@/components/vector/VectorPanel"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { countByScope, docScope, matchesFilter, type DocFilter } from "@/lib/doc-scope"
+import { countByScope, docScope, findRecentApprovedKnowledge, matchesFilter, type DocFilter } from "@/lib/doc-scope"
 import { cn } from "@/lib/utils"
 import type { DocMeta, Stats, ChartData, GitCommit, DecisionEntry, SessionLog } from "@/lib/types"
 import {
@@ -105,6 +106,8 @@ export default function DashboardPage() {
   const [projectMission, setProjectMission] = useState<string | null>(null)
   const [docsMode, setDocsMode] = useState<DocsMode>("card")
   const [inboxOpen, setInboxOpen] = useState(true)
+  const knowledgeHeadingRef = useRef<HTMLHeadingElement>(null)
+  const knowledgeOpenButtonRef = useRef<HTMLButtonElement>(null)
   const [cmdOpen, setCmdOpen] = useState(false)
   const [loading, setLoading] = useState(true)
   const [dashboardError, setDashboardError] = useState<string | null>(null)
@@ -115,7 +118,7 @@ export default function DashboardPage() {
   const [constellationNebula, setConstellationNebula] = useState(true)
   const [constellationMode, setConstellationMode] = useState<"2d" | "3d">("2d")
 
-  const loadDashboard = useCallback(async (fresh = false) => {
+  const loadDashboard = useCallback(async (fresh = false): Promise<DocMeta[] | null> => {
     const url = fresh ? `/api/docs?fresh=1&t=${Date.now()}` : `/api/docs?t=${Date.now()}`
     try {
       const r = await fetch(url, { cache: "no-store" })
@@ -125,21 +128,24 @@ export default function DashboardPage() {
         const message = typeof data.error === "string" ? data.error : `HTTP ${r.status}`
         if (data.setupRequired === true) {
           setDashboardError(message)
-          return
+          return null
         }
         throw new Error(message)
       }
-      setDocs(data.docs ?? [])
+      const nextDocs = Array.isArray(data.docs) ? data.docs as DocMeta[] : []
+      setDocs(nextDocs)
       setStats((prev) => data.stats ?? prev)
       setCharts((prev) => data.charts ?? prev)
       setChangelog(data.changelog ?? [])
       setDecisionEntries(data.decisions ?? [])
       setSessionLogs(data.sessions ?? [])
       setDashboardError(null)
+      return nextDocs
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error)
       setDashboardError(message)
       console.error(error)
+      return null
     }
   }, [])
 
@@ -207,6 +213,7 @@ export default function DashboardPage() {
   }, [docs])
 
   const filtered = useMemo(() => docs.filter((d) => matchesFilter(d, activeCategory)), [docs, activeCategory])
+  const recentApprovedKnowledge = useMemo(() => findRecentApprovedKnowledge(docs), [docs])
 
   /** status 미기입 — 헤더에서 바로 보이게 */
   const scopeCounts = useMemo(() => countByScope(docs), [docs])
@@ -299,6 +306,28 @@ export default function DashboardPage() {
     setMobileNavOpen(false)
   }, [])
 
+  const locateApprovedKnowledge = useCallback(async (itemId: string): Promise<string | null> => {
+    const nextDocs = await loadDashboard(true)
+    if (!nextDocs) throw new Error("문서 목록을 새로 불러오지 못했습니다.")
+    return nextDocs.find((doc) => doc.id === `knowledge-${itemId}` && doc.category === "insights")?.relPath ?? null
+  }, [loadDashboard])
+
+  const openApprovedKnowledge = useCallback((relPath: string) => {
+    setInboxOpen(false)
+    openDoc(relPath)
+  }, [openDoc])
+
+  const closeKnowledgeReview = useCallback(() => {
+    setInboxOpen(false)
+    window.requestAnimationFrame(() => knowledgeOpenButtonRef.current?.focus())
+  }, [])
+
+  useEffect(() => {
+    if (activeView !== "docs" || !inboxOpen) return
+    const frame = window.requestAnimationFrame(() => knowledgeHeadingRef.current?.focus())
+    return () => window.cancelAnimationFrame(frame)
+  }, [activeView, inboxOpen])
+
   if (loading) {
     return (
       <div className="h-screen flex items-center justify-center bg-background">
@@ -385,49 +414,78 @@ export default function DashboardPage() {
           {/* ── 문서 ── 카드/표/관계 3모드 + 인박스 */}
           {activeView === "docs" && (
             <>
-              <div className="shrink-0 flex flex-wrap items-center gap-2 border-b border-border/60 px-3 py-2">
-                <div className="flex rounded-md border border-border p-0.5">
-                  {DOCS_MODES.map((m) => (
+              <div className="flex min-h-14 shrink-0 flex-wrap items-center gap-3 border-b border-border/60 px-3 py-2 sm:px-4">
+                {inboxOpen ? (
+                  <>
+                    <div className="min-w-0 flex-1">
+                      <h1
+                        ref={knowledgeHeadingRef}
+                        tabIndex={-1}
+                        className="text-xl font-semibold tracking-[-0.025em] focus:outline-none sm:text-2xl"
+                      >
+                        지식 검토
+                      </h1>
+                      <p className="mt-1 text-sm leading-6 text-muted-foreground">Focus Feed에서 도착한 자료를 읽고, 근거를 확인한 뒤 지식으로 승격합니다.</p>
+                    </div>
                     <button
-                      key={m.id}
-                      onClick={() => setDocsMode(m.id)}
-                      aria-pressed={docsMode === m.id}
-                      className={cn(
-                        "rounded px-2.5 py-1 text-[11px] font-medium transition-colors focus-visible:ring-2 focus-visible:ring-ring",
-                        docsMode === m.id ? "bg-foreground/10 text-foreground" : "text-muted-foreground hover:text-foreground"
-                      )}
+                      type="button"
+                      onClick={closeKnowledgeReview}
+                      className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-lg border border-border bg-card px-3 text-sm font-medium text-foreground hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring"
                     >
-                      {m.label}
+                      <X size={16} aria-hidden /> 닫기
                     </button>
-                  ))}
-                </div>
-                <span className="text-[11px] text-muted-foreground">
-                  {CAT_LABEL[activeCategory] ?? activeCategory} · {filtered.length}건
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setInboxOpen((v) => !v)}
-                  aria-pressed={inboxOpen}
-                  className={cn(
-                    "ml-auto inline-flex min-h-11 items-center rounded-lg border px-3 text-xs font-semibold transition-colors",
-                    inboxOpen
-                      ? "border-foreground bg-foreground text-background"
-                      : "border-border bg-card text-foreground hover:bg-muted"
-                  )}
-                >
-                  {inboxOpen ? "지식 검토 닫기" : "지식 검토 열기"}
-                </button>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex rounded-md border border-border p-0.5">
+                      {DOCS_MODES.map((m) => (
+                        <button
+                          key={m.id}
+                          onClick={() => setDocsMode(m.id)}
+                          aria-pressed={docsMode === m.id}
+                          className={cn(
+                            "min-h-9 rounded px-3 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-ring",
+                            docsMode === m.id ? "bg-foreground/10 text-foreground" : "text-muted-foreground hover:text-foreground"
+                          )}
+                        >
+                          {m.label}
+                        </button>
+                      ))}
+                    </div>
+                    <span className="text-sm text-muted-foreground">
+                      {CAT_LABEL[activeCategory] ?? activeCategory} · {filtered.length}건
+                    </span>
+                    <button
+                      ref={knowledgeOpenButtonRef}
+                      type="button"
+                      onClick={() => setInboxOpen(true)}
+                      aria-label="지식 검토 열기"
+                      className="ml-auto inline-flex min-h-11 items-center rounded-lg border border-foreground bg-foreground px-3 text-sm font-semibold text-background transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      지식 검토
+                    </button>
+                  </>
+                )}
               </div>
 
               {inboxOpen && (
-                <div id="knowledge-review" className="max-h-[calc(100dvh-7.5rem)] shrink-0 scroll-mt-4 overflow-y-auto border-b border-border/60 px-3 py-3">
-                  <div className="mx-auto max-w-5xl">
-                    <YohanInboxPanel onSaved={() => void loadDashboard(true)} />
+                <div id="knowledge-review" className="min-h-0 flex-1 overflow-y-auto px-3 py-4 sm:px-4 sm:py-6">
+                  <div className="mx-auto max-w-6xl">
+                    <YohanInboxPanel
+                      onSaved={() => void loadDashboard(true)}
+                      onKnowledgeApproved={locateApprovedKnowledge}
+                      onOpenDoc={openApprovedKnowledge}
+                      recentApprovedKnowledge={recentApprovedKnowledge ? {
+                        title: recentApprovedKnowledge.title,
+                        summaryRelPath: recentApprovedKnowledge.summaryRelPath,
+                        artifacts: recentApprovedKnowledge.artifacts,
+                      } : null}
+                    />
                   </div>
                 </div>
               )}
 
-              {docsMode === "graph" ? (
+              {!inboxOpen && (docsMode === "graph" ? (
                 <div className="flex flex-1 min-h-0 flex-col overflow-hidden md:flex-row">
                   <div className="flex min-h-0 min-w-0 flex-1 flex-col border-border md:border-r">
                     <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-border/60 px-3 py-2">
@@ -576,7 +634,7 @@ export default function DashboardPage() {
                   </ScrollArea>
                   <DocPreview relPath={visibleDoc} onClose={() => setSelectedDoc(null)} fullscreenMobile />
                 </div>
-              )}
+              ))}
             </>
           )}
 

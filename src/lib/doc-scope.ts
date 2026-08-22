@@ -76,3 +76,34 @@ export function countByScope(docs: readonly DocMeta[]): ScopeCounts {
   }
   return { managed, collected: docs.length - managed, all: docs.length, gaps }
 }
+
+export interface RecentApprovedKnowledge {
+  title: string
+  summaryRelPath: string | null
+  artifacts: {
+    resource: boolean
+    summary: boolean
+  }
+}
+
+/** 승인 시각이 가장 최신인 RESOURCE를 기준으로 연결된 SUMMARY의 실제 존재를 확인합니다. */
+export function findRecentApprovedKnowledge(docs: readonly DocMeta[]): RecentApprovedKnowledge | null {
+  const resource = docs
+    .filter((doc) => doc.category === "url" && doc.approvedAt && /^ingest\/url\/knowledge-[0-9a-f-]+\.md$/i.test(doc.relPath))
+    .sort((left, right) => (right.approvedAt ?? "").localeCompare(left.approvedAt ?? ""))[0]
+  if (!resource) return null
+
+  const fileName = resource.relPath.split("/").at(-1)
+  if (!fileName) return null
+  const expectedSummaryPath = `ingest/insights/${fileName}`
+  const summary = docs.find((doc) => doc.category === "insights" && doc.relPath === expectedSummaryPath)
+
+  return {
+    title: summary?.title ?? resource.title,
+    summaryRelPath: summary?.relPath ?? null,
+    artifacts: {
+      resource: true,
+      summary: Boolean(summary),
+    },
+  }
+}

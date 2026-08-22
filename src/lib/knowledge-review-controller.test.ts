@@ -142,10 +142,49 @@ test("완료 항목 재승인은 409을 보존하고 메모는 stdin으로만 �
   assert.equal(idempotent.status, 409)
   let observedArgs: string[] = []
   let observedStdin = ""
-  const success = await submitKnowledgeReview(parseKnowledgeReviewDecision({ id: JOB_ID, decision: "approve_after_edit", note: "표현 수정" }), { runCli: async (args, stdin) => { observedArgs = args; observedStdin = stdin ?? ""; return { ok: true, resource_path: "private/resource.md", insight_path: "private/summary.md" } } })
+  const success = await submitKnowledgeReview(parseKnowledgeReviewDecision({ id: JOB_ID, decision: "approve_after_edit", note: "표현 수정" }), { runCli: async (args, stdin) => { observedArgs = args; observedStdin = stdin ?? ""; return { ok: true, resource_path: "private/resource.md", insight_path: "private/summary.md", approval_intent_hash: "private-hash" } } })
   assert.deepEqual(observedArgs, ["approve", JOB_ID, "--stdin"])
   assert.deepEqual(JSON.parse(observedStdin), { humanNote: "표현 수정" })
-  assert.deepEqual(success.body, { ok: true })
+  assert.deepEqual(success.body, {
+    ok: true,
+    receipt: {
+      decision: "approve_after_edit",
+      outcome: "approved",
+      artifacts: { resource: true, summary: true },
+    },
+  })
+  assert.equal(JSON.stringify(success.body).includes("private/"), false)
+  assert.equal(JSON.stringify(success.body).includes("private-hash"), false)
+})
+
+test("승인이 아닌 결정 영수증은 문서 생성을 주장하지 않는다", async () => {
+  const held = await submitKnowledgeReview(
+    parseKnowledgeReviewDecision({ id: JOB_ID, decision: "hold" }),
+    { runCli: async () => ({ ok: true, resource_path: "private/resource.md", insight_path: "private/summary.md" }) },
+  )
+  assert.deepEqual(held.body, {
+    ok: true,
+    receipt: {
+      decision: "hold",
+      outcome: "held",
+      artifacts: { resource: false, summary: false },
+    },
+  })
+})
+
+test("승인 응답에 실제 경로가 없으면 공개 영수증도 생성을 주장하지 않는다", async () => {
+  const approvedWithoutArtifacts = await submitKnowledgeReview(
+    parseKnowledgeReviewDecision({ id: JOB_ID, decision: "approve" }),
+    { runCli: async () => ({ ok: true }) },
+  )
+  assert.deepEqual(approvedWithoutArtifacts.body, {
+    ok: true,
+    receipt: {
+      decision: "approve",
+      outcome: "approved",
+      artifacts: { resource: false, summary: false },
+    },
+  })
 })
 
 test("검토 요청은 JSON content-type과 16KiB 본문 상한을 적용한다", async () => {

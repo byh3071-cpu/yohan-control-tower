@@ -154,6 +154,13 @@ function extractExcerpt(content: string, max = 120): string {
   return flat.length > max ? flat.slice(0, max) + "…" : flat
 }
 
+function extractApprovedAt(data: Record<string, unknown>): string | null {
+  const value = data.approved_at
+  if (typeof value === "string") return value.trim() || null
+  if (value instanceof Date && !Number.isNaN(value.getTime())) return value.toISOString()
+  return null
+}
+
 export async function listDocs(): Promise<DocMeta[]> {
   const allFiles: string[] = []
   for (const d of DOC_SCAN_PREFIXES) {
@@ -177,6 +184,7 @@ export async function listDocs(): Promise<DocMeta[]> {
         id: typeof data.id === "string" ? data.id : relPath,
         title,
         date: extractDate(data, fileName),
+        approvedAt: extractApprovedAt(data),
         tags: Array.isArray(data.tags) ? data.tags.map(String) : [],
         related: extractRelated(data),
         category: cat,

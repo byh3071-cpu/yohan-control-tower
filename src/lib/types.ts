@@ -13,6 +13,8 @@ export interface DocMeta {
   id: string
   title: string
   date: string | null
+  /** 사람 승인 시각. 승인 산출물에만 존재하며 같은 날짜 안의 최신 항목 판정에 사용합니다. */
+  approvedAt?: string | null
   tags: string[]
   /** Frontmatter `related` ids (kebab or note id) */
   related: string[]
@@ -506,6 +508,18 @@ export interface InboxDashboardResponse {
 }
 
 export type KnowledgeReviewDecision = "approve" | "approve_after_edit" | "hold" | "reject" | "reprocess_required"
+
+export type KnowledgeReviewDecisionOutcome = "approved" | "held" | "rejected" | "reprocess_required"
+
+/** 승인 API가 내부 경로·hash 없이 브라우저에 돌려주는 공개 영수증입니다. */
+export interface KnowledgeReviewDecisionReceipt {
+  decision: KnowledgeReviewDecision
+  outcome: KnowledgeReviewDecisionOutcome
+  artifacts: {
+    resource: boolean
+    summary: boolean
+  }
+}
 
 export type KnowledgeReviewStatus = "review_required" | "completed" | "held" | "rejected"
 

@@ -3,8 +3,9 @@ vhk_format: 1
 type: goal
 id: 13
 title: Focus Feed 지식 검토 근거와 정확히 1회 승인 증명
-status: IN_PROGRESS
+status: DONE
 priority: P0
+completed: 2026-08-22
 ---
 
 # Goal 13: Focus Feed 지식 검토 근거와 정확히 1회 승인 증명
