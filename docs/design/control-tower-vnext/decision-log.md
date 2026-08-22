@@ -39,3 +39,13 @@
 - Evidence: 사용자 주석 이미지 `codex-clipboard-uNqrNF.png`, `docs/design/control-tower-vnext/design-spec.md`
 - Consequences: 스킬, 문서, 디자인 지식, 일정이 동일한 선택·역링크 규칙을 공유한다. 숨겨야 하는 프롬프트·시크릿·설정은 UI 데이터 계약에서 제외한다.
 - Revisit trigger: 360px 검사 열에서 여섯 역할과 관계 경로가 과밀하거나, 본문 표가 1280px에서 핵심 열을 잃을 때
+
+## 2026-08-22 — 좌측 탐색과 자동화 자산 범위를 다시 탐색
+
+- Status: deferred
+- Decider: 사용자
+- Options considered: 기존 `지금 / 프로젝트 / 지식·자산 / 스킬·도구 / 운영 기록` / `작업` 중첩형 5영역 / 할 일·일정 각각 최상위
+- Decision and rationale: 할 일과 일정을 프로젝트와 별도로 바로 열 수 있어야 한다는 피드백과, 스킬 외 MCP·Hook·Rule·Script 등 전체 자산을 보여야 한다는 피드백을 반영해 정보구조 선택을 다시 연다. 다섯 상위 영역 상한은 유지하고 `작업` 아래 `할 일 / 일정 / 프로젝트`를 형제 보기로 두는 안을 우선 시각화한다.
+- Evidence: 2026-08-22 사용자 피드백, Agent Kit canonical catalog 197개, `research-round-2.md`
+- Consequences: 이전 5항목 결정은 새 화면군 선택 전까지 production handoff 근거로 사용하지 않는다. `스킬·도구`는 `자동화 자산`으로 확장하고 catalog·가용·검증 상태를 분리한다.
+- Revisit trigger: 사용자가 세 화면군에서 좌측 탐색과 자산 facet을 승인·수정·거절할 때

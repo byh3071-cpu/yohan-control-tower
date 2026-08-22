@@ -1,8 +1,8 @@
 # DesignContext: 요한 관제탑 vNext
 
-- Context version: 0.2
-- State: selected
-- Owner repository and branch/ref: `yohan-control-tower@d3f33ec0f0b41bfc295c6f895b3fcc697ff05c28`, branch `codex/control-tower-design-direction`
+- Context version: 0.3
+- State: exploring
+- Owner repository and branch/ref: `yohan-control-tower@7f118b1`, branch `codex/control-tower-design-direction`
 - Last verified at: 2026-08-22 (Asia/Seoul)
 - Design owner / final approver: 사용자
 
@@ -13,7 +13,7 @@
 - **Approved** — 세 시안 중 3안의 `어두운 셸 + 밝은 작업면 + 명확한 도구 아이콘`을 기본 방향으로 사용하고 2안의 문서 관계 표현을 결합한다.
 - **Proposed** — 첫 화면은 “지금 무엇을 이어가고, 무엇을 승인하고, 어디가 막혔는가”를 한 번에 결정하게 한다.
 - **Non-goal** — Notion이나 Brain을 대체하거나, 클라우드 배포 제품을 만들거나, 원시 벡터 운영 정보를 기본 홈에 노출하지 않는다.
-- **Non-goal** — 시각 방향 선택 전 production UI를 수정하지 않는다.
+- **Non-goal** — 이번 다중 화면 정보구조와 시각 방향을 사용자가 승인하기 전 production UI를 수정하지 않는다.
 
 ## Users and jobs to be done
 
@@ -45,6 +45,9 @@
 - **Inferred** — 제품 기능은 충분하지만 Home, 전역 탭, 문서 사이드바, 명령 실행이 서로 다른 우선순위를 동시에 요구해 인지 비용이 커졌다.
 - **Approved** — 새 상위 탐색은 `지금 / 프로젝트 / 지식·자산 / 스킬·도구 / 운영 기록` 다섯 개로 구성하고, Vector·명령 실행은 `시스템 상태`와 명령 팔레트로 내린다.
 - **Approved** — 항목 선택 시 우측 `작업 맥락`은 화면 위에 뜨는 임시 서랍이 아니라 본문과 같은 시작선·세로 구분선·스크롤 규칙을 쓰는 전용 검사 열로 구성한다.
+- **Observed** — Agent Kit canonical catalog는 197개이며 `skill 99 / script 29 / manifest 17 / rule 14 / agent 13 / hook 7 / config 5 / plugin 4 / command 4 / fixture 3 / mcp 1 / template 1`이다.
+- **Observed** — 기존 `스킬·도구` 시안은 12개 kind 전체를 수용하지 못하고, catalog lifecycle과 설치·runtime·검증을 같은 열 체계로 취급했다.
+- **Proposed** — 이전 다섯 항목을 `지금 / 작업 / 지식·디자인 / 자동화 자산 / 운영 기록`으로 재구성하고 데스크톱에서는 `작업` 아래 `할 일 / 일정 / 프로젝트`를 항상 보이는 형제 보기로 둔다.
 
 ## Existing design system and assets
 
@@ -54,6 +57,8 @@
 - **Observed** — 과거 승인 문서는 캡처 중심 화면을 기본 홈으로 정했지만 현재 PRD와 코드는 오늘의 행동·미션 관제로 진화했다.
 - **Proposed** — 과거 시안은 시각 언어와 선택 시 context peek 패턴의 참고 자산으로 사용하고, 현재 홈 구조의 복제 대상으로 사용하지 않는다.
 - **Approved** — 3안의 선명한 Lucide 계열 항목 아이콘과 실제 도구 브랜드 아이콘을 유지한다. 이모지·텍스트 기호·임의 SVG는 사용하지 않는다.
+- **Observed** — 생성 시안의 작은 아이콘 왜곡은 ImageGen 래스터 산출물의 표현 오류이며 실제 컴포넌트 자산 사용을 증명하지 못한다.
+- **Proposed** — 셸은 `#030405`에 가까운 진한 검정을 기본으로 하고, 밝은 작업면은 `#F7F7F5`, 선택 강조는 electric blue 한 색으로 제한한다.
 
 ## Information and content contracts
 
@@ -61,8 +66,10 @@
 - **Observed** — Brain은 정본이고 Notion은 사람용 뷰·모바일 인박스다. Qdrant는 파생 벡터 인프라다.
 - **Observed** — 상태 숫자는 출처, 소유자, 마지막 갱신 또는 unknown을 함께 표현해야 한다.
 - **Proposed** — Home의 우선순위는 `결정/승인 → 이어가기 → 막힘 → 오늘 일정 → 미션 지평선 → 시스템 이상` 순으로 구성한다.
-- **Approved** — `design-team` 같은 복합 스킬은 전체 프롬프트 대신 역할·사용 스킬·참조 문서·최근 근거·관계·다음 일정만 요약한다.
+- **Approved** — `design-team` 같은 복합 스킬은 전체 프롬프트 대신 역할·사용 스킬·참조 문서·최근 근거·검증된 관계만 요약한다.
 - **Approved** — 문서 라이브러리, 디자인 지식, 스킬·에이전트, 시안, 결정, 일정은 별도 복제본이 아니라 관계와 역링크로 연결한다.
+- **Observed** — 이전 시안의 `오늘 14:00`은 실제 Calendar 원장에서 읽은 값이 아니라 레이아웃 확인용 mock data였다.
+- **Proposed** — 자동화 자산 상세에는 검증된 Calendar 관계가 있을 때만 `관련 검토` 역링크를 표시하고, 관계가 없으면 섹션 전체를 숨긴다.
 
 ## Technical and operational constraints
 
@@ -116,9 +123,11 @@
 - **Open** — 우측 검사 열의 기본 폭을 360px로 고정할지 344–400px 범위에서 사용자가 조절하게 할지 구현 전 확인한다.
 - **Open** — 캘린더 전체 화면의 기본 보기를 주간으로 할지 월간으로 할지 실제 일정 밀도로 검증한다.
 - **Open** — 관계는 목록형 경로를 기본으로 하고, 작은 그래프 보기를 보조 기능으로 둘지 사용성 검증이 필요하다.
+- **Open** — `작업` 아래 `할 일 / 일정 / 프로젝트` 중첩 탐색이 독립 진입성과 5탭 상한을 함께 만족하는지 새 화면군에서 확인한다.
+- **Open** — `자동화 자산` 12 kind를 `실행 능력 / 연결·활성화 / 정책·패키징 / 검증·도구` 네 facet으로 묶는 명칭을 사용자가 승인해야 한다.
 - **Contradiction** — 과거 승인 문서의 capture-first와 현재 PRD의 “지금 뭐 하나”가 충돌한다. 새 방향은 Home에서는 “지금 뭐 하나”를 우선하고 capture는 전역 입력으로 축소한다.
 - **Unknown** — 실제 최근 일주일의 탭 사용 빈도와 불필요 화면 데이터는 없다. 삭제보다 hide/defer를 우선한다.
 
 ## Freshness and next verification
 
-선택 방향을 반영한 단일 수정 시안을 1440×1024에서 다시 검토한다. 다음 사람 게이트는 우측 검사 열의 밀도·구성·관계 표현 승인이다. 승인 뒤에만 `handoff.md`와 구현 파일 매핑을 작성한다.
+진한 블랙앤화이트 시각 언어로 `작업`, `자동화 자산`, `지식·디자인` 세 화면을 같은 1440×1024 조건에서 검토한다. 다음 사람 게이트는 좌측 중첩 탐색, 자산 facet, 검사 열 관계 표현의 선택이다. 승인 뒤에만 `handoff.md`와 구현 파일 매핑을 작성한다.
