@@ -27,9 +27,9 @@ Control Tower에서 Focus Feed 검토자가 사실·해석·제안을 구분해 
 - [x] 검토 UI가 핵심 요점과 사실·해석·제안을 분리해 표시한다.
 - [x] 문자열 alias 충돌·타입 위조·과도한 collection을 fail-closed로 차단한다.
 - [x] 390px 모바일과 데스크톱에서 검토 근거와 44px 주요 동작을 확인한다.
-- [ ] 사용자가 Control Tower UI에서 실제 항목 1건을 승인한다.
-- [ ] 승인 후 Brain RESOURCE·SUMMARY가 각각 1개이며 재승인에도 hash가 변하지 않는다.
-- [ ] typecheck·lint·test·build·VHK policy·비밀값 검사가 통과한다.
+- [x] 사용자가 Control Tower UI에서 실제 항목 1건을 승인한다.
+- [x] 승인 후 Brain RESOURCE·SUMMARY가 각각 1개이며 재승인에도 hash가 변하지 않는다.
+- [x] typecheck·lint·test·build·VHK policy·비밀값 검사가 통과한다.
 
 ## Forbidden
 
@@ -43,4 +43,6 @@ Control Tower에서 Focus Feed 검토자가 사실·해석·제안을 구분해 
 - `src/lib/knowledge-review-controller.ts`: 브라우저 허용목록, alias 일치, collection 상한, POST 응답 축소.
 - `src/components/knowledge-review-panel.tsx`: 핵심 요점, 주장 유형, 검증된 타임스탬프·근거, 사람 판단 표시.
 - `src/lib/knowledge-review-controller.test.ts`: 위조·충돌·상한·응답 노출 회귀 검사.
-- 실제 운영 검토 job: `218827c7-5d0d-40c1-bfc0-56cb858d1e1d` (승인 전 Brain 기록 0건 확인).
+- 실제 운영 검토 job: `2ce64944-0a81-4274-82bf-f7542e43d9ad` (사용자가 UI에서 승인, RESOURCE·SUMMARY 각 1개 생성).
+- 승인·멱등성 증거: `docs/log/2026-08-22-goal-13-approval-proof.md`.
+- 시각·적대검수 증거: `design-qa.md`, `docs/design/knowledge-review/captures/`.
