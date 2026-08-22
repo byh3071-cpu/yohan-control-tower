@@ -3,8 +3,9 @@ vhk_format: 1
 type: goal
 id: 2
 title: Focus Feed 지식 검토·승인 UI 연결
-status: NOT_STARTED
+status: DONE
 priority: P0
+completed: 2026-08-22
 ---
 
 # Goal 2: Focus Feed 지식 검토·승인 UI 연결
@@ -15,11 +16,11 @@ Focus Feed에서 담아 NotebookLM 근거 검사를 통과한 review 후보를 �
 
 ## 선행 게이트
 
-- [ ] yohan-control-tower PR #29의 최종 handoff·base commit 확인
-- [ ] PR #29의 Goal 1과 YohanInboxPanel·inbox-controller 계약 확인
-- [ ] yohan-brain PR #170 기준 확정
-- [ ] yohan-brain ADR-017이 Accepted
-- [ ] Brain Goal 18의 knowledge:reviews·knowledge:approve JSON 계약 고정
+- [x] yohan-control-tower PR #29의 최종 handoff·base commit 확인
+- [x] PR #29의 Goal 1과 YohanInboxPanel·inbox-controller 계약 확인
+- [x] yohan-brain PR #170 기준 확정
+- [x] yohan-brain ADR-017이 Accepted
+- [x] Brain Goal 18의 knowledge:reviews·knowledge:approve JSON 계약 고정
 
 선행 게이트가 충족되기 전에는 API·UI 코드를 만들지 않는다. Goal 1 기능을 복사하거나 별도 Inbox 앱을 만들지 않는다.
 
@@ -99,13 +100,15 @@ interface KnowledgeReviewItem {
 
 ## 완료 조건
 
-- [ ] 새 탭 없이 문서 인박스에서 지식 후보가 보인다.
-- [ ] 요약·근거·품질·불확실성·내 생각을 한 화면에서 확인한다.
-- [ ] 빈 내 생각과 4,000자 내 생각 승인이 모두 동작한다.
-- [ ] 승인 후 brain 파일 2개와 queue completed가 같은 성공을 의미한다.
-- [ ] 서비스 키·humanNote가 URL·argv·브라우저 로그에 나타나지 않는다.
-- [ ] 일반 Inbox Goal 1의 큐·승인 흐름이 회귀하지 않는다.
-- [ ] Notion API를 호출하지 않는다.
+- [x] 새 탭 없이 문서 인박스에서 지식 후보가 보인다.
+- [x] 요약·근거·품질·불확실성·내 생각을 한 화면에서 확인한다.
+- [x] 빈 내 생각과 4,000자 내 생각 승인이 모두 동작한다.
+- [x] 승인 후 brain 파일 2개와 queue completed가 같은 성공을 의미한다.
+- [x] 서비스 키·humanNote가 URL·argv·브라우저 로그에 나타나지 않는다.
+- [x] 일반 Inbox Goal 1의 큐·승인 흐름이 회귀하지 않는다.
+- [x] Notion API를 호출하지 않는다.
+
+> 완료 증거와 현행 승인 계약은 Goal 13 및 `docs/log/2026-08-22-goal-13-approval-proof.md`에서 이어서 관리한다.
 
 ## 악수
 
