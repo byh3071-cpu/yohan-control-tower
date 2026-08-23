@@ -1,8 +1,8 @@
 # DesignContext: 요한 관제탑 vNext
 
-- Context version: 0.4
+- Context version: 0.5
 - State: selected
-- Owner repository and branch/ref: `yohan-control-tower@4688b82`, branch `codex/control-tower-design-direction`
+- Owner repository and branch/ref: `yohan-control-tower@861c856`, branch `codex/control-tower-design-direction`
 - Last verified at: 2026-08-23 (Asia/Seoul)
 - Design owner / final approver: 사용자
 
@@ -62,6 +62,13 @@
 - **Rejected** — `#030405` 중심의 진한 검정 셸은 좌우 패널이 중앙 작업보다 먼저 보이고 경계가 과도해 다음 시안에서 사용하지 않는다.
 - **Approved** — Mova의 밝은 중립 셸을 이어 `#E7ECEE / #F7F9F9 / #172326 / #526367`을 기본으로 하고 hover `#EEF3F6`, selected `#E7EFF5`, focus `#146C94`를 제한적으로 쓴다.
 
+## Taste, forbidden patterns, and reference set
+
+- **Approved** — 관제탑에서 확인된 취향, 금지 패턴, 시안 계보, 짧은 진행 신호의 해석은 `taste-profile.md`를 정본으로 사용한다.
+- **Approved** — 범용 디자인 운영 방법은 Yohan Agent Kit `design-team`이 소유하고, 프로젝트별 취향과 결정은 이 저장소에만 둔다.
+- **Approved** — Candidate A는 다음 화면군의 공통 시각 기반이지만 최종 미감 승인이나 production 구현 승인을 뜻하지 않는다.
+- **Observed** — 새 디자인 세션은 `session-handoff.md`의 branch/ref·승인 상태·다음 행동을 되말해야 수신 완료로 본다.
+
 ## Information and content contracts
 
 - **Observed** — 계층은 `projects.yaml → <repo>/goals/*.md → .vhk/events/*.jsonl` 순으로 읽는다.
@@ -105,6 +112,8 @@
 | `docs/prototypes/control-tower-asset-validation/browser-qa.js` | executed 2026-08-23 | 6개 폭·두 variant·키보드·modal·breakpoint 회귀 검사 | project internal | prototype 변경 시 |
 | `docs/prototypes/control-tower-asset-validation/audit/browser-qa-results.json` | 178/178 pass | P0/P1 해소 수치와 오류 0건 | project internal | browser QA 재실행 시 |
 | `docs/prototypes/control-tower-asset-validation/audit/03-final-asset-detail-1440.png` | 1440×1024 capture | 선택 방향의 native desktop 상태 | project internal | 시각 방향 변경 시 |
+| `docs/design/control-tower-vnext/taste-profile.md` | v1.0 | 사용자 취향, 금지 패턴, 시안 계보 | project internal | 새 명시적 피드백 또는 방향 변경 시 |
+| `docs/design/control-tower-vnext/session-handoff.md` | v1.0 | 승인 상태, 다음 단일 작업, 세션 전달 영수증 | project internal | 세션 인수인계 또는 게이트 변경 시 |
 
 ## Accepted decisions
 
@@ -139,4 +148,4 @@
 
 ## Freshness and next verification
 
-`스킬·도구` native prototype은 6개 폭과 고의 오류 대조본을 포함한 기술 검증을 통과했다. 다음 사람 게이트는 사용자가 현재 목록 밀도·검사 열 정보 순서·릴리스 상태 반복을 유지할지 결정하는 것이다. 그 뒤 `작업`, `지식·디자인`, 캘린더를 같은 밝은 중립 셸과 관계 규칙으로 검토하고, 화면군 최종 승인 뒤에만 `handoff.md`와 production 구현 매핑을 작성한다.
+`스킬·도구` native prototype은 6개 폭과 고의 오류 대조본을 포함한 기술 검증을 통과했다. 새 세션은 Candidate A를 다시 탐색하지 않고 `지금` 화면의 정보 구조 세 대안부터 시작한다. 공통 시각 기반은 유지하되, 목록 밀도·검사 열 정보 순서·반복 상태의 최종 미감 승인은 아직 열려 있다. 화면군 최종 승인 뒤에만 production 구현 매핑을 작성한다.

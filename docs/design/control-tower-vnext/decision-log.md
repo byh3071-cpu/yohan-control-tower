@@ -1,5 +1,25 @@
 # 요한 관제탑 vNext 결정 로그
 
+## 2026-08-23 — 프로젝트 취향·운영·세션 인수인계 정본을 분리
+
+- Status: approved
+- Decider: 사용자
+- Options considered: 대화 기록에만 의존 / 범용 스킬에 프로젝트 취향 포함 / 프로젝트 Git에 취향·운영·인수인계 분리
+- Decision and rationale: 범용 방법은 Agent Kit `design-team`이, 관제탑 취향·결정·다음 행동은 프로젝트 Git이 소유한다. `taste-profile.md`, `design-operations-manual.md`, `session-handoff.md`를 통해 새 세션이 같은 맥락으로 시작하고 실제 수신 확인까지 남긴다.
+- Evidence: 사용자 인수인계 요청, Yohan Agent Kit Goal 14 세션 연속성 계약
+- Consequences: 해결된 취향을 새 세션에서 다시 묻지 않고, 전달 성공과 사용자 승인 상태를 분리한다.
+- Revisit trigger: 새 세션 forward test가 branch/ref·현재 게이트·다음 행동 중 하나를 복원하지 못할 때
+
+## 2026-08-23 — Candidate A를 다음 화면의 공통 시각 기반으로 사용
+
+- Status: approved · 최종 미감 승인 아님
+- Decider: 사용자
+- Options considered: 세 방향 재탐색 / Candidate A 기반 다음 화면 정보 구조 탐색
+- Decision and rationale: Candidate A는 2안의 간결한 골격·관계 표현과 3안의 행 밀도·아이콘을 Mova 밝은 중립 셸에 결합했고 기술 QA 178/178 및 독립 검수를 통과했다. 따라서 색·셸을 다시 흔들지 않고 `지금` 화면의 정보 구조를 비교한다.
+- Evidence: `docs/prototypes/control-tower-asset-validation/audit/browser-qa-results.json`, Claude Code 최종 검수, 사용자 후속 진행 요청
+- Consequences: production UI는 계속 보류한다. 목록 밀도와 검사 열 정보 순서는 다음 사용자 게이트에서 확정한다.
+- Revisit trigger: `지금` 화면 세 대안에서 공통 셸이 핵심 행동을 방해하거나 사용자가 명시적으로 방향 변경을 요청할 때
+
 ## 2026-08-22 — 디자인 탐색을 독립 worktree로 분리
 
 - Status: approved
