@@ -1,0 +1,1573 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="data:," />
+    <title>요한 관제탑 — 스킬·도구 구조 검증</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --fog: #e7ecee;
+        --paper: #f7f9f9;
+        --paper-strong: #ffffff;
+        --ink: #172326;
+        --slate: #526367;
+        --hairline: #ced8db;
+        --hover: #eef3f6;
+        --selected: #e7eff5;
+        --current: #146c94;
+        --current-dark: #0f5574;
+        --caution: #a84f18;
+        --danger: #a12a2a;
+        --success: #237a49;
+        --sidebar: 216px;
+        --inspector: 320px;
+        --topbar: 56px;
+        --radius: 8px;
+        font-family: Pretendard, Inter, "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        min-width: 320px;
+        min-height: 100%;
+        margin: 0;
+        background: var(--fog);
+        color: var(--ink);
+      }
+
+      body {
+        font-size: 16px;
+        line-height: 1.6;
+      }
+
+      button,
+      input {
+        color: inherit;
+        font: inherit;
+      }
+
+      button {
+        min-height: 44px;
+      }
+
+      button:focus-visible,
+      input:focus-visible,
+      [tabindex="0"]:focus-visible {
+        outline: 3px solid color-mix(in srgb, var(--current) 65%, white);
+        outline-offset: 2px;
+      }
+
+      .app {
+        min-height: 100vh;
+        display: grid;
+        grid-template:
+          "top top top" var(--topbar)
+          "nav main inspector" calc(100vh - var(--topbar))
+          / var(--sidebar) minmax(720px, 1fr) var(--inspector);
+        background: var(--paper);
+      }
+
+      .app.inspector-closed {
+        grid-template:
+          "top top" var(--topbar)
+          "nav main" calc(100vh - var(--topbar))
+          / var(--sidebar) minmax(720px, 1fr);
+      }
+
+      .topbar {
+        grid-area: top;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 0 20px;
+        background: var(--paper-strong);
+        border-bottom: 1px solid var(--hairline);
+      }
+
+      .brand {
+        font-size: 16px;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+      }
+
+      .top-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .close-inspector {
+        min-width: 44px;
+        padding: 0 12px;
+        border: 1px solid var(--hairline);
+        border-radius: var(--radius);
+        background: var(--paper-strong);
+        cursor: pointer;
+      }
+
+      .trap-label {
+        display: none;
+        min-height: 32px;
+        align-items: center;
+        padding: 0 10px;
+        border: 1px solid color-mix(in srgb, var(--caution) 30%, white);
+        border-radius: 999px;
+        color: var(--caution);
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      [data-variant="misleading"] .trap-label {
+        display: inline-flex;
+      }
+
+      .sidebar {
+        grid-area: nav;
+        min-width: 0;
+        display: grid;
+        grid-template-rows: 1fr auto;
+        overflow: auto;
+        background: var(--paper-strong);
+        border-right: 1px solid var(--hairline);
+      }
+
+      .nav-list,
+      .nav-children,
+      .utility-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+
+      .nav-list {
+        padding: 18px 12px;
+      }
+
+      .nav-item,
+      .utility-item,
+      .nav-child {
+        width: 100%;
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        padding: 0 14px;
+        border: 0;
+        border-radius: var(--radius);
+        background: transparent;
+        text-align: left;
+        cursor: pointer;
+      }
+
+      .nav-item:hover,
+      .utility-item:hover,
+      .nav-child:hover {
+        background: var(--hover);
+      }
+
+      .nav-item[aria-current="page"] {
+        background: var(--selected);
+        color: var(--current-dark);
+        font-weight: 700;
+      }
+
+      .nav-children {
+        margin: 2px 0 8px 20px;
+      }
+
+      .nav-child {
+        min-height: 40px;
+        color: var(--slate);
+        font-size: 14px;
+      }
+
+      .utility-list {
+        margin: 0 12px;
+        padding: 12px 0 16px;
+        border-top: 1px solid var(--hairline);
+      }
+
+      .main {
+        grid-area: main;
+        min-width: 0;
+        overflow: auto;
+        padding: 34px 32px 56px;
+        background: var(--paper);
+      }
+
+      .content-head {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 24px;
+        margin-bottom: 26px;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin-top: 0;
+      }
+
+      h1 {
+        margin-bottom: 6px;
+        font-size: 24px;
+        line-height: 32px;
+        letter-spacing: -0.025em;
+      }
+
+      .subtitle {
+        margin-bottom: 0;
+        color: var(--slate);
+        font-size: 16px;
+        line-height: 26px;
+      }
+
+      .snapshot {
+        color: var(--slate);
+        font-size: 14px;
+        white-space: nowrap;
+      }
+
+      .toolbar {
+        display: grid;
+        gap: 14px;
+        margin-bottom: 18px;
+      }
+
+      .filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      .more-wrap {
+        position: relative;
+        flex: 0 0 auto;
+      }
+
+      .filter-button {
+        min-height: 40px;
+        padding: 0 12px;
+        border: 0;
+        border-bottom: 2px solid transparent;
+        background: transparent;
+        color: var(--slate);
+        cursor: pointer;
+      }
+
+      .filter-button:hover {
+        background: var(--hover);
+      }
+
+      .filter-button[aria-pressed="true"] {
+        border-bottom-color: var(--current);
+        color: var(--ink);
+        font-weight: 700;
+      }
+
+      .more-menu {
+        position: absolute;
+        z-index: 5;
+        top: calc(100% + 6px);
+        left: 0;
+        width: 292px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        padding: 8px;
+        border: 1px solid var(--hairline);
+        border-radius: 10px;
+        background: var(--paper-strong);
+        box-shadow: 0 10px 28px rgb(23 35 38 / 12%);
+      }
+
+      .more-menu:not([hidden]) {
+        display: grid;
+      }
+
+      .more-menu[hidden] {
+        display: none;
+      }
+
+      .more-menu button {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 0 10px;
+        border: 0;
+        border-radius: 6px;
+        background: transparent;
+        cursor: pointer;
+      }
+
+      .more-menu button:hover {
+        background: var(--hover);
+      }
+
+      .more-menu button[aria-pressed="true"] {
+        background: var(--selected);
+        color: var(--current-dark);
+        font-weight: 700;
+      }
+
+      .search-wrap {
+        position: relative;
+      }
+
+      .search-wrap label {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+      }
+
+      .search-input {
+        width: 100%;
+        min-height: 46px;
+        padding: 0 16px;
+        border: 1px solid var(--hairline);
+        border-radius: var(--radius);
+        background: var(--paper-strong);
+      }
+
+      .asset-table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+        background: transparent;
+      }
+
+      .asset-table th {
+        height: 46px;
+        padding: 0 12px;
+        border-bottom: 1px solid var(--hairline);
+        color: var(--slate);
+        font-size: 14px;
+        font-weight: 600;
+        text-align: left;
+      }
+
+      .sort-button {
+        width: 100%;
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        color: inherit;
+        font-weight: inherit;
+        text-align: left;
+        cursor: pointer;
+      }
+
+      .sort-button:hover {
+        color: var(--ink);
+      }
+
+      .sort-state {
+        color: var(--current-dark);
+        font-weight: 700;
+      }
+
+      .mobile-sort {
+        display: none;
+      }
+
+      .asset-table th:nth-child(1) {
+        width: 30%;
+      }
+
+      .asset-table th:nth-child(2) {
+        width: 15%;
+      }
+
+      .asset-table th:nth-child(3) {
+        width: 16%;
+      }
+
+      .asset-table th:nth-child(4) {
+        width: 21%;
+      }
+
+      .asset-table th:nth-child(5) {
+        width: 18%;
+      }
+
+      .asset-row {
+        height: 62px;
+        border-bottom: 1px solid var(--hairline);
+        cursor: pointer;
+      }
+
+      .asset-row:hover {
+        background: var(--hover);
+      }
+
+      .asset-row[data-selected="true"] {
+        background: var(--selected);
+      }
+
+      .asset-row td {
+        padding: 10px 12px;
+        overflow-wrap: anywhere;
+        vertical-align: middle;
+      }
+
+      .asset-select {
+        width: 100%;
+        min-height: 44px;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        text-align: left;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .state-unknown {
+        color: var(--slate);
+      }
+
+      .state-installed {
+        color: var(--success);
+        font-weight: 700;
+      }
+
+      .empty-state {
+        padding: 48px 20px;
+        color: var(--slate);
+        text-align: center;
+      }
+
+      .inspector {
+        grid-area: inspector;
+        min-width: 0;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        overflow: hidden;
+        background: var(--paper-strong);
+        border-left: 1px solid var(--hairline);
+      }
+
+      .inspector-backdrop {
+        display: none;
+      }
+
+      .inspector[hidden] {
+        display: none;
+      }
+
+      .inspector-head {
+        position: relative;
+        padding: 24px 20px 20px;
+        border-bottom: 1px solid var(--hairline);
+      }
+
+      .inspector-eyebrow {
+        margin: 0 48px 6px 0;
+        color: var(--current-dark);
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 20px;
+      }
+
+      .inspector-head h2 {
+        margin: 0 48px 6px 0;
+        font-size: 22px;
+        line-height: 30px;
+        letter-spacing: -0.015em;
+        overflow-wrap: anywhere;
+      }
+
+      .inspector-head p {
+        margin-bottom: 18px;
+        color: var(--slate);
+        font-size: 16px;
+        line-height: 26px;
+      }
+
+      .close-inspector {
+        position: absolute;
+        top: 18px;
+        right: 16px;
+      }
+
+      .status-summary {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1px;
+        overflow: hidden;
+        border: 1px solid var(--hairline);
+        border-radius: var(--radius);
+        background: var(--hairline);
+      }
+
+      .status-summary-item {
+        min-width: 0;
+        padding: 10px 12px;
+        background: var(--paper);
+      }
+
+      .status-summary-label,
+      .status-summary-value {
+        display: block;
+      }
+
+      .status-summary-label {
+        margin-bottom: 2px;
+        color: var(--slate);
+        font-size: 14px;
+        line-height: 20px;
+      }
+
+      .status-summary-value {
+        font-size: 15px;
+        font-weight: 700;
+        line-height: 22px;
+        overflow-wrap: anywhere;
+      }
+
+      .inspector-body {
+        overflow: auto;
+        padding: 0 20px 28px;
+      }
+
+      .detail-section {
+        padding: 22px 0;
+        border-bottom: 1px solid var(--hairline);
+      }
+
+      .detail-section:last-child {
+        border-bottom: 0;
+      }
+
+      .detail-section h3 {
+        margin-bottom: 12px;
+        font-size: 15px;
+        line-height: 22px;
+        font-weight: 700;
+      }
+
+      .detail-grid {
+        display: grid;
+        gap: 12px;
+        margin: 0;
+      }
+
+      .detail-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+        gap: 12px;
+        align-items: start;
+        font-size: 14px;
+      }
+
+      .detail-row dt {
+        color: var(--slate);
+      }
+
+      .detail-row dd {
+        margin: 0;
+        overflow-wrap: anywhere;
+        text-align: right;
+      }
+
+      .item-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        gap: 10px;
+        font-size: 14px;
+      }
+
+      .item-list li {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .client-note {
+        color: var(--slate);
+      }
+
+      .client-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        gap: 4px;
+      }
+
+      .client-item {
+        min-height: 40px;
+        display: grid;
+        grid-template-columns: 36px minmax(0, 1fr) auto;
+        gap: 10px;
+        align-items: center;
+        font-size: 14px;
+        line-height: 22px;
+      }
+
+      .client-icon {
+        width: 34px;
+        height: 34px;
+        justify-self: center;
+        object-fit: contain;
+      }
+
+      .client-name {
+        min-width: 0;
+        font-weight: 600;
+      }
+
+      .evidence-disclosure {
+        border-bottom: 1px solid var(--hairline);
+      }
+
+      .evidence-disclosure summary {
+        min-height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        cursor: pointer;
+        font-size: 15px;
+        font-weight: 700;
+        list-style: none;
+      }
+
+      .evidence-disclosure summary::-webkit-details-marker {
+        display: none;
+      }
+
+      .evidence-disclosure summary::after {
+        content: "+";
+        color: var(--slate);
+        font-size: 18px;
+        font-weight: 400;
+      }
+
+      .evidence-disclosure[open] summary::after {
+        content: "−";
+      }
+
+      .evidence-content {
+        padding: 0 0 22px;
+      }
+
+      .inspector-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        padding: 14px 20px;
+        border-top: 1px solid var(--hairline);
+        background: var(--paper-strong);
+      }
+
+      .action-button {
+        padding: 0 14px;
+        border: 1px solid var(--hairline);
+        border-radius: var(--radius);
+        background: var(--paper-strong);
+        cursor: pointer;
+      }
+
+      .action-button.primary {
+        border-color: var(--current);
+        background: var(--current);
+        color: white;
+        font-weight: 700;
+      }
+
+      .action-button.primary:hover {
+        background: var(--current-dark);
+      }
+
+      .toast {
+        position: fixed;
+        z-index: 30;
+        left: 50%;
+        bottom: 24px;
+        max-width: min(520px, calc(100vw - 32px));
+        transform: translateX(-50%);
+        padding: 12px 16px;
+        border: 1px solid var(--hairline);
+        border-radius: var(--radius);
+        background: var(--ink);
+        color: white;
+        font-size: 14px;
+        box-shadow: 0 12px 30px rgb(23 35 38 / 18%);
+      }
+
+      .toast[hidden] {
+        display: none;
+      }
+
+      @media (max-width: 1279px) {
+        :root {
+          --sidebar: 184px;
+        }
+
+        .app,
+        .app.inspector-closed {
+          grid-template:
+            "top top" var(--topbar)
+            "nav main" calc(100vh - var(--topbar))
+            / var(--sidebar) minmax(0, 1fr);
+        }
+
+        .inspector {
+          position: fixed;
+          z-index: 20;
+          top: var(--topbar);
+          right: 0;
+          bottom: 0;
+          width: min(380px, calc(100vw - var(--sidebar)));
+          box-shadow: -18px 0 36px rgb(23 35 38 / 14%);
+        }
+
+        .inspector-backdrop:not([hidden]) {
+          position: fixed;
+          z-index: 19;
+          inset: 0;
+          display: block;
+          background: rgb(23 35 38 / 18%);
+        }
+
+        .main {
+          padding-right: 24px;
+          padding-left: 24px;
+        }
+      }
+
+      @media (max-width: 767px) {
+        :root {
+          --topbar: 52px;
+        }
+
+        .app,
+        .app.inspector-closed {
+          display: block;
+          min-height: 100vh;
+        }
+
+        .topbar {
+          position: sticky;
+          z-index: 15;
+          top: 0;
+          height: var(--topbar);
+          padding: 0 12px;
+        }
+
+        .sidebar {
+          display: block;
+          border-right: 0;
+          border-bottom: 1px solid var(--hairline);
+          overflow-x: auto;
+        }
+
+        .nav-list {
+          display: flex;
+          gap: 4px;
+          padding: 8px 10px;
+          width: max-content;
+        }
+
+        .nav-item {
+          width: auto;
+          white-space: nowrap;
+        }
+
+        .nav-children,
+        .utility-list {
+          display: none;
+        }
+
+        .main {
+          padding: 24px 16px 48px;
+          overflow: visible;
+        }
+
+        .content-head {
+          display: block;
+          margin-bottom: 20px;
+        }
+
+        h1 {
+          font-size: 24px;
+        }
+
+        .snapshot {
+          display: block;
+          margin-top: 8px;
+          white-space: normal;
+        }
+
+        .filters {
+          flex-wrap: nowrap;
+          overflow-x: auto;
+          padding-bottom: 4px;
+        }
+
+        .filter-button {
+          flex: 0 0 auto;
+          white-space: nowrap;
+        }
+
+        .more-menu {
+          position: fixed;
+          top: auto;
+          right: 16px;
+          bottom: 16px;
+          left: 16px;
+          width: auto;
+        }
+
+        .more-wrap {
+          position: static;
+        }
+
+        .mobile-sort {
+          display: grid;
+          gap: 6px;
+          color: var(--slate);
+          font-size: 14px;
+        }
+
+        .mobile-sort select {
+          min-height: 46px;
+          padding: 0 12px;
+          border: 1px solid var(--hairline);
+          border-radius: var(--radius);
+          background: var(--paper-strong);
+          color: var(--ink);
+          font: inherit;
+        }
+
+        .asset-table,
+        .asset-table tbody {
+          display: block;
+        }
+
+        .asset-table thead {
+          display: none;
+        }
+
+        .asset-row {
+          height: auto;
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 8px 12px;
+          margin-bottom: 10px;
+          padding: 14px;
+          border: 1px solid var(--hairline);
+          border-radius: var(--radius);
+          background: var(--paper-strong);
+        }
+
+        .asset-row td {
+          display: grid;
+          gap: 2px;
+          padding: 0;
+        }
+
+        .asset-row td::before {
+          content: attr(data-label);
+          color: var(--slate);
+          font-size: 14px;
+        }
+
+        .asset-row td:first-child {
+          grid-column: 1 / -1;
+        }
+
+        .inspector {
+          top: 0;
+          left: 0;
+          width: 100vw;
+          height: 100dvh;
+          max-width: none;
+          box-shadow: none;
+        }
+
+        .inspector-actions {
+          padding-bottom: max(14px, env(safe-area-inset-bottom));
+        }
+      }
+
+      @media (max-width: 431px) {
+        .brand {
+          font-size: 14px;
+        }
+
+        .asset-row {
+          grid-template-columns: 1fr;
+        }
+
+        .asset-row td:first-child {
+          grid-column: auto;
+        }
+
+        .inspector-actions {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app" id="app">
+      <header class="topbar">
+        <div class="brand">Yohan Control Tower</div>
+        <div class="top-actions">
+          <span class="trap-label">의도적으로 잘못된 대조본</span>
+        </div>
+      </header>
+
+      <nav class="sidebar" aria-label="주요 탐색">
+        <ul class="nav-list">
+          <li><button type="button" class="nav-item">지금</button></li>
+          <li>
+            <button type="button" class="nav-item">작업</button>
+            <ul class="nav-children">
+              <li><button type="button" class="nav-child">할 일</button></li>
+              <li><button type="button" class="nav-child">일정</button></li>
+              <li><button type="button" class="nav-child">프로젝트</button></li>
+            </ul>
+          </li>
+          <li><button type="button" class="nav-item">지식·디자인</button></li>
+          <li><button type="button" class="nav-item" aria-current="page">스킬·도구</button></li>
+          <li><button type="button" class="nav-item">운영 기록</button></li>
+        </ul>
+        <ul class="utility-list">
+          <li><button type="button" class="utility-item">연결 관리</button></li>
+          <li><button type="button" class="utility-item">설정</button></li>
+        </ul>
+      </nav>
+
+      <main class="main">
+        <header class="content-head">
+          <div>
+            <h1>스킬·도구</h1>
+            <p class="subtitle">무엇을 쓸 수 있고, 어디까지 확인됐는지 봅니다.</p>
+          </div>
+          <span class="snapshot">정본 스냅샷 · 2026-08-22</span>
+        </header>
+
+        <section class="toolbar" aria-label="스킬·도구 찾기">
+          <div class="filters" id="filters">
+            <button class="filter-button" type="button" data-filter="all" aria-pressed="true">전체 201</button>
+            <button class="filter-button" type="button" data-filter="skill" aria-pressed="false">스킬 100</button>
+            <button class="filter-button" type="button" data-filter="agent" aria-pressed="false">에이전트 13</button>
+            <button class="filter-button" type="button" data-filter="mcp" aria-pressed="false">MCP 1</button>
+            <button class="filter-button" type="button" data-filter="plugin" aria-pressed="false">플러그인 4</button>
+            <button class="filter-button" type="button" data-filter="hook" aria-pressed="false">훅 7</button>
+            <div class="more-wrap">
+              <button class="filter-button" type="button" id="moreButton" aria-expanded="false" aria-controls="moreMenu" aria-haspopup="true" aria-pressed="false">더보기</button>
+              <div class="more-menu" id="moreMenu" aria-label="다른 자산 종류" hidden>
+                <button type="button" data-filter="command" aria-pressed="false"><span>명령</span><span>4</span></button>
+                <button type="button" data-filter="rule" aria-pressed="false"><span>규칙</span><span>14</span></button>
+                <button type="button" data-filter="config" aria-pressed="false"><span>설정</span><span>5</span></button>
+                <button type="button" data-filter="manifest" aria-pressed="false"><span>매니페스트</span><span>18</span></button>
+                <button type="button" data-filter="script" aria-pressed="false"><span>스크립트</span><span>31</span></button>
+                <button type="button" data-filter="fixture" aria-pressed="false"><span>테스트 자료</span><span>3</span></button>
+                <button type="button" data-filter="template" aria-pressed="false"><span>템플릿</span><span>1</span></button>
+              </div>
+            </div>
+          </div>
+          <div class="search-wrap">
+            <label for="assetSearch">이름 또는 종류 검색</label>
+            <input class="search-input" id="assetSearch" type="search" placeholder="이름 또는 종류 검색" autocomplete="off" />
+          </div>
+          <label class="mobile-sort" for="mobileSort">
+            정렬
+            <select id="mobileSort">
+              <option value="default">기본 순서</option>
+              <option value="id-asc">이름 · 오름차순</option>
+              <option value="id-desc">이름 · 내림차순</option>
+              <option value="kind-asc">종류 · 오름차순</option>
+              <option value="kind-desc">종류 · 내림차순</option>
+              <option value="lifecycle-asc">정본 단계 · 오름차순</option>
+              <option value="lifecycle-desc">정본 단계 · 내림차순</option>
+              <option value="support-asc">지원 환경 · 적은 순</option>
+              <option value="support-desc">지원 환경 · 많은 순</option>
+              <option value="pc-asc">현재 PC · 오름차순</option>
+              <option value="pc-desc">현재 PC · 내림차순</option>
+            </select>
+          </label>
+        </section>
+
+        <table class="asset-table">
+          <thead>
+            <tr>
+              <th scope="col" aria-sort="none"><button class="sort-button" type="button" data-sort="id">이름<span class="sort-state"></span></button></th>
+              <th scope="col" aria-sort="none"><button class="sort-button" type="button" data-sort="kind">종류<span class="sort-state"></span></button></th>
+              <th scope="col" aria-sort="none"><button class="sort-button" type="button" data-sort="lifecycle">정본 단계<span class="sort-state"></span></button></th>
+              <th scope="col" aria-sort="none"><button class="sort-button" type="button" data-sort="support">지원 환경<span class="sort-state"></span></button></th>
+              <th scope="col" aria-sort="none"><button class="sort-button" type="button" data-sort="pc">현재 PC<span class="sort-state"></span></button></th>
+            </tr>
+          </thead>
+          <tbody id="assetRows"></tbody>
+        </table>
+        <div class="empty-state" id="emptyState" hidden>조건에 맞는 항목이 없습니다.</div>
+      </main>
+
+      <div class="inspector-backdrop" id="inspectorBackdrop" aria-hidden="true" hidden></div>
+
+      <aside class="inspector" id="inspector" aria-labelledby="inspectorTitle">
+        <header class="inspector-head">
+          <button type="button" class="close-inspector" id="closeInspector" aria-label="상세 닫기">닫기</button>
+          <div class="inspector-eyebrow" id="inspectorKind"></div>
+          <h2 id="inspectorTitle"></h2>
+          <p id="inspectorSummary"></p>
+          <div class="status-summary" id="inspectorStatus"></div>
+        </header>
+        <div class="inspector-body" id="inspectorBody"></div>
+        <footer class="inspector-actions" id="inspectorActions"></footer>
+      </aside>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+    <script>
+      const assets = [
+        {
+          id: "design-team",
+          kind: "skill",
+          kindLabel: "스킬",
+          lifecycle: "reviewed",
+          lifecycleLabel: "검토됨",
+          support: "4개 환경",
+          clients: [["Claude Code", "지원"], ["Codex", "지원"], ["Cursor", "지원"], ["Antigravity", "지원"]],
+          summary: "프로젝트 맥락에 맞춰 디자인 작업 방식을 구성합니다.",
+          sections: [
+            { title: "스킬 정보", rows: [["구성 방식", "프로젝트별 동적 구성"], ["자동 호출", "가능"]] },
+            { title: "참조 문서", items: ["DesignContext", "팀 구성 기준", "검증 기준"] },
+            { title: "근거", rows: [["관리 주체", "yohan-agent-kit"], ["검증", "기록 없음"]] }
+          ],
+          actions: ["문서 열기", "근거 보기"]
+        },
+        {
+          id: "mcp.yohan",
+          kind: "mcp",
+          kindLabel: "MCP",
+          lifecycle: "released",
+          lifecycleLabel: "배포됨",
+          support: "4개 환경",
+          clients: [["Claude Code", "지원"], ["Codex", "지원"], ["Cursor", "지원"], ["Antigravity", "지원"]],
+          summary: "요한 MCP 서버의 연결 정의입니다.",
+          sections: [
+            { title: "연결 정보", rows: [["연결 방식", "확인 안 됨"], ["필요한 환경 설정", "YOHAN_ECOSYSTEM_ROOT"], ["제공 기능", "확인 안 됨"]] },
+            { title: "근거", rows: [["관리 주체", "yohan-core"], ["정본 파일", ".mcp.json"], ["검증", "기록 없음"]] }
+          ],
+          actions: ["근거 보기", "연결 상태 확인"]
+        },
+        {
+          id: "critical-thinking",
+          kind: "plugin",
+          kindLabel: "플러그인",
+          lifecycle: "released",
+          lifecycleLabel: "배포됨",
+          support: "Claude Code",
+          clients: [["Claude Code", "지원"], ["Codex", "지원 안 함"], ["Cursor", "지원 안 함"], ["Antigravity", "지원 안 함"]],
+          summary: "비판적 사고 모드를 제공하는 플러그인입니다.",
+          sections: [
+            { title: "플러그인 정보", rows: [["버전", "0.1.0"], ["호환 범위", "Claude Code 전용"]] },
+            { title: "포함 항목", items: ["스킬", "에이전트", "명령", "훅"] },
+            { title: "근거", rows: [["관리 주체", "yohan-agent-kit"], ["검증", "기록 없음"]] }
+          ],
+          actions: ["구성 보기", "근거 보기"]
+        },
+        {
+          id: "skeptic",
+          kind: "agent",
+          kindLabel: "에이전트",
+          lifecycle: "released",
+          lifecycleLabel: "배포됨",
+          support: "4개 환경",
+          clients: [["Claude Code", "지원"], ["Codex", "지원"], ["Cursor", "지원"], ["Antigravity", "지원"]],
+          summary: "아이디어와 의사결정을 반대 입장에서 검토합니다.",
+          sections: [
+            { title: "에이전트 정보", rows: [["책임", "추론·설계·결정 검토"], ["기본 모델 힌트", "sonnet"], ["허용 도구", "Read · Grep · Glob · WebSearch"]] },
+            { title: "사용 스킬", items: ["critical-thinking"] },
+            { title: "근거", rows: [["관리 주체", "critical-thinking"], ["검증", "기록 없음"]] }
+          ],
+          actions: ["정의 보기", "근거 보기"]
+        },
+        {
+          id: "session-title",
+          kind: "hook",
+          kindLabel: "훅",
+          lifecycle: "candidate",
+          lifecycleLabel: "후보",
+          support: "4개 환경",
+          clients: [["Claude Code", "지원 대상"], ["Codex", "지원 대상"], ["Cursor", "지원 대상"], ["Antigravity", "지원 대상"]],
+          summary: "새 세션의 제목을 정하는 훅 후보입니다.",
+          sections: [
+            { title: "훅 정보", rows: [["처리 대상", "세션 제목"], ["이벤트 연결", "확인 안 됨"], ["실패 정책", "확인 안 됨"], ["제한 시간", "확인 안 됨"]] },
+            { title: "근거", rows: [["출처", "홈 설정 조사"], ["조사 시점", "2026-08-14"], ["검증", "기록 없음"]] }
+          ],
+          actions: ["관련 조사", "근거 보기"]
+        },
+        {
+          id: "release-gate",
+          kind: "skill",
+          kindLabel: "스킬",
+          lifecycle: "released",
+          lifecycleLabel: "배포됨",
+          support: "Claude Code",
+          clients: [["Claude Code", "지원"], ["Codex", "지원 안 함"], ["Cursor", "지원 안 함"], ["Antigravity", "지원 안 함"]],
+          summary: "릴리스 전 검증 절차를 안내하는 스킬입니다.",
+          sections: [
+            { title: "스킬 정보", rows: [["호환 범위", "Claude Code 전용"], ["자동 호출", "확인 안 됨"]] },
+            { title: "근거", rows: [["관리 주체", "workflow"], ["검증", "기록 없음"]] }
+          ],
+          actions: ["문서 열기", "근거 보기"]
+        },
+        {
+          id: "agents-core",
+          kind: "rule",
+          kindLabel: "규칙",
+          lifecycle: "released",
+          lifecycleLabel: "배포됨",
+          support: "4개 환경",
+          clients: [["Claude Code", "지원"], ["Codex", "지원"], ["Cursor", "지원"], ["Antigravity", "지원"]],
+          summary: "에이전트 공통 운영 규칙입니다.",
+          sections: [
+            { title: "규칙 정보", rows: [["적용 범위", "에이전트 공통"], ["전파 대상", "4개 환경"], ["우선순위", "확인 안 됨"]] },
+            { title: "근거", rows: [["관리 주체", "yohan-agent-kit"], ["검증", "기록 없음"]] }
+          ],
+          actions: ["규칙 보기", "근거 보기"]
+        },
+        {
+          id: "agent-kit-hook",
+          kind: "script",
+          kindLabel: "스크립트",
+          lifecycle: "released",
+          lifecycleLabel: "배포됨",
+          support: "4개 환경",
+          clients: [["Claude Code", "지원"], ["Codex", "지원"], ["Cursor", "지원"], ["Antigravity", "지원"]],
+          summary: "에이전트 키트의 스크립트 자산입니다.",
+          sections: [
+            { title: "스크립트 정보", rows: [["용도", "확인 안 됨"], ["읽기·쓰기 경계", "확인 안 됨"], ["패키지 포함", "확인 안 됨"]] },
+            { title: "근거", rows: [["관리 주체", "yohan-agent-kit"], ["검증", "기록 없음"]] }
+          ],
+          actions: ["정의 보기", "근거 보기"]
+        }
+      ];
+
+      const state = {
+        filter: "all",
+        search: "",
+        selectedId: "design-team",
+        inspectorOpen: true,
+        sortKey: null,
+        sortDirection: "asc",
+        misleading: new URLSearchParams(window.location.search).get("variant") === "misleading"
+      };
+
+      const app = document.getElementById("app");
+      const rows = document.getElementById("assetRows");
+      const emptyState = document.getElementById("emptyState");
+      const inspector = document.getElementById("inspector");
+      const inspectorBackdrop = document.getElementById("inspectorBackdrop");
+      const closeInspector = document.getElementById("closeInspector");
+      const title = document.getElementById("inspectorTitle");
+      const summary = document.getElementById("inspectorSummary");
+      const kind = document.getElementById("inspectorKind");
+      const inspectorStatus = document.getElementById("inspectorStatus");
+      const body = document.getElementById("inspectorBody");
+      const actions = document.getElementById("inspectorActions");
+      const search = document.getElementById("assetSearch");
+      const moreButton = document.getElementById("moreButton");
+      const moreMenu = document.getElementById("moreMenu");
+      const mobileSort = document.getElementById("mobileSort");
+      const toast = document.getElementById("toast");
+      const overlayInspector = window.matchMedia("(max-width: 1279px)");
+      const backgroundRegions = [
+        document.querySelector(".topbar"),
+        document.querySelector(".sidebar"),
+        document.querySelector(".main")
+      ];
+      let returnFocusAssetId = state.selectedId;
+
+      const moreFilterLabels = {
+        command: "명령 4",
+        rule: "규칙 14",
+        config: "설정 5",
+        manifest: "매니페스트 18",
+        script: "스크립트 31",
+        fixture: "테스트 자료 3",
+        template: "템플릿 1"
+      };
+
+      app.dataset.variant = state.misleading ? "misleading" : "candidate";
+
+      function pcState(asset) {
+        if (state.misleading && asset.lifecycle === "released") {
+          return { label: "설치됨", className: "state-installed" };
+        }
+        return { label: "확인 안 됨", className: "state-unknown" };
+      }
+
+      function visibleAssets() {
+        const query = state.search.trim().toLocaleLowerCase("ko");
+        const visible = assets.filter((asset) => {
+          const matchesFilter = state.filter === "all" || asset.kind === state.filter;
+          const haystack = `${asset.id} ${asset.kindLabel} ${asset.lifecycleLabel}`.toLocaleLowerCase("ko");
+          return matchesFilter && (!query || haystack.includes(query));
+        });
+        if (!state.sortKey) return visible;
+        return visible.toSorted((left, right) => compareAssets(left, right, state.sortKey, state.sortDirection));
+      }
+
+      function supportedClientCount(asset) {
+        return asset.clients.filter(([, note]) => note === "지원" || note === "지원 대상").length;
+      }
+
+      function compareAssets(left, right, key, direction) {
+        const lifecycleOrder = { candidate: 0, reviewed: 1, approved: 2, released: 3, deprecated: 4 };
+        const values = {
+          id: [left.id, right.id],
+          kind: [left.kindLabel, right.kindLabel],
+          lifecycle: [lifecycleOrder[left.lifecycle], lifecycleOrder[right.lifecycle]],
+          support: [supportedClientCount(left), supportedClientCount(right)],
+          pc: [pcState(left).label, pcState(right).label]
+        };
+        const [leftValue, rightValue] = values[key];
+        const result = typeof leftValue === "number"
+          ? leftValue - rightValue
+          : leftValue.localeCompare(rightValue, "ko", { numeric: true, sensitivity: "base" });
+        if (result !== 0) return direction === "asc" ? result : -result;
+        return left.id.localeCompare(right.id, "ko", { numeric: true, sensitivity: "base" });
+      }
+
+      function selectAsset(id, moveFocus = false) {
+        returnFocusAssetId = id;
+        state.selectedId = id;
+        state.inspectorOpen = true;
+        render({ focusInspector: overlayInspector.matches });
+        if (moveFocus && !overlayInspector.matches) {
+          document.querySelector(`.asset-select[data-asset-id="${CSS.escape(id)}"]`)?.focus();
+        }
+      }
+
+      function inspectorFocusableElements() {
+        return [...inspector.querySelectorAll("a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex='-1'])")]
+          .filter((element) => !element.hidden && element.getAttribute("aria-hidden") !== "true" && element.getClientRects().length > 0);
+      }
+
+      function restoreInspectorFocus() {
+        const assetButton = document.querySelector(`.asset-select[data-asset-id="${CSS.escape(returnFocusAssetId)}"]`);
+        const target = assetButton || search;
+        target?.focus();
+      }
+
+      function syncInspectorModality({ focusInspector = false, restoreOnDesktop = false } = {}) {
+        const modal = state.inspectorOpen && overlayInspector.matches;
+        const focusWasInside = inspector.contains(document.activeElement);
+
+        if (modal) {
+          inspector.setAttribute("role", "dialog");
+          inspector.setAttribute("aria-modal", "true");
+          inspector.setAttribute("aria-describedby", "inspectorSummary");
+          inspectorBackdrop.hidden = false;
+
+          if (focusInspector || !focusWasInside) closeInspector.focus();
+
+          backgroundRegions.forEach((region) => {
+            region.inert = true;
+            region.setAttribute("aria-hidden", "true");
+          });
+          return;
+        }
+
+        backgroundRegions.forEach((region) => {
+          region.inert = false;
+          region.removeAttribute("aria-hidden");
+        });
+        inspectorBackdrop.hidden = true;
+        inspector.removeAttribute("role");
+        inspector.removeAttribute("aria-modal");
+        inspector.removeAttribute("aria-describedby");
+
+        if (restoreOnDesktop && focusWasInside) restoreInspectorFocus();
+      }
+
+      function closeInspectorPanel() {
+        state.inspectorOpen = false;
+        renderInspector();
+        restoreInspectorFocus();
+      }
+
+      function renderRows() {
+        const visible = visibleAssets();
+        rows.innerHTML = "";
+        emptyState.hidden = visible.length > 0;
+        for (const asset of visible) {
+          const currentPc = pcState(asset);
+          const row = document.createElement("tr");
+          row.className = "asset-row";
+          row.dataset.assetId = asset.id;
+          row.dataset.selected = String(asset.id === state.selectedId);
+          const cells = [
+            ["이름", asset.id, ""],
+            ["종류", asset.kindLabel, ""],
+            ["정본 단계", asset.lifecycleLabel, ""],
+            ["지원 환경", asset.support, ""],
+            ["현재 PC", currentPc.label, currentPc.className]
+          ];
+          for (const [index, [label, value, className]] of cells.entries()) {
+            const cell = document.createElement("td");
+            cell.dataset.label = label;
+            if (index === 0) {
+              const selectButton = document.createElement("button");
+              selectButton.type = "button";
+              selectButton.className = "asset-select";
+              selectButton.dataset.assetId = asset.id;
+              selectButton.textContent = value;
+              selectButton.setAttribute("aria-controls", "inspector");
+              if (asset.id === state.selectedId) selectButton.setAttribute("aria-current", "true");
+              selectButton.addEventListener("keydown", (event) => handleRowKeydown(event, asset.id, visible));
+              cell.appendChild(selectButton);
+            } else {
+              cell.textContent = value;
+            }
+            if (className) cell.className = className;
+            row.appendChild(cell);
+          }
+          row.addEventListener("click", () => selectAsset(asset.id));
+          rows.appendChild(row);
+        }
+      }
+
+      function handleRowKeydown(event, id, visible) {
+        const index = visible.findIndex((asset) => asset.id === id);
+        if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+          event.preventDefault();
+          const delta = event.key === "ArrowDown" ? 1 : -1;
+          const next = visible[(index + delta + visible.length) % visible.length];
+          selectAsset(next.id, true);
+        }
+      }
+
+      function sectionMarkup(section) {
+        const rowsMarkup = section.rows
+          ? `<dl class="detail-grid">${section.rows.map(([label, value]) => `<div class="detail-row"><dt>${label}</dt><dd>${value}</dd></div>`).join("")}</dl>`
+          : "";
+        const itemsMarkup = section.items
+          ? `<ul class="item-list">${section.items.map((item) => `<li><span>${item}</span></li>`).join("")}</ul>`
+          : "";
+        if (section.title === "근거") {
+          const evidenceCount = (section.rows?.length || 0) + (section.items?.length || 0);
+          return `<details class="evidence-disclosure"><summary>근거 <span class="client-note">${evidenceCount}개</span></summary><div class="evidence-content">${rowsMarkup}${itemsMarkup}</div></details>`;
+        }
+        return `<section class="detail-section"><h3>${section.title}</h3>${rowsMarkup}${itemsMarkup}</section>`;
+      }
+
+      function clientIcon(client) {
+        const slugs = {
+          "Claude Code": "claudecode",
+          Codex: "codex",
+          Cursor: "cursor",
+          Antigravity: "antigravity"
+        };
+        return `https://unpkg.com/@lobehub/icons-static-svg@1.91.0/icons/${slugs[client]}.svg`;
+      }
+
+      function renderInspector({ focusInspector = false } = {}) {
+        const asset = assets.find((item) => item.id === state.selectedId) || assets[0];
+        const currentPc = pcState(asset);
+        inspector.hidden = !state.inspectorOpen;
+        app.classList.toggle("inspector-closed", !state.inspectorOpen);
+        if (!state.inspectorOpen) {
+          syncInspectorModality();
+          return;
+        }
+
+        kind.textContent = asset.kindLabel;
+        title.textContent = asset.id;
+        summary.textContent = asset.summary;
+        inspectorStatus.innerHTML = `<div class="status-summary-item"><span class="status-summary-label">정본 단계</span><strong class="status-summary-value">${asset.lifecycleLabel}</strong></div><div class="status-summary-item"><span class="status-summary-label">현재 PC</span><strong class="status-summary-value ${currentPc.className}">${currentPc.label}</strong></div>`;
+        const clientMarkup = `<section class="detail-section"><h3>지원 환경</h3><ul class="client-list">${asset.clients.map(([client, note]) => `<li class="client-item"><img class="client-icon" src="${clientIcon(client)}" alt="" width="34" height="34" /><span class="client-name">${client}</span><span class="client-note">${note}</span></li>`).join("")}</ul></section>`;
+        body.innerHTML = clientMarkup + asset.sections.map(sectionMarkup).join("");
+        actions.innerHTML = asset.actions.map((label, index) => `<button type="button" class="action-button ${index === asset.actions.length - 1 ? "primary" : ""}" data-action="${label}">${label}</button>`).join("");
+        actions.querySelectorAll("button").forEach((button) => button.addEventListener("click", () => showToast(actionMessage(button.dataset.action))));
+        syncInspectorModality({ focusInspector });
+      }
+
+      function actionMessage(action) {
+        if (action === "연결 상태 확인") return "검증 프로토타입에서는 실제 연결 검사를 실행하지 않습니다.";
+        return `프로토타입 동작 확인: ${action}`;
+      }
+
+      let toastTimer;
+      function showToast(message) {
+        window.clearTimeout(toastTimer);
+        toast.textContent = message;
+        toast.hidden = false;
+        toastTimer = window.setTimeout(() => {
+          toast.hidden = true;
+        }, 2600);
+      }
+
+      function setFilter(filter) {
+        state.filter = filter;
+        document.querySelectorAll("[data-filter]").forEach((button) => {
+          button.setAttribute("aria-pressed", String(button.dataset.filter === filter));
+        });
+        const isMoreFilter = Object.hasOwn(moreFilterLabels, filter);
+        moreButton.textContent = isMoreFilter ? moreFilterLabels[filter] : "더보기";
+        moreButton.setAttribute("aria-pressed", String(isMoreFilter));
+        moreMenu.hidden = true;
+        moreButton.setAttribute("aria-expanded", "false");
+        const visible = visibleAssets();
+        if (visible.length && !visible.some((asset) => asset.id === state.selectedId)) {
+          state.selectedId = visible[0].id;
+        }
+        render();
+      }
+
+      function render({ focusInspector = false } = {}) {
+        renderRows();
+        renderInspector({ focusInspector });
+        renderSortControls();
+      }
+
+      function renderSortControls() {
+        document.querySelectorAll(".sort-button").forEach((button) => {
+          const active = button.dataset.sort === state.sortKey;
+          const th = button.closest("th");
+          const stateLabel = button.querySelector(".sort-state");
+          th.setAttribute("aria-sort", active ? (state.sortDirection === "asc" ? "ascending" : "descending") : "none");
+          stateLabel.textContent = active ? (state.sortDirection === "asc" ? "오름" : "내림") : "";
+          button.setAttribute("aria-label", `${button.firstChild.textContent} 정렬${active ? `, 현재 ${stateLabel.textContent}차순` : ""}`);
+        });
+        mobileSort.value = state.sortKey ? `${state.sortKey}-${state.sortDirection}` : "default";
+      }
+
+      function cycleSort(key) {
+        if (state.sortKey !== key) {
+          state.sortKey = key;
+          state.sortDirection = "asc";
+        } else if (state.sortDirection === "asc") {
+          state.sortDirection = "desc";
+        } else {
+          state.sortKey = null;
+          state.sortDirection = "asc";
+        }
+        render();
+      }
+
+      document.querySelectorAll(".filter-button[data-filter]").forEach((button) => {
+        button.addEventListener("click", () => setFilter(button.dataset.filter));
+      });
+
+      moreButton.addEventListener("click", () => {
+        const open = moreMenu.hidden;
+        moreMenu.hidden = !open;
+        moreButton.setAttribute("aria-expanded", String(open));
+        if (open) moreMenu.querySelector("button")?.focus();
+      });
+
+      moreMenu.querySelectorAll("button[data-filter]").forEach((button) => {
+        button.addEventListener("click", () => setFilter(button.dataset.filter));
+      });
+
+      document.addEventListener("click", (event) => {
+        if (!moreMenu.hidden && !event.target.closest(".more-wrap")) {
+          moreMenu.hidden = true;
+          moreButton.setAttribute("aria-expanded", "false");
+        }
+      });
+
+      search.addEventListener("input", () => {
+        state.search = search.value;
+        renderRows();
+      });
+
+      document.querySelectorAll(".sort-button").forEach((button) => {
+        button.addEventListener("click", () => cycleSort(button.dataset.sort));
+      });
+
+      mobileSort.addEventListener("change", () => {
+        if (mobileSort.value === "default") {
+          state.sortKey = null;
+          state.sortDirection = "asc";
+        } else {
+          const [key, direction] = mobileSort.value.split("-");
+          state.sortKey = key;
+          state.sortDirection = direction;
+        }
+        render();
+      });
+
+      closeInspector.addEventListener("click", () => {
+        closeInspectorPanel();
+      });
+
+      inspectorBackdrop.addEventListener("click", closeInspectorPanel);
+
+      inspector.addEventListener("keydown", (event) => {
+        if (event.key !== "Tab" || !state.inspectorOpen || !overlayInspector.matches) return;
+
+        const focusable = inspectorFocusableElements();
+        if (!focusable.length) {
+          event.preventDefault();
+          closeInspector.focus();
+          return;
+        }
+
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        const focusIsOutside = !inspector.contains(document.activeElement);
+        if (event.shiftKey && (document.activeElement === first || focusIsOutside)) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && (document.activeElement === last || focusIsOutside)) {
+          event.preventDefault();
+          first.focus();
+        }
+      });
+
+      overlayInspector.addEventListener("change", (event) => {
+        if (!state.inspectorOpen) {
+          syncInspectorModality();
+          return;
+        }
+
+        if (event.matches) {
+          const activeAssetId = document.activeElement?.closest?.(".asset-select")?.dataset.assetId;
+          if (activeAssetId) returnFocusAssetId = activeAssetId;
+          syncInspectorModality({ focusInspector: true });
+        } else {
+          syncInspectorModality({ restoreOnDesktop: true });
+        }
+      });
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+          if (!moreMenu.hidden) {
+            moreMenu.hidden = true;
+            moreButton.setAttribute("aria-expanded", "false");
+            moreButton.focus();
+          } else if (state.inspectorOpen) {
+            closeInspectorPanel();
+          }
+        }
+      });
+
+      render();
+    </script>
+  </body>
+</html>
