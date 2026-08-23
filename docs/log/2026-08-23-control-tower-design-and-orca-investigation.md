@@ -96,6 +96,7 @@ Claude는 `Read`, `Grep`, `Glob`만 사용했고 Bash·browser·web·파일 쓰�
 - retry dispatch: `ctx_0cec168cfa58`
 - coordinator 미수신 메시지 관찰: sequence 554, 557
 - 외부 디자인 Git worktree는 Orca worktree 목록에 없었고, 경로 지정 terminal 생성은 실패 영수증 없이 종료됐다. design cwd에서 생성한 terminal은 main repo에 붙었다.
+- 최종 인수인계 시도에서 Orca 1.4.188 `status`는 runtime `ready`·`reachable`을 반환했지만, 직후 `terminal list`는 두 번 연속 `runtime_unavailable`과 `runtimeId: null`을 반환했다. main terminal handle을 안전하게 재획득할 수 없어 직접 전송을 중단했다.
 
 ### 원인 판정
 
@@ -154,5 +155,6 @@ Claude는 `Read`, `Grep`, `Glob`만 사용했고 Bash·browser·web·파일 쓰�
 
 - 병합 대상: 아직 아님. 사용자 미감·밀도 승인 대기.
 - production 구현: 금지 유지.
+- main 지휘자 직접 전송: Orca terminal 제어 채널 불일치로 차단. 재시작은 사용 중인 세션을 방해하므로 반복하지 않았다. 이 보고서 커밋을 회수 경로로 사용한다.
 - 다음 지휘자 행동: 최종 캡처를 사용자와 검토해 후보 A를 승인하거나 수정 범위를 확정한다.
 - 오케스트레이션 행동: 보안 마스킹·release 조정·message ACK를 우선순위로 분리하고 upstream 중복 검색 뒤 이슈화한다.
