@@ -1,5 +1,7 @@
 # 요한 관제탑 vNext 2차 구조·레퍼런스 조사
 
+> **Freshness correction — 2026-08-22:** 이 문서의 197개 집계는 조사 시점 스냅샷이다. 같은 날 재검증한 현재 정본은 201개이며 다음 시안은 `asset-detail-contract.md`의 동적 집계와 실제 종류명 필터를 따른다. 네 facet 명칭은 사용자 피드백으로 폐기했다.
+
 - Date: 2026-08-22
 - Scope: 할 일·일정 진입, 자동화 자산 전체 범위, 문서·디자인 관계, 진한 블랙앤화이트 시각 체계
 - State: evidence-backed proposal

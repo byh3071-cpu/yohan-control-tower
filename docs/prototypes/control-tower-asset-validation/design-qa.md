@@ -1,11 +1,16 @@
 # 스킬·도구 구조 검증 프로토타입
 
-- Status: candidate A · browser/keyboard gate passed · task validation not run
+- Technical browser/keyboard gate: passed · 178/178 checks
+- Unmoderated user-task validation: not run
+- Overall product-acceptance gate: candidate · 사용자 승인 대기
 - Production boundary: `src/` 변경 없음, 실제 설치·연결·명령 실행 없음
 - Visual source: `docs/design/control-tower-vnext/visual-hierarchy-contract.md`
 - Data contract: `docs/design/control-tower-vnext/asset-detail-contract.md`
 - Prototype: `docs/prototypes/control-tower-asset-validation/index.html`
-- Prototype evidence commit: `48b99b9bfd23321258a1bc4c13d536d119aa29b7`
+- Browser QA script: `docs/prototypes/control-tower-asset-validation/browser-qa.js`
+- Browser QA result: `docs/prototypes/control-tower-asset-validation/audit/browser-qa-results.json`
+- Prototype implementation baseline: `48b99b9bfd23321258a1bc4c13d536d119aa29b7`
+- Validated evidence bundle: final handoff commit 대상 · 커밋 뒤 후속 보고서에 실제 해시 기록
 
 ## DesignContext
 
@@ -23,7 +28,11 @@
     "brainExistingFileMutation": false,
     "assetStateAxes": ["declared-support", "release-inclusion", "local-install", "runtime-verification"]
   },
-  "approvedSources": []
+  "approvedSources": [
+    "docs/design/control-tower-vnext/visual-hierarchy-contract.md",
+    "docs/design/control-tower-vnext/asset-detail-contract.md",
+    "docs/design/control-tower-vnext/design-spec.md"
+  ]
 }
 ```
 
@@ -31,7 +40,7 @@
 
 - goal: 종류별 상세 구조가 실제 관제 질문에 답하는지 검증할 수 있는 클릭 프로토타입을 만든다.
 - user and target screen: 단일 운영자 요한, 데스크톱 중심 `스킬·도구` 화면.
-- approved visual source: 없음. 현재 밝은 중립 셸은 `candidate A`이며 구조 검증 대상이다.
+- approved visual source: 사용자가 선택한 3안의 명확한 아이콘·행 밀도와 2안의 간결한 골격. 현재 밝은 중립 native prototype은 그 방향의 구조 검증본이다.
 - selected source of truth: 현재 사용자 요청 → 프로젝트 Git의 디자인 계약 → Agent Kit catalog.
 - applicable project rules: production UI 수정 금지, 5개 상위 탐색 상한, Brain 읽기 전용, 비밀 값·원본 MCP command 노출 금지.
 - acceptance criteria: 아래 5개 과제의 정답률·시간·오해율을 측정하고, 고의 오류 대조본을 검수 게이트가 P0로 잡아낸다.
@@ -110,7 +119,7 @@
 | 과제 완료 | 위 5개 과제 | 각 20초 이내, 5/5 성공 | 미측정 | not run |
 | 용어 이해 | 사후 질문 | `정본 단계`, `지원 환경`, `현재 PC`를 자기 말로 구분 | 미측정 | not run |
 | 복구 | 잘못 선택 후 목표 항목 재탐색 | 10초 이내 | 미측정 | not run |
-| 본문 가독성 | 100% 확대, Windows | 16px 본문·14px 보조를 확대 없이 읽음 | Chromium computed 16px·14px | pass |
+| 본문 가독성 | 100% 확대, Windows | 설명 16/26px·표와 메타 14/21px | Chromium computed 일치, `Malgun Gothic` 가용 | pass |
 | 가로 overflow | 360·432·768·1280·1440px | 0px | 다섯 viewport 모두 0px | pass |
 | 키보드 | 필터→검색→목록→상세→닫기 | 모든 경로 도달, focus 표시 | menu·검색·선택·modal 순환·세 종료 경로 확인 | pass |
 | 콘솔 | 같은 5개 viewport | 오류 0건 | console 0, page error 0 | pass |
@@ -122,7 +131,7 @@
 
 - 기대 결과: 검토자가 `정본 단계 → 현재 PC 설치 상태`의 잘못된 추론을 P0로 판정한다.
 - 실패 조건: 이 대조본이 통과하거나 일반 시안으로 승인된다.
-- 안전 표시: 화면 상단에 `의도적으로 잘못된 대조본`을 지속 표시한다.
+- 안전 표시: desktop topbar와 modal inspector 안에 `의도적으로 잘못된 대조본`을 지속 표시한다.
 
 ## 구현된 상호작용
 
@@ -137,10 +146,13 @@
 - `Esc`와 닫기 버튼으로 검사 열 닫기
 - 종류·자산명·설명·정본 단계·현재 PC 순의 검사 열 머리말과 기본 접힘 근거
 - 1280px 미만 sheet, 767px 이하 전체 화면 상세
+- 1280px 미만은 최초 진입에서 상세를 닫고 사용자가 자산을 선택한 뒤에만 modal을 연다.
 - 767px 이하 목록 카드 변환
 - 버튼 동작 확인용 비파괴 toast
 
-## 2026-08-23 브라우저 재검증
+## 2026-08-23 1차 브라우저 재검증 — 후속 적대 검수로 대체됨
+
+이 절은 modal focus trap을 처음 검증한 당시 기록이다. 이후 Claude Code 검수에서 안전 표시 가림, Enter 포커스 유실, 타입 계약 불일치, 공통 근거와 릴리스 포함 축 누락이 새 P0/P1으로 확인됐다. 아래 `후속 P0/P1 재검증`이 현재 판정을 우선한다.
 
 - Browser: Windows Chromium 151, Playwright.
 - Scope: `design-team` 선택·상세 열림 상태의 반응형, 모달 경계, 포커스 순환·복귀, 콘솔, computed style, 브랜드 SVG 렌더링.
@@ -178,8 +190,44 @@
 
 - 해결된 P1: modal 상태에서 배경 자산으로 키보드 포커스가 빠지던 문제.
 - 해결된 P2: 768px에서 상세 패널과 배경의 시각적 경계가 약하던 문제. 18% ink backdrop을 추가했다.
-- 잔존 P0/P1: 없음.
+- 당시 범위에서는 잔존 P0/P1이 없다고 기록했으나, 후속 적대 검수에서 반증됐다.
 - 잔존 P2: prototype-only 원격 SVG를 production에서 로컬 승인 자산으로 고정해야 한다. 실제 사용자 5개 과제 검증과 실제 보조기술 조합 검증은 별도 제품 승인 게이트다.
+
+## 2026-08-23 후속 P0/P1 재검증
+
+- Reviewer finding basis: Claude Code 적대 검수 `run_bf3a8491ba4b` · P0 1건, P1 6건.
+- Browser tool: Playwright MCP. 노출되지 않은 package backend version은 추정하지 않는다.
+- Script: `browser-qa.js`를 UTF-8로 읽어 `browser_run_code_unsafe`에 동일 문자열로 전달했다. Playwright 서버의 파일 허용 root가 현재 세션 workspace로 제한돼 외부 design worktree 파일을 `filename`으로 직접 열 수 없었다.
+- Server: prototype 디렉터리에서 `python -m http.server 4175 --bind 127.0.0.1`.
+- Executed at: `2026-08-23T06:24:59.438Z`.
+- Raw receipt: `audit/browser-qa-results.json`.
+- Same-state captures: `audit/03-final-asset-detail-1440.png`, `audit/04-final-asset-detail-360.png`, `audit/05-misleading-safety-360.png`.
+
+| Check | Condition | Threshold | Reading | Verdict |
+| --- | --- | --- | --- | --- |
+| 전체 자동 검사 | candidate·misleading, 6개 폭 | 실패 0 | 178/178 pass | pass |
+| 가로 overflow | 360·432·768·1279·1280·1440px | 0px | 모든 폭 0px | pass |
+| 고의 오류 안전 표시 | 360px full-screen modal | 화면 표시 + accessible description | 표시됨, `comparisonWarning inspectorSummary` | pass |
+| 초기 modal | 1279px 이하 최초 진입 | 상세 닫힘·포커스 탈취 없음 | 상세 닫힘, background active | pass |
+| Enter·Space | 1440px 자산 선택 | 재렌더 뒤 선택 버튼 focus | `mcp.yohan`, `critical-thinking` | pass |
+| 화살표 이동 | 1440px | focus와 selected 동일 | 둘 다 `mcp.yohan` | pass |
+| modal focus loop | 360px | Tab 8회·Shift+Tab 6회 모두 inspector 내부 | 14/14 내부 | pass |
+| 종료·복귀 | 360px Escape, 768px backdrop | background 복원 + 호출 자산 focus | 두 경로 모두 `design-team` | pass |
+| breakpoint | 1279↔1280px | dialog·backdrop·inert 정확히 전환 | 양방향 pass | pass |
+| 타입 위계 | 1280·1440px | 16/26, 14/21, 18/26/600, 15/22/600 | computed 일치 | pass |
+| 목록 행 | 1280·1440px | 56–60px | `57.997px` | pass |
+| Windows 글꼴 | Windows Chromium | 명시한 한국어 시스템 글꼴 가용 | `Malgun Gothic` true | pass |
+| 브랜드 아이콘 | 1280·1440px | 렌더 크기 34px, natural width > 0 | `33.9915px`, 4/4 natural 16px | pass |
+| fixture 표시 | candidate·misleading, 6개 폭 | 목록·상세 모두 예시 데이터 표식 | 12/12 viewport pass | pass |
+| console·page error | 전체 실행 | 0 | 0·0 | pass |
+
+### 후속 판정
+
+- P0 해결: modal이 topbar를 inert 처리해도 고의 오류 경고를 modal 내부에서 보고 읽을 수 있다.
+- P1 해결: 키보드 선택 focus, 타입·행 밀도, Windows 글꼴 증거, 공통 관리 주체·출처·검증, 릴리스 포함 축, 계약 문서와 실행 영수증을 보정했다.
+- P1 해결: 고정된 대표 8개 fixture를 정본 스냅샷으로 오인하지 않도록 목록과 검사 열에 `예시 데이터`를 상시 표시한다.
+- 잔존 P0/P1: 없음.
+- 잔존 P2: 원격 브랜드 SVG의 production 로컬 고정, 실제 Windows 보조기술 조합, 설명 없는 사용자 과제 5개는 아직 별도 사람 게이트다.
 
 ## 현재 확인된 한계
 
@@ -188,7 +236,7 @@
 - 왼쪽 탐색과 일반 기능 아이콘은 아직 제외했다. production에서는 설치된 `lucide-react`와 승인된 브랜드 자산을 구분해 써야 한다.
 - 프로토타입 데이터는 2026-08-22 catalog의 대표 항목만 담은 고정 fixture다. 전체 201개 검색 성능과 긴 이름은 미검증이다.
 - Playwright Chromium 기계 검증은 통과했지만 실제 Windows 보조기술과 터치 기기 조합 검증을 대체하지 않는다.
-- 이 프로토타입은 비교 상태를 보여 주기 위해 작은 화면에서도 `design-team` 상세가 열린 채 시작한다. production의 일반 목록 진입점이라면 초기 상세 닫힘이 더 예측 가능한지 별도 결정해야 한다. [확신 중간]
+- 작은 화면은 `design-team` 상세를 닫은 채 시작하며, 사용자가 자산을 선택한 뒤에만 modal을 열고 닫기 버튼으로 포커스를 옮긴다.
 
 ## 정적 검사 영수증
 
@@ -196,12 +244,12 @@
 - 선택 행: inset edge 선언 없음, 실제 button으로 선택 경로 전환.
 - `더보기`: trigger wrapper anchoring, 일반 필터 버튼 semantics, 선택명 유지 로직 확인.
 - 실행 환경 SVG 4개: 정적 검사에서 HTTP 200, `image/svg+xml`, background `<rect>`·raster `<image>` 없음을 확인했고, 2026-08-23 동적 재검증에서 다섯 viewport 렌더를 확인했다.
-- 지원 환경 광학 토큰: 34px icon / 36px column / 10px horizontal gap / 40px row / 4px list gap / 22px line-height 정적 확인.
+- 지원 환경 광학 토큰: 34px icon / 36px column / 10px horizontal gap / 40px row / 4px list gap / 22px line-height 정적 확인. 동적 측정은 33.9915px, 4/4 natural width > 0이다.
 - 정렬: 이름 오름·내림, lifecycle 단계순, 지원 대상 수 comparator 실행 테스트 통과.
 - 정렬 접근성: 다섯 열 `aria-sort`, 3단계 순환, 모바일 native select 경로 확인. 데스크톱 이름 정렬은 `agent-kit-hook → skeptic → design-team`으로 오름·내림·기본 복귀했고, 모바일 오름차순도 `agent-kit-hook`부터 표시했다.
 - 상호작용 smoke: `더보기` 열기 시 첫 종류 버튼으로 이동하고 Escape 뒤 트리거로 복귀, `mcp` 검색 1건, `mcp.yohan` 선택·닫기 뒤 같은 자산으로 복귀를 브라우저에서 확인했다.
 - modal 접근성: Chromium에서 overlay 배경 inert, dialog 의미, 순·역방향 focus loop, 세 종료 경로와 breakpoint 전환을 기계 검증했다.
-- 반응형 캡처: `audit/02-responsive-after.png`에 360·432·768·1280·1440px 동일 상태를 한 화면으로 보존했다.
+- 반응형 캡처: 1차 비교판 `audit/02-responsive-after.png`와 후속 최종 상태 `audit/03-final-asset-detail-1440.png`, `audit/04-final-asset-detail-360.png`, `audit/05-misleading-safety-360.png`를 보존했다.
 - 브라우저 오류: 다섯 viewport에서 console error 0, page error 0.
 - 토큰 대비: 네 조합 모두 선언 threshold를 상회하고 브라우저 computed color·font-size가 선언값과 일치했다.
 - catalog kind 합계: 201. 프로토타입은 대표 8개 fixture만 렌더링함.
@@ -211,16 +259,18 @@
 ## 다음 게이트
 
 1. 설명 없는 5개 과제 수행과 시간·오답 기록.
-2. `misleading` 대조본이 P0로 거절되는지 검수.
+2. ~~`misleading` 대조본이 P0로 거절되는지 검수.~~ Claude Code가 P0로 거절했고 후속 안전 표시 회귀 검사를 통과했다.
 3. 실제 Windows 보조기술과 터치 기기 조합에서 modal 경로를 확인.
 4. production 채택 시 원격 브랜드 SVG를 승인된 로컬 자산으로 고정.
 5. 위 제품 검증을 통과한 뒤에만 구조 승인 여부를 사용자에게 요청.
 
 ## 판정 범위
 
-- Design-to-HTML 기술 구현 게이트: passed.
+- Design-to-HTML 기술 구현 게이트: passed · 178/178.
 - 실제 사용자 5개 과제와 구조 승인 게이트: not run.
-- Git 보존 게이트: partial. 프로토타입과 비교 증거는 `48b99b9bfd23321258a1bc4c13d536d119aa29b7`에 보존됐지만, 위에서 참조한 `visual-hierarchy-contract.md`와 `asset-detail-contract.md`는 아직 미추적 상태다.
-- 전체 디자인 상태: candidate A. 기술 구현은 통과했지만 Git 보존 전에는 Design-to-HTML 인수인계를 차단한다.
+- Git 보존 게이트: prototype, 두 계약, 재현 스크립트, raw receipt, 최종 캡처를 최종 인수인계 commit 대상에 함께 포함한다.
+- 전체 디자인 상태: candidate A. 기술 구현은 통과했지만 실제 사용자 과제와 최종 미감 승인은 대기한다.
 
-final result: blocked
+아래 literal result는 Design-to-HTML 기술 구현 게이트만 가리킨다. 제품 수용과 사용자 과제는 위 상태대로 아직 통과하지 않았다.
+
+final result (Design-to-HTML technical gate only): passed

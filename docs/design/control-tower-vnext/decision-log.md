@@ -49,3 +49,13 @@
 - Evidence: 2026-08-22 사용자 피드백, Agent Kit canonical catalog 197개, `research-round-2.md`
 - Consequences: 이전 5항목 결정은 새 화면군 선택 전까지 production handoff 근거로 사용하지 않는다. `스킬·도구`는 `자동화 자산`으로 확장하고 catalog·가용·검증 상태를 분리한다.
 - Revisit trigger: 사용자가 세 화면군에서 좌측 탐색과 자산 facet을 승인·수정·거절할 때
+
+## 2026-08-22 — 자산 종류별 상세와 실행 영수증을 분리
+
+- Status: proposed · 사용자 시각 검토 대기
+- Decider: 사용자
+- Options considered: 모든 자산에 design-team 역할 카드를 적용 / 공통 머리말 + kind별 상세 렌더러
+- Decision and rationale: 두 번째 방식을 다음 시안의 기준으로 삼는다. `Codex`는 역할이 아니라 실행 환경이며, 역할·실행 환경·모델·관리 주체·사용 도구는 서로 다른 개념이다. `design-team`의 역할도 정적 조직도가 아니라 실행마다 동적으로 구성된다.
+- Evidence: 사용자 피드백, Agent Kit `asset-catalog.json`, `team-contract.md`, `agent-roster.yaml`, 시니어 개발 도메인 검토
+- Consequences: 고정 역할 카드, `Codex` 담당자 표기, 네 개 조어 facet, 197 하드코딩, 모든 종류에 같은 상세 섹션을 적용한 시안은 폐기한다. 다음 시안은 `asset-detail-contract.md`와 `visual-hierarchy-contract.md`를 따른다.
+- Revisit trigger: 실제 읽기 모델에서 종류별 필드를 안전하게 만들 수 없거나, 스킬·MCP·훅·플러그인 네 상태의 시각 검증이 실패할 때

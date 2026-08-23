@@ -1,16 +1,17 @@
 # DesignContext: 요한 관제탑 vNext
 
-- Context version: 0.3
-- State: exploring
-- Owner repository and branch/ref: `yohan-control-tower@7f118b1`, branch `codex/control-tower-design-direction`
-- Last verified at: 2026-08-22 (Asia/Seoul)
+- Context version: 0.4
+- State: selected
+- Owner repository and branch/ref: `yohan-control-tower@4688b82`, branch `codex/control-tower-design-direction`
+- Last verified at: 2026-08-23 (Asia/Seoul)
 - Design owner / final approver: 사용자
 
 ## Outcome and non-goals
 
 - **Observed** — 제품의 한 줄 목적은 Yohan Brain을 읽어 미션·프로젝트·Goal·문서·벡터를 관제하는 로컬 전용 운영 프론트다.
 - **Approved** — 새 디자인은 생태계와 현재 자산을 먼저 조사하고, 사용자가 세 시안 중 방향을 정한 뒤 구현한다.
-- **Approved** — 세 시안 중 3안의 `어두운 셸 + 밝은 작업면 + 명확한 도구 아이콘`을 기본 방향으로 사용하고 2안의 문서 관계 표현을 결합한다.
+- **Superseded** — 처음에는 3안의 `어두운 셸 + 밝은 작업면` 대비를 선택했으나, 후속 피드백에서 검정 면이 과하고 영역 경계가 밋밋하다는 이유로 Mova 밝은 중립 셸로 바꿨다.
+- **Approved** — 3안에서는 명확한 도구 아이콘과 행 밀도만 유지하고, 2안의 간결한 골격·문서 관계 표현과 Mova 밝은 중립 셸을 결합한다.
 - **Proposed** — 첫 화면은 “지금 무엇을 이어가고, 무엇을 승인하고, 어디가 막혔는가”를 한 번에 결정하게 한다.
 - **Non-goal** — Notion이나 Brain을 대체하거나, 클라우드 배포 제품을 만들거나, 원시 벡터 운영 정보를 기본 홈에 노출하지 않는다.
 - **Non-goal** — 이번 다중 화면 정보구조와 시각 방향을 사용자가 승인하기 전 production UI를 수정하지 않는다.
@@ -43,11 +44,11 @@
 - **Observed** — 현재 Home과 문서 도구에서 10–13px 텍스트를 광범위하게 사용한다.
 - **Observed** — 공통 디자인 규칙은 본문 16px 이상, 보조 문구 14px 이상, line-height 1.6 이상을 요구한다. 현재 구현과 충돌한다.
 - **Inferred** — 제품 기능은 충분하지만 Home, 전역 탭, 문서 사이드바, 명령 실행이 서로 다른 우선순위를 동시에 요구해 인지 비용이 커졌다.
-- **Approved** — 새 상위 탐색은 `지금 / 프로젝트 / 지식·자산 / 스킬·도구 / 운영 기록` 다섯 개로 구성하고, Vector·명령 실행은 `시스템 상태`와 명령 팔레트로 내린다.
+- **Superseded** — `지금 / 프로젝트 / 지식·자산 / 스킬·도구 / 운영 기록`은 작업·일정 진입성이 부족해 다음 시안의 기준으로 사용하지 않는다.
 - **Approved** — 항목 선택 시 우측 `작업 맥락`은 화면 위에 뜨는 임시 서랍이 아니라 본문과 같은 시작선·세로 구분선·스크롤 규칙을 쓰는 전용 검사 열로 구성한다.
-- **Observed** — Agent Kit canonical catalog는 197개이며 `skill 99 / script 29 / manifest 17 / rule 14 / agent 13 / hook 7 / config 5 / plugin 4 / command 4 / fixture 3 / mcp 1 / template 1`이다.
+- **Observed** — 2026-08-22 재검증 시 Agent Kit canonical catalog는 201개이며 `skill 100 / script 31 / manifest 18 / rule 14 / agent 13 / hook 7 / config 5 / plugin 4 / command 4 / fixture 3 / mcp 1 / template 1`이다. 이 수량은 변하므로 UI에 하드코딩하지 않는다.
 - **Observed** — 기존 `스킬·도구` 시안은 12개 kind 전체를 수용하지 못하고, catalog lifecycle과 설치·runtime·검증을 같은 열 체계로 취급했다.
-- **Proposed** — 이전 다섯 항목을 `지금 / 작업 / 지식·디자인 / 자동화 자산 / 운영 기록`으로 재구성하고 데스크톱에서는 `작업` 아래 `할 일 / 일정 / 프로젝트`를 항상 보이는 형제 보기로 둔다.
+- **Proposed** — 다섯 항목을 `지금 / 작업 / 지식·디자인 / 스킬·도구 / 운영 기록`으로 재구성하고 데스크톱에서는 `작업` 아래 `할 일 / 일정 / 프로젝트`를 항상 보이는 형제 보기로 둔다.
 
 ## Existing design system and assets
 
@@ -58,7 +59,8 @@
 - **Proposed** — 과거 시안은 시각 언어와 선택 시 context peek 패턴의 참고 자산으로 사용하고, 현재 홈 구조의 복제 대상으로 사용하지 않는다.
 - **Approved** — 3안의 선명한 Lucide 계열 항목 아이콘과 실제 도구 브랜드 아이콘을 유지한다. 이모지·텍스트 기호·임의 SVG는 사용하지 않는다.
 - **Observed** — 생성 시안의 작은 아이콘 왜곡은 ImageGen 래스터 산출물의 표현 오류이며 실제 컴포넌트 자산 사용을 증명하지 못한다.
-- **Proposed** — 셸은 `#030405`에 가까운 진한 검정을 기본으로 하고, 밝은 작업면은 `#F7F7F5`, 선택 강조는 electric blue 한 색으로 제한한다.
+- **Rejected** — `#030405` 중심의 진한 검정 셸은 좌우 패널이 중앙 작업보다 먼저 보이고 경계가 과도해 다음 시안에서 사용하지 않는다.
+- **Approved** — Mova의 밝은 중립 셸을 이어 `#E7ECEE / #F7F9F9 / #172326 / #526367`을 기본으로 하고 hover `#EEF3F6`, selected `#E7EFF5`, focus `#146C94`를 제한적으로 쓴다.
 
 ## Information and content contracts
 
@@ -66,10 +68,10 @@
 - **Observed** — Brain은 정본이고 Notion은 사람용 뷰·모바일 인박스다. Qdrant는 파생 벡터 인프라다.
 - **Observed** — 상태 숫자는 출처, 소유자, 마지막 갱신 또는 unknown을 함께 표현해야 한다.
 - **Proposed** — Home의 우선순위는 `결정/승인 → 이어가기 → 막힘 → 오늘 일정 → 미션 지평선 → 시스템 이상` 순으로 구성한다.
-- **Approved** — `design-team` 같은 복합 스킬은 전체 프롬프트 대신 역할·사용 스킬·참조 문서·최근 근거·검증된 관계만 요약한다.
+- **Superseded** — `design-team`의 역할 구성을 정적 상세에 고정하지 않는다. 실제 실행 기록이 있을 때만 `이번 작업의 역할`을 표시하고 역할·실행 환경·모델·사용 도구를 분리한다.
 - **Approved** — 문서 라이브러리, 디자인 지식, 스킬·에이전트, 시안, 결정, 일정은 별도 복제본이 아니라 관계와 역링크로 연결한다.
 - **Observed** — 이전 시안의 `오늘 14:00`은 실제 Calendar 원장에서 읽은 값이 아니라 레이아웃 확인용 mock data였다.
-- **Proposed** — 자동화 자산 상세에는 검증된 Calendar 관계가 있을 때만 `관련 검토` 역링크를 표시하고, 관계가 없으면 섹션 전체를 숨긴다.
+- **Proposed** — 스킬·도구 상세에는 검증된 Calendar 관계가 있을 때만 `관련 검토` 역링크를 표시하고, 관계가 없으면 섹션 전체를 숨긴다.
 
 ## Technical and operational constraints
 
@@ -100,6 +102,9 @@
 | `docs/reference/websites/yohan-workspace-notion-control-tower-concepts.md` | `yohan-brain@5d9e92d` | 과거 승인 정보 구조와 금지 패턴 | ecosystem internal | 승인 문서 supersede 시 |
 | `docs/reference/websites/assets/yohan-control-tower-capture-context-peek-approved.png` | SHA-256 `AD24CB137FBC7A4E94D7369CF0A3D7FA9299B46FCEA5A20F63A78CEE30746F5E` | 과거 승인 시각 언어와 context peek | ecosystem internal | 새 시안 선택 시 |
 | Linear, Notion, GitHub, Material, W3C 공식 문서 | retrieved 2026-08-22 | 우선순위, 통합 할 일, 다중 view, 반응형 layout, 접근성 | public | 시각 명세 전 |
+| `docs/prototypes/control-tower-asset-validation/browser-qa.js` | executed 2026-08-23 | 6개 폭·두 variant·키보드·modal·breakpoint 회귀 검사 | project internal | prototype 변경 시 |
+| `docs/prototypes/control-tower-asset-validation/audit/browser-qa-results.json` | 178/178 pass | P0/P1 해소 수치와 오류 0건 | project internal | browser QA 재실행 시 |
+| `docs/prototypes/control-tower-asset-validation/audit/03-final-asset-detail-1440.png` | 1440×1024 capture | 선택 방향의 native desktop 상태 | project internal | 시각 방향 변경 시 |
 
 ## Accepted decisions
 
@@ -117,17 +122,21 @@
 - **Rejected** — 출처 없는 생산성 수치, 장식용 차트, 여섯 번째 상위 탭, 화면마다 중복되는 빠른 실행 목록.
 - **Rejected** — 전체 시스템 프롬프트, 비밀 설정, 장문의 에이전트 컨텍스트를 상세 패널에 그대로 노출하는 구성.
 - **Rejected** — 우측 패널이 전역 헤더 아래에서 어색하게 시작하거나 본문 위를 덮어 선택 행과 관계가 끊기는 구성.
+- **Rejected** — 모든 자산에 역할 조직도·설치·연결 상태를 같은 카드 구조로 강제하는 구성.
+- **Rejected** — `Codex`를 담당자·작성자·역할로 고정하거나 실행 환경과 모델을 한 필드로 합치는 구성.
+- **Rejected** — `자동화 자산`, `실행 능력`, `연결·활성화`처럼 설명이 필요한 조어를 기본 탐색에 사용하는 구성.
 
 ## Open questions and contradictions
 
 - **Open** — 우측 검사 열의 기본 폭을 360px로 고정할지 344–400px 범위에서 사용자가 조절하게 할지 구현 전 확인한다.
 - **Open** — 캘린더 전체 화면의 기본 보기를 주간으로 할지 월간으로 할지 실제 일정 밀도로 검증한다.
 - **Open** — 관계는 목록형 경로를 기본으로 하고, 작은 그래프 보기를 보조 기능으로 둘지 사용성 검증이 필요하다.
+- **Open** — 목록에서 반복되는 `릴리스 · 확인 안 됨`과 검사 열의 긴 source ref가 실제 사용 시 필요한 밀도인지 최종 미감·과제 검증에서 유지 또는 축약을 결정한다.
 - **Open** — `작업` 아래 `할 일 / 일정 / 프로젝트` 중첩 탐색이 독립 진입성과 5탭 상한을 함께 만족하는지 새 화면군에서 확인한다.
-- **Open** — `자동화 자산` 12 kind를 `실행 능력 / 연결·활성화 / 정책·패키징 / 검증·도구` 네 facet으로 묶는 명칭을 사용자가 승인해야 한다.
+- **Resolved** — 12종은 `스킬 / 에이전트 / MCP / 플러그인 / 훅 / 더보기`처럼 실제 용어로 탐색한다. `더보기`에서도 raw kind를 그대로 표시한다.
 - **Contradiction** — 과거 승인 문서의 capture-first와 현재 PRD의 “지금 뭐 하나”가 충돌한다. 새 방향은 Home에서는 “지금 뭐 하나”를 우선하고 capture는 전역 입력으로 축소한다.
 - **Unknown** — 실제 최근 일주일의 탭 사용 빈도와 불필요 화면 데이터는 없다. 삭제보다 hide/defer를 우선한다.
 
 ## Freshness and next verification
 
-진한 블랙앤화이트 시각 언어로 `작업`, `자동화 자산`, `지식·디자인` 세 화면을 같은 1440×1024 조건에서 검토한다. 다음 사람 게이트는 좌측 중첩 탐색, 자산 facet, 검사 열 관계 표현의 선택이다. 승인 뒤에만 `handoff.md`와 구현 파일 매핑을 작성한다.
+`스킬·도구` native prototype은 6개 폭과 고의 오류 대조본을 포함한 기술 검증을 통과했다. 다음 사람 게이트는 사용자가 현재 목록 밀도·검사 열 정보 순서·릴리스 상태 반복을 유지할지 결정하는 것이다. 그 뒤 `작업`, `지식·디자인`, 캘린더를 같은 밝은 중립 셸과 관계 규칙으로 검토하고, 화면군 최종 승인 뒤에만 `handoff.md`와 production 구현 매핑을 작성한다.

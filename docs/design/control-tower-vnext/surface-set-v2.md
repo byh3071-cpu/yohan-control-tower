@@ -1,22 +1,22 @@
 # 요한 관제탑 vNext 화면군 v2
 
-- State: proposed · awaiting user selection
+- State: superseded by domain-corrected v3 contract
 - Viewport: 1440×1024 desktop
-- Visual direction: 깊은 블랙 셸 + 따뜻한 백색 작업면 + electric blue focus
+- Visual direction: Mova 밝은 중립 셸 + 종류별 상세 + 제한된 청록 focus
 - Purpose: 동일 시스템의 세 핵심 표면을 비교해 정보구조와 밀도를 승인받는다.
 
 ## 공통 셸
 
-왼쪽 탐색은 다섯 상위 영역 `지금 / 작업 / 지식·디자인 / 자동화 자산 / 운영 기록`을 사용한다. 데스크톱에서는 `작업` 아래 `할 일 / 일정 / 프로젝트`를 모든 화면에서 항상 보여주며 각각 독립 URL과 선택 상태를 가진다. `작업` 표제는 접기 버튼과 분리한다. 하단 `시스템 상태`는 utility entry다.
+왼쪽 탐색은 다섯 상위 영역 `지금 / 작업 / 지식·디자인 / 스킬·도구 / 운영 기록`을 사용한다. 데스크톱에서는 `작업` 아래 `할 일 / 일정 / 프로젝트`를 모든 화면에서 항상 보여주며 각각 독립 URL과 선택 상태를 가진다. `작업` 표제는 접기 버튼과 분리한다. 하단에는 `연결 관리`와 `설정`을 두며 정상 상태 문구는 숨긴다.
 
-- Shell black: `#030405`
-- Raised black: `#0A0C0F`
-- Light work surface: `#F7F7F5`
-- Pure white: `#FFFFFF`
-- Primary text: `#111214`
-- Muted text: `#666A73`
-- Hairline: `#D9DADF` on light, `#24272C` on dark
-- Focus blue: `#315EFB`
+- App fog: `#E7ECEE`
+- Paper surface: `#F7F9F9`
+- Primary text: `#172326`
+- Muted text: `#526367`
+- Hover: `#EEF3F6`
+- Selected: `#E7EFF5`
+- Focus/current: `#146C94`
+- Caution: `#A84F18`
 - Radius: controls 8–10px, major layout surfaces square
 - Shadows: floating menu·dialog 외 사용하지 않음
 
@@ -33,13 +33,14 @@
 - 오늘 일정은 시간축으로 작게 병치하되 일반 할 일과 같은 체크박스를 쓰지 않음.
 - 제외: 전체 backlog, 자산 수치, 원시 event log.
 
-## 화면 B — 자동화 자산
+## 화면 B — 스킬·도구
 
 핵심 질문은 “무엇이 존재하고, 현재 이 환경에서 실제로 쓸 수 있으며, 근거가 있는가”다.
 
-- 상단 facet `전체 197 / 실행 능력 116 / 연결·활성화 12 / 정책·패키징 36 / 검증·도구 33`.
-- 목록은 raw kind, owner, catalog, availability, verification, usage를 보여준다.
-- 선택 `design-team`은 역할 구성·사용 도구·참조 문서·최근 근거를 요약하되 full prompt와 모델 조직도는 숨긴다.
+- 상단 필터 `전체 201 / 스킬 100 / 에이전트 13 / MCP 1 / 플러그인 4 / 훅 7 / 더보기`.
+- 목록은 이름, 실제 종류명, 정본 단계, 지원 환경, 현재 PC를 보여준다.
+- 선택 항목은 kind별 상세 렌더러를 사용한다. `design-team` 정적 상세에는 역할 구성을 표시하지 않는다.
+- 실행 영수증이 있을 때만 역할·실행 환경·모델·사용 도구를 서로 다른 필드로 표시한다.
 - 관계는 한 줄 화살표 대신 두 줄 고정 행으로 표시한다.
 - 검증된 Calendar 관계가 없으므로 mock `다음 일정`은 표시하지 않는다.
 - 제외: install/update/restore 실행, secret, catalog lifecycle을 runtime으로 추론.
@@ -48,7 +49,7 @@
 
 핵심 질문은 “이 기준과 결과가 어디서 왔고, 무엇에 적용됐으며, 사람이 승인했는가”다.
 
-- 목록 보기 `문서 / 디자인 / 결정 / 관계 오류`.
+- 목록 보기 `전체 / 문서 / 디자인`. 결정은 종류 필터와 상세 근거로, 관계 문제는 `확인 필요`로 제공한다.
 - 기본 표는 title, kind, owner, source, status, latest verification.
 - 선택 항목 검사 열은 source ref·Git ref·hash, 적용 범위, 파생 결과, backlinks, decision evidence를 표시.
 - 관계는 선택 항목 중심 목록이 기본이며 그래프는 보조 보기다.
@@ -60,9 +61,9 @@
 - 사이드바와 본문 아이콘은 20px named vector 기준으로 형태가 깨지지 않는다.
 - `작업`의 세 자식이 한 번의 시선과 한 번의 클릭으로 접근된다.
 - 관계 한 건마다 출발·동사·대상·상태가 최소 16px 간격으로 읽힌다.
-- 자동화 자산 12 kind와 합계 197이 정확하다.
+- 스킬·도구 12 kind와 현재 합계 201이 카탈로그에서 계산된다.
 - mock data는 시안 데이터임을 표시하고 실제 source 상태처럼 오인시키지 않는다.
-- 실제 원장에 연결되지 않은 목록·검사 열에는 각각 `예시 데이터`가 계속 보이며, 정본에서 검증한 `197개`와 facet 합계만 `정본 수량`으로 구분한다.
+- 실제 원장에 연결되지 않은 목록·검사 열에는 각각 `예시 데이터`가 계속 보인다. 정본 수량도 하드코딩하지 않고 카탈로그 응답에서 계산한다.
 - 1440px에서 검사 열은 400px, 중앙 핵심 목록은 최소 680px을 확보한다.
 - 상태는 색만으로 전달하지 않는다.
 - production 구현은 사용자가 화면군을 승인한 뒤에만 시작한다.

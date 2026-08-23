@@ -25,7 +25,7 @@
         --inspector: 320px;
         --topbar: 56px;
         --radius: 8px;
-        font-family: Pretendard, Inter, "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+        font-family: "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
       }
 
       * {
@@ -43,7 +43,7 @@
 
       body {
         font-size: 16px;
-        line-height: 1.6;
+        line-height: 26px;
       }
 
       button,
@@ -126,6 +126,22 @@
 
       [data-variant="misleading"] .trap-label {
         display: inline-flex;
+      }
+
+      .comparison-warning {
+        margin: 0 48px 12px 0;
+        padding: 8px 10px;
+        border: 1px solid color-mix(in srgb, var(--caution) 30%, white);
+        border-radius: var(--radius);
+        background: color-mix(in srgb, var(--caution) 7%, white);
+        color: var(--caution);
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 20px;
+      }
+
+      .comparison-warning[hidden] {
+        display: none;
       }
 
       .sidebar {
@@ -343,6 +359,8 @@
         border-collapse: collapse;
         table-layout: fixed;
         background: transparent;
+        font-size: 14px;
+        line-height: 21px;
       }
 
       .asset-table th {
@@ -384,27 +402,27 @@
       }
 
       .asset-table th:nth-child(1) {
-        width: 30%;
+        width: 28%;
       }
 
       .asset-table th:nth-child(2) {
-        width: 15%;
+        width: 14%;
       }
 
       .asset-table th:nth-child(3) {
-        width: 16%;
+        width: 23%;
       }
 
       .asset-table th:nth-child(4) {
-        width: 21%;
-      }
-
-      .asset-table th:nth-child(5) {
         width: 18%;
       }
 
+      .asset-table th:nth-child(5) {
+        width: 17%;
+      }
+
       .asset-row {
-        height: 62px;
+        height: 58px;
         border-bottom: 1px solid var(--hairline);
         cursor: pointer;
       }
@@ -418,7 +436,7 @@
       }
 
       .asset-row td {
-        padding: 10px 12px;
+        padding: 6px 12px;
         overflow-wrap: anywhere;
         vertical-align: middle;
       }
@@ -431,7 +449,21 @@
         background: transparent;
         text-align: left;
         font-weight: 700;
+        line-height: 21px;
         cursor: pointer;
+      }
+
+      .asset-state-stack {
+        display: grid;
+        gap: 1px;
+      }
+
+      .asset-state-meta {
+        color: var(--slate);
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 20px;
+        white-space: nowrap;
       }
 
       .state-unknown {
@@ -469,22 +501,37 @@
 
       .inspector-head {
         position: relative;
-        padding: 24px 20px 20px;
+        padding: 20px 20px 18px;
         border-bottom: 1px solid var(--hairline);
       }
 
       .inspector-eyebrow {
         margin: 0 48px 6px 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
         color: var(--current-dark);
         font-size: 14px;
-        font-weight: 700;
+        font-weight: 600;
         line-height: 20px;
+      }
+
+      .fixture-marker {
+        padding: 2px 6px;
+        border: 1px solid var(--hairline);
+        border-radius: 999px;
+        background: var(--paper);
+        color: var(--slate);
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 18px;
       }
 
       .inspector-head h2 {
         margin: 0 48px 6px 0;
-        font-size: 22px;
-        line-height: 30px;
+        font-size: 18px;
+        font-weight: 600;
+        line-height: 26px;
         letter-spacing: -0.015em;
         overflow-wrap: anywhere;
       }
@@ -531,10 +578,26 @@
       }
 
       .status-summary-value {
-        font-size: 15px;
-        font-weight: 700;
-        line-height: 22px;
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 21px;
         overflow-wrap: anywhere;
+      }
+
+      .common-meta {
+        display: grid;
+        gap: 8px;
+        margin: 12px 0 0;
+        padding-top: 12px;
+        border-top: 1px solid var(--hairline);
+      }
+
+      .common-meta .detail-row {
+        grid-template-columns: 88px minmax(0, 1fr);
+      }
+
+      .common-meta dd {
+        text-align: left;
       }
 
       .inspector-body {
@@ -555,7 +618,7 @@
         margin-bottom: 12px;
         font-size: 15px;
         line-height: 22px;
-        font-weight: 700;
+        font-weight: 600;
       }
 
       .detail-grid {
@@ -643,7 +706,7 @@
         gap: 12px;
         cursor: pointer;
         font-size: 15px;
-        font-weight: 700;
+        font-weight: 600;
         list-style: none;
       }
 
@@ -714,7 +777,7 @@
         display: none;
       }
 
-      @media (max-width: 1279px) {
+      @media (max-width: 1279.98px) {
         :root {
           --sidebar: 184px;
         }
@@ -961,7 +1024,7 @@
             <h1>스킬·도구</h1>
             <p class="subtitle">무엇을 쓸 수 있고, 어디까지 확인됐는지 봅니다.</p>
           </div>
-          <span class="snapshot">정본 스냅샷 · 2026-08-22</span>
+          <span class="snapshot">예시 데이터 · 대표 8개 / 정본 수량 201 · 2026-08-22 catalog 기준</span>
         </header>
 
         <section class="toolbar" aria-label="스킬·도구 찾기">
@@ -1012,7 +1075,7 @@
             <tr>
               <th scope="col" aria-sort="none"><button class="sort-button" type="button" data-sort="id">이름<span class="sort-state"></span></button></th>
               <th scope="col" aria-sort="none"><button class="sort-button" type="button" data-sort="kind">종류<span class="sort-state"></span></button></th>
-              <th scope="col" aria-sort="none"><button class="sort-button" type="button" data-sort="lifecycle">정본 단계<span class="sort-state"></span></button></th>
+              <th scope="col" aria-sort="none"><button class="sort-button" type="button" data-sort="lifecycle">정본·릴리스<span class="sort-state"></span></button></th>
               <th scope="col" aria-sort="none"><button class="sort-button" type="button" data-sort="support">지원 환경<span class="sort-state"></span></button></th>
               <th scope="col" aria-sort="none"><button class="sort-button" type="button" data-sort="pc">현재 PC<span class="sort-state"></span></button></th>
             </tr>
@@ -1027,10 +1090,12 @@
       <aside class="inspector" id="inspector" aria-labelledby="inspectorTitle">
         <header class="inspector-head">
           <button type="button" class="close-inspector" id="closeInspector" aria-label="상세 닫기">닫기</button>
-          <div class="inspector-eyebrow" id="inspectorKind"></div>
+          <p class="comparison-warning" id="comparisonWarning" hidden>의도적으로 잘못된 대조본 — 릴리스 단계만으로 현재 PC 설치 상태를 추론했습니다.</p>
+          <div class="inspector-eyebrow"><span id="inspectorKind"></span><span class="fixture-marker">예시 데이터</span></div>
           <h2 id="inspectorTitle"></h2>
           <p id="inspectorSummary"></p>
           <div class="status-summary" id="inspectorStatus"></div>
+          <dl class="common-meta" id="inspectorMeta"></dl>
         </header>
         <div class="inspector-body" id="inspectorBody"></div>
         <footer class="inspector-actions" id="inspectorActions"></footer>
@@ -1047,13 +1112,16 @@
           kindLabel: "스킬",
           lifecycle: "reviewed",
           lifecycleLabel: "검토됨",
+          releaseInclusion: "확인 안 됨",
           support: "4개 환경",
+          owner: "yohan-agent-kit",
+          sourceRef: "distribution/asset-catalog.json",
+          verification: "검증 기록 없음",
           clients: [["Claude Code", "지원"], ["Codex", "지원"], ["Cursor", "지원"], ["Antigravity", "지원"]],
           summary: "프로젝트 맥락에 맞춰 디자인 작업 방식을 구성합니다.",
           sections: [
             { title: "스킬 정보", rows: [["구성 방식", "프로젝트별 동적 구성"], ["자동 호출", "가능"]] },
-            { title: "참조 문서", items: ["DesignContext", "팀 구성 기준", "검증 기준"] },
-            { title: "근거", rows: [["관리 주체", "yohan-agent-kit"], ["검증", "기록 없음"]] }
+            { title: "참조 문서", items: ["DesignContext", "팀 구성 기준", "검증 기준"] }
           ],
           actions: ["문서 열기", "근거 보기"]
         },
@@ -1063,12 +1131,15 @@
           kindLabel: "MCP",
           lifecycle: "released",
           lifecycleLabel: "배포됨",
+          releaseInclusion: "확인 안 됨",
           support: "4개 환경",
+          owner: "yohan-core",
+          sourceRef: ".mcp.json",
+          verification: "검증 기록 없음",
           clients: [["Claude Code", "지원"], ["Codex", "지원"], ["Cursor", "지원"], ["Antigravity", "지원"]],
           summary: "요한 MCP 서버의 연결 정의입니다.",
           sections: [
-            { title: "연결 정보", rows: [["연결 방식", "확인 안 됨"], ["필요한 환경 설정", "YOHAN_ECOSYSTEM_ROOT"], ["제공 기능", "확인 안 됨"]] },
-            { title: "근거", rows: [["관리 주체", "yohan-core"], ["정본 파일", ".mcp.json"], ["검증", "기록 없음"]] }
+            { title: "연결 정보", rows: [["연결 방식", "확인 안 됨"], ["필요한 환경 설정", "YOHAN_ECOSYSTEM_ROOT"], ["제공 기능", "확인 안 됨"]] }
           ],
           actions: ["근거 보기", "연결 상태 확인"]
         },
@@ -1078,13 +1149,16 @@
           kindLabel: "플러그인",
           lifecycle: "released",
           lifecycleLabel: "배포됨",
+          releaseInclusion: "확인 안 됨",
           support: "Claude Code",
+          owner: "yohan-agent-kit",
+          sourceRef: "distribution/asset-catalog.json",
+          verification: "검증 기록 없음",
           clients: [["Claude Code", "지원"], ["Codex", "지원 안 함"], ["Cursor", "지원 안 함"], ["Antigravity", "지원 안 함"]],
           summary: "비판적 사고 모드를 제공하는 플러그인입니다.",
           sections: [
             { title: "플러그인 정보", rows: [["버전", "0.1.0"], ["호환 범위", "Claude Code 전용"]] },
-            { title: "포함 항목", items: ["스킬", "에이전트", "명령", "훅"] },
-            { title: "근거", rows: [["관리 주체", "yohan-agent-kit"], ["검증", "기록 없음"]] }
+            { title: "포함 항목", items: ["스킬", "에이전트", "명령", "훅"] }
           ],
           actions: ["구성 보기", "근거 보기"]
         },
@@ -1094,13 +1168,16 @@
           kindLabel: "에이전트",
           lifecycle: "released",
           lifecycleLabel: "배포됨",
+          releaseInclusion: "확인 안 됨",
           support: "4개 환경",
+          owner: "critical-thinking",
+          sourceRef: "distribution/asset-catalog.json",
+          verification: "검증 기록 없음",
           clients: [["Claude Code", "지원"], ["Codex", "지원"], ["Cursor", "지원"], ["Antigravity", "지원"]],
           summary: "아이디어와 의사결정을 반대 입장에서 검토합니다.",
           sections: [
             { title: "에이전트 정보", rows: [["책임", "추론·설계·결정 검토"], ["기본 모델 힌트", "sonnet"], ["허용 도구", "Read · Grep · Glob · WebSearch"]] },
-            { title: "사용 스킬", items: ["critical-thinking"] },
-            { title: "근거", rows: [["관리 주체", "critical-thinking"], ["검증", "기록 없음"]] }
+            { title: "사용 스킬", items: ["critical-thinking"] }
           ],
           actions: ["정의 보기", "근거 보기"]
         },
@@ -1110,12 +1187,16 @@
           kindLabel: "훅",
           lifecycle: "candidate",
           lifecycleLabel: "후보",
+          releaseInclusion: "확인 안 됨",
           support: "4개 환경",
+          owner: "확인 안 됨",
+          sourceRef: "홈 설정 조사",
+          verification: "검증 기록 없음",
           clients: [["Claude Code", "지원 대상"], ["Codex", "지원 대상"], ["Cursor", "지원 대상"], ["Antigravity", "지원 대상"]],
           summary: "새 세션의 제목을 정하는 훅 후보입니다.",
           sections: [
             { title: "훅 정보", rows: [["처리 대상", "세션 제목"], ["이벤트 연결", "확인 안 됨"], ["실패 정책", "확인 안 됨"], ["제한 시간", "확인 안 됨"]] },
-            { title: "근거", rows: [["출처", "홈 설정 조사"], ["조사 시점", "2026-08-14"], ["검증", "기록 없음"]] }
+            { title: "근거", rows: [["조사 시점", "2026-08-14"]] }
           ],
           actions: ["관련 조사", "근거 보기"]
         },
@@ -1125,12 +1206,15 @@
           kindLabel: "스킬",
           lifecycle: "released",
           lifecycleLabel: "배포됨",
+          releaseInclusion: "확인 안 됨",
           support: "Claude Code",
+          owner: "workflow",
+          sourceRef: "distribution/asset-catalog.json",
+          verification: "검증 기록 없음",
           clients: [["Claude Code", "지원"], ["Codex", "지원 안 함"], ["Cursor", "지원 안 함"], ["Antigravity", "지원 안 함"]],
           summary: "릴리스 전 검증 절차를 안내하는 스킬입니다.",
           sections: [
-            { title: "스킬 정보", rows: [["호환 범위", "Claude Code 전용"], ["자동 호출", "확인 안 됨"]] },
-            { title: "근거", rows: [["관리 주체", "workflow"], ["검증", "기록 없음"]] }
+            { title: "스킬 정보", rows: [["호환 범위", "Claude Code 전용"], ["자동 호출", "확인 안 됨"]] }
           ],
           actions: ["문서 열기", "근거 보기"]
         },
@@ -1140,12 +1224,15 @@
           kindLabel: "규칙",
           lifecycle: "released",
           lifecycleLabel: "배포됨",
+          releaseInclusion: "확인 안 됨",
           support: "4개 환경",
+          owner: "yohan-agent-kit",
+          sourceRef: "distribution/asset-catalog.json",
+          verification: "검증 기록 없음",
           clients: [["Claude Code", "지원"], ["Codex", "지원"], ["Cursor", "지원"], ["Antigravity", "지원"]],
           summary: "에이전트 공통 운영 규칙입니다.",
           sections: [
-            { title: "규칙 정보", rows: [["적용 범위", "에이전트 공통"], ["전파 대상", "4개 환경"], ["우선순위", "확인 안 됨"]] },
-            { title: "근거", rows: [["관리 주체", "yohan-agent-kit"], ["검증", "기록 없음"]] }
+            { title: "규칙 정보", rows: [["적용 범위", "에이전트 공통"], ["전파 대상", "4개 환경"], ["우선순위", "확인 안 됨"]] }
           ],
           actions: ["규칙 보기", "근거 보기"]
         },
@@ -1155,12 +1242,15 @@
           kindLabel: "스크립트",
           lifecycle: "released",
           lifecycleLabel: "배포됨",
+          releaseInclusion: "확인 안 됨",
           support: "4개 환경",
+          owner: "yohan-agent-kit",
+          sourceRef: "distribution/asset-catalog.json",
+          verification: "검증 기록 없음",
           clients: [["Claude Code", "지원"], ["Codex", "지원"], ["Cursor", "지원"], ["Antigravity", "지원"]],
           summary: "에이전트 키트의 스크립트 자산입니다.",
           sections: [
-            { title: "스크립트 정보", rows: [["용도", "확인 안 됨"], ["읽기·쓰기 경계", "확인 안 됨"], ["패키지 포함", "확인 안 됨"]] },
-            { title: "근거", rows: [["관리 주체", "yohan-agent-kit"], ["검증", "기록 없음"]] }
+            { title: "스크립트 정보", rows: [["용도", "확인 안 됨"], ["읽기·쓰기 경계", "확인 안 됨"], ["패키지 포함", "확인 안 됨"]] }
           ],
           actions: ["정의 보기", "근거 보기"]
         }
@@ -1182,10 +1272,12 @@
       const inspector = document.getElementById("inspector");
       const inspectorBackdrop = document.getElementById("inspectorBackdrop");
       const closeInspector = document.getElementById("closeInspector");
+      const comparisonWarning = document.getElementById("comparisonWarning");
       const title = document.getElementById("inspectorTitle");
       const summary = document.getElementById("inspectorSummary");
       const kind = document.getElementById("inspectorKind");
       const inspectorStatus = document.getElementById("inspectorStatus");
+      const inspectorMeta = document.getElementById("inspectorMeta");
       const body = document.getElementById("inspectorBody");
       const actions = document.getElementById("inspectorActions");
       const search = document.getElementById("assetSearch");
@@ -1193,7 +1285,8 @@
       const moreMenu = document.getElementById("moreMenu");
       const mobileSort = document.getElementById("mobileSort");
       const toast = document.getElementById("toast");
-      const overlayInspector = window.matchMedia("(max-width: 1279px)");
+      const overlayInspector = window.matchMedia("(max-width: 1279.98px)");
+      if (overlayInspector.matches) state.inspectorOpen = false;
       const backgroundRegions = [
         document.querySelector(".topbar"),
         document.querySelector(".sidebar"),
@@ -1252,14 +1345,16 @@
         return left.id.localeCompare(right.id, "ko", { numeric: true, sensitivity: "base" });
       }
 
-      function selectAsset(id, moveFocus = false) {
+      function focusAsset(id) {
+        document.querySelector(`.asset-select[data-asset-id="${CSS.escape(id)}"]`)?.focus();
+      }
+
+      function selectAsset(id, { restoreListFocus = false } = {}) {
         returnFocusAssetId = id;
         state.selectedId = id;
         state.inspectorOpen = true;
         render({ focusInspector: overlayInspector.matches });
-        if (moveFocus && !overlayInspector.matches) {
-          document.querySelector(`.asset-select[data-asset-id="${CSS.escape(id)}"]`)?.focus();
-        }
+        if (restoreListFocus && !overlayInspector.matches) focusAsset(id);
       }
 
       function inspectorFocusableElements() {
@@ -1276,11 +1371,12 @@
       function syncInspectorModality({ focusInspector = false, restoreOnDesktop = false } = {}) {
         const modal = state.inspectorOpen && overlayInspector.matches;
         const focusWasInside = inspector.contains(document.activeElement);
+        comparisonWarning.hidden = !(state.misleading && modal);
 
         if (modal) {
           inspector.setAttribute("role", "dialog");
           inspector.setAttribute("aria-modal", "true");
-          inspector.setAttribute("aria-describedby", "inspectorSummary");
+          inspector.setAttribute("aria-describedby", state.misleading ? "comparisonWarning inspectorSummary" : "inspectorSummary");
           inspectorBackdrop.hidden = false;
 
           if (focusInspector || !focusWasInside) closeInspector.focus();
@@ -1323,7 +1419,7 @@
           const cells = [
             ["이름", asset.id, ""],
             ["종류", asset.kindLabel, ""],
-            ["정본 단계", asset.lifecycleLabel, ""],
+            ["정본·릴리스", asset.lifecycleLabel, ""],
             ["지원 환경", asset.support, ""],
             ["현재 PC", currentPc.label, currentPc.className]
           ];
@@ -1339,14 +1435,28 @@
               selectButton.setAttribute("aria-controls", "inspector");
               if (asset.id === state.selectedId) selectButton.setAttribute("aria-current", "true");
               selectButton.addEventListener("keydown", (event) => handleRowKeydown(event, asset.id, visible));
+              selectButton.addEventListener("click", () => selectAsset(asset.id, { restoreListFocus: true }));
               cell.appendChild(selectButton);
+            } else if (label === "정본·릴리스") {
+              const stateStack = document.createElement("span");
+              stateStack.className = "asset-state-stack";
+              const lifecycle = document.createElement("span");
+              lifecycle.textContent = value;
+              const release = document.createElement("span");
+              release.className = "asset-state-meta";
+              release.textContent = `릴리스 · ${asset.releaseInclusion}`;
+              stateStack.append(lifecycle, release);
+              cell.appendChild(stateStack);
             } else {
               cell.textContent = value;
             }
             if (className) cell.className = className;
             row.appendChild(cell);
           }
-          row.addEventListener("click", () => selectAsset(asset.id));
+          row.addEventListener("click", (event) => {
+            if (event.target.closest(".asset-select")) return;
+            selectAsset(asset.id);
+          });
           rows.appendChild(row);
         }
       }
@@ -1357,7 +1467,7 @@
           event.preventDefault();
           const delta = event.key === "ArrowDown" ? 1 : -1;
           const next = visible[(index + delta + visible.length) % visible.length];
-          selectAsset(next.id, true);
+          selectAsset(next.id, { restoreListFocus: true });
         }
       }
 
@@ -1398,7 +1508,8 @@
         kind.textContent = asset.kindLabel;
         title.textContent = asset.id;
         summary.textContent = asset.summary;
-        inspectorStatus.innerHTML = `<div class="status-summary-item"><span class="status-summary-label">정본 단계</span><strong class="status-summary-value">${asset.lifecycleLabel}</strong></div><div class="status-summary-item"><span class="status-summary-label">현재 PC</span><strong class="status-summary-value ${currentPc.className}">${currentPc.label}</strong></div>`;
+        inspectorStatus.innerHTML = `<div class="status-summary-item"><span class="status-summary-label">정본 단계</span><strong class="status-summary-value">${asset.lifecycleLabel}</strong></div><div class="status-summary-item"><span class="status-summary-label">릴리스 포함</span><strong class="status-summary-value">${asset.releaseInclusion}</strong></div><div class="status-summary-item"><span class="status-summary-label">현재 PC</span><strong class="status-summary-value ${currentPc.className}">${currentPc.label}</strong></div><div class="status-summary-item"><span class="status-summary-label">검증</span><strong class="status-summary-value">${asset.verification}</strong></div>`;
+        inspectorMeta.innerHTML = `<div class="detail-row"><dt>관리 주체</dt><dd>${asset.owner}</dd></div><div class="detail-row"><dt>출처</dt><dd>${asset.sourceRef}</dd></div>`;
         const clientMarkup = `<section class="detail-section"><h3>지원 환경</h3><ul class="client-list">${asset.clients.map(([client, note]) => `<li class="client-item"><img class="client-icon" src="${clientIcon(client)}" alt="" width="34" height="34" /><span class="client-name">${client}</span><span class="client-note">${note}</span></li>`).join("")}</ul></section>`;
         body.innerHTML = clientMarkup + asset.sections.map(sectionMarkup).join("");
         actions.innerHTML = asset.actions.map((label, index) => `<button type="button" class="action-button ${index === asset.actions.length - 1 ? "primary" : ""}" data-action="${label}">${label}</button>`).join("");
