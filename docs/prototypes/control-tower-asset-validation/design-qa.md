@@ -5,6 +5,7 @@
 - Visual source: `docs/design/control-tower-vnext/visual-hierarchy-contract.md`
 - Data contract: `docs/design/control-tower-vnext/asset-detail-contract.md`
 - Prototype: `docs/prototypes/control-tower-asset-validation/index.html`
+- Prototype evidence commit: `48b99b9bfd23321258a1bc4c13d536d119aa29b7`
 
 ## DesignContext
 
@@ -219,7 +220,7 @@
 
 - Design-to-HTML 기술 구현 게이트: passed.
 - 실제 사용자 5개 과제와 구조 승인 게이트: not run.
-- Git 보존 게이트: blocked. 프로토타입 디렉터리가 아직 미추적 상태이며 commit SHA가 없다.
+- Git 보존 게이트: partial. 프로토타입과 비교 증거는 `48b99b9bfd23321258a1bc4c13d536d119aa29b7`에 보존됐지만, 위에서 참조한 `visual-hierarchy-contract.md`와 `asset-detail-contract.md`는 아직 미추적 상태다.
 - 전체 디자인 상태: candidate A. 기술 구현은 통과했지만 Git 보존 전에는 Design-to-HTML 인수인계를 차단한다.
 
 final result: blocked
