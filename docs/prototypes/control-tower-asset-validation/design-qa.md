@@ -10,7 +10,7 @@
 - Browser QA script: `docs/prototypes/control-tower-asset-validation/browser-qa.js`
 - Browser QA result: `docs/prototypes/control-tower-asset-validation/audit/browser-qa-results.json`
 - Prototype implementation baseline: `48b99b9bfd23321258a1bc4c13d536d119aa29b7`
-- Validated evidence bundle: final handoff commit 대상 · 커밋 뒤 후속 보고서에 실제 해시 기록
+- Validated evidence bundle: `4395bd0348f072e37700b21f8c425df945be7b36`
 
 ## DesignContext
 
@@ -228,6 +228,13 @@
 - P1 해결: 고정된 대표 8개 fixture를 정본 스냅샷으로 오인하지 않도록 목록과 검사 열에 `예시 데이터`를 상시 표시한다.
 - 잔존 P0/P1: 없음.
 - 잔존 P2: 원격 브랜드 SVG의 production 로컬 고정, 실제 Windows 보조기술 조합, 설명 없는 사용자 과제 5개는 아직 별도 사람 게이트다.
+
+### 타벤더 최종 재검수
+
+- Reviewer: Claude Code · Sonnet 5 · high · read-only (`Read`, `Grep`, `Glob`).
+- Session: `b636ddd0-386a-4081-be16-111ef84152d4`.
+- Result: 새 P0/P1 없음. 178/178 수치, fixture 표식, 타입·안전·focus 계약, baseline commit 해시를 교차 확인했다.
+- Receipt caveat: 요청한 구조화 `VERDICT` 리터럴과 P2 개수는 reviewer 출력에서 누락됐다. 따라서 여기서는 기술 감사의 P0/P1 부재만 수용하며 제품 승인으로 확장하지 않는다.
 
 ## 현재 확인된 한계
 
