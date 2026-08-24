@@ -17,7 +17,8 @@
 - 포트: **3001**
 - **brain = SoT.** 관제탑은 읽기 자유 + **신규 파일 생성만** 허용. 기존 brain 파일 수정은 금지. active `ecosystem-contract.yaml` v0.3.0의 `control_tower.must_not: modify_existing_brain_files`가 이를 강제한다.
 - **로컬 전용.** localhost 서비스(Qdrant 6333 · Ollama 11434)와 로컬 파일시스템에 의존한다. 클라우드 배포 대상이 아니다.
-- brain 경로는 `YOHAN_OS_ROOT` env 로 해석한다. 절대경로 하드코딩 금지.
+- brain 경로는 `YOHAN_OS_ROOT` env 로만 해석한다.
+- 소스 코드에 개인·시스템 절대경로를 하드코딩하지 않는다.
 - 노션은 **사람용 뷰·모바일 인박스**. 정본이 아니다 (ADR-009).
 - 계층은 `projects.yaml`(brain) → `<repo>/goals/*.md` → `.vhk/events/*.jsonl` 순으로 읽는다.
 
@@ -28,10 +29,10 @@
 - AI 는 분류·상태변경을 **제안**만 한다. 승인은 사람.
 
 ## 코딩 규칙
-- TypeScript strict — `any` 금지. 타입 SoT 2축: 공용 = `src/lib/types.ts`, 벡터 = `src/lib/vector/types.ts` (벡터 모듈 7개 + 테스트가 `./types` 상대 import 라 같은 디렉토리 유지).
+- TypeScript strict — 명시적 `any` 대신 `unknown` 또는 구체 타입을 사용한다. 타입 SoT 2축: 공용 = `src/lib/types.ts`, 벡터 = `src/lib/vector/types.ts` (벡터 모듈 7개 + 테스트가 `./types` 상대 import 라 같은 디렉토리 유지).
 - try-catch 필수, 빈 catch 금지
 - `console.log` 프로덕션 제거
-- 파일명 kebab-case
+- 파일 기본 이름은 소문자 영단어를 하이픈으로 연결한다. `.test` 같은 역할 접미사는 허용한다.
 - 하드코딩 금지 — 경로·ID·상수는 설정 한 곳에
 
 ## 보안 코딩 규칙

@@ -48,4 +48,8 @@ node_modules/
 dist/
 .codex/
 logs/
+!/fixtures/agent-session-health/logs/
+!/fixtures/agent-session-health/logs/main.trace.ndjson
 .vhk/events/
+/.playwright-mcp/
+/.vhk/work-prompt.md

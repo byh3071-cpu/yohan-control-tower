@@ -5,10 +5,10 @@ import { Database, Inbox, RefreshCw, Settings2 } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import type { StatusResponse, IngestSummary, QueryResponse, CollectionName } from '@/lib/vector/types'
 import { sourcesByTier } from '@/lib/vector/sources'
-import CollectionStatus from '@/components/vector/CollectionStatus'
-import IngestButton from '@/components/vector/IngestButton'
-import LogViewer from '@/components/vector/LogViewer'
-import QueryTester from '@/components/vector/QueryTester'
+import CollectionStatus from '@/components/vector/collection-status'
+import IngestButton from '@/components/vector/ingest-button'
+import LogViewer from '@/components/vector/log-viewer'
+import QueryTester from '@/components/vector/query-tester'
 
 function timestamp(): string {
   return new Date().toLocaleTimeString('ko-KR', { hour12: false })
