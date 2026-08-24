@@ -3,8 +3,9 @@ vhk_format: 1
 type: goal
 id: 14
 title: 채택 시안 기반 Home·공통 셸
-status: NOT_STARTED
+status: DONE
 priority: P0
+completed: 2026-08-23
 ---
 
 # Goal 14: 채택 시안 기반 Home·공통 셸
@@ -23,12 +24,12 @@ priority: P0
 
 ## Completion Check
 
-- [ ] 1280px와 390px에서 상단 바·제목·주요 버튼이 잘리거나 서로 가리지 않는다.
-- [ ] Home의 제목·부제목·핵심 행동·보조 메타가 첫 시야에서 명확한 강약을 가진다.
-- [ ] 빠른 담기→최근 항목 갱신→컨텍스트 피크→명시적 행동의 핵심 경로가 실제 데이터로 작동한다.
-- [ ] 탭은 5개 상한을 유지하고 키보드 포커스·44px 주요 동작·reduced-motion을 확인한다.
-- [ ] `design-qa.md`가 `final result: passed`이고 P0·P1·P2가 모두 0건이다.
-- [ ] typecheck·lint·test·build·VHK policy·비밀값 검사가 통과한다.
+- [x] 1280px와 390px에서 상단 바·제목·주요 버튼이 잘리거나 서로 가리지 않는다.
+- [x] Home의 제목·부제목·핵심 행동·보조 메타가 첫 시야에서 명확한 강약을 가진다.
+- [x] 빠른 담기→최근 항목 갱신→컨텍스트 피크→명시적 행동의 핵심 경로가 실제 데이터로 작동한다.
+- [x] 탭은 5개 상한을 유지하고 키보드 포커스·44px 주요 동작·reduced-motion을 확인한다.
+- [x] `design-qa.md`가 `final result: passed`이고 P0·P1·P2가 모두 0건이다.
+- [x] typecheck·lint·test·build·VHK policy·비밀값 검사가 통과한다.
 
 ## Forbidden
 

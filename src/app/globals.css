@@ -82,6 +82,9 @@
   --sidebar-accent-foreground: #171717;
   --sidebar-border: #d9d3c8;
   --sidebar-ring: #ff5c28;
+  --app-header-height: 3.5rem;
+  --app-tabs-height: 2.75rem;
+  --app-chrome-height: calc(var(--app-header-height) + var(--app-tabs-height));
 }
 
 .dark {
@@ -116,6 +119,9 @@
   --sidebar-accent-foreground: oklch(0.94 0.01 250);
   --sidebar-border: oklch(0.30 0.01 252);
   --sidebar-ring: oklch(0.55 0.012 252);
+  --app-header-height: 3.5rem;
+  --app-tabs-height: 2.75rem;
+  --app-chrome-height: calc(var(--app-header-height) + var(--app-tabs-height));
 }
 
 @layer base {
@@ -129,11 +135,21 @@
     @apply font-sans;
     scrollbar-color: oklch(0.4 0.02 270) transparent;
   }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 }
 
 @layer components {
   .calendar-icon-button {
-    @apply inline-flex size-8 items-center justify-center rounded-lg border border-border bg-background transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring;
+    @apply inline-flex size-11 items-center justify-center rounded-lg border border-border bg-background transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring;
   }
 
   .calendar-input {

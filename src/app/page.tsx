@@ -103,7 +103,6 @@ export default function DashboardPage() {
   const [activeCategory, setActiveCategory] = useState<DocFilter>("all")
   const [selectedDoc, setSelectedDoc] = useState<string | null>(null)
   const [activeView, setActiveView] = useState<ViewTab>("home")
-  const [projectMission, setProjectMission] = useState<string | null>(null)
   const [docsMode, setDocsMode] = useState<DocsMode>("card")
   const [inboxOpen, setInboxOpen] = useState(true)
   const knowledgeHeadingRef = useRef<HTMLHeadingElement>(null)
@@ -292,12 +291,6 @@ export default function DashboardPage() {
     setMobileNavOpen(false)
   }, [])
 
-  const openMissionFromHome = useCallback((missionId: string) => {
-    setProjectMission(missionId)
-    setActiveView("projects")
-    setMobileNavOpen(false)
-  }, [])
-
   const openInboxFromHome = useCallback(() => {
     setActiveCategory("all")
     setDocsMode("card")
@@ -330,7 +323,7 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="h-screen flex items-center justify-center bg-background">
+      <div className="flex h-dvh items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-foreground flex items-center justify-center animate-pulse">
             <span className="text-background font-bold text-lg">Y</span>
@@ -344,14 +337,14 @@ export default function DashboardPage() {
   const sidebarHidden = activeView !== "docs"
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden">
+    <div className="flex h-dvh min-h-0 flex-col overflow-hidden">
       <Header
         onOpenSearch={() => setCmdOpen(true)}
         onOpenKnowledgeReview={() => {
           setActiveView("docs")
           setInboxOpen(true)
         }}
-        onOpenMobileNav={() => setMobileNavOpen(true)}
+        onOpenMobileNav={activeView === "docs" ? () => setMobileNavOpen(true) : undefined}
         stats={stats}
         gaps={scopeCounts.gaps}
       />
@@ -364,7 +357,7 @@ export default function DashboardPage() {
           type="button"
           aria-label="메뉴 닫기"
           className={cn(
-            "fixed left-0 right-0 top-12 bottom-0 z-[35] bg-black/40 transition-opacity md:hidden",
+            "fixed left-0 right-0 top-[var(--app-chrome-height)] bottom-0 z-[35] bg-black/40 transition-opacity md:hidden",
             mobileNavOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none",
             sidebarHidden && "hidden"
           )}
@@ -373,7 +366,7 @@ export default function DashboardPage() {
         <div
           className={cn(
             "z-[40] flex h-full shrink-0 transition-transform duration-200 ease-out max-md:shadow-2xl",
-            "fixed left-0 top-12 bottom-0 md:relative md:top-auto md:bottom-auto md:shadow-none md:transition-none",
+            "fixed left-0 top-[var(--app-chrome-height)] bottom-0 md:relative md:top-auto md:bottom-auto md:shadow-none md:transition-none",
             mobileNavOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0",
             sidebarHidden && "hidden"
           )}
@@ -390,24 +383,19 @@ export default function DashboardPage() {
         <div className="flex-1 flex flex-col overflow-hidden min-h-0">
           {/* ── 홈 ── 한 화면 관제. 상세 기능은 기존 4개 원장으로 흡수한다. */}
           {activeView === "home" && (
-            <ScrollArea className="flex-1 min-h-0">
+            <div className="flex min-h-0 flex-1 flex-col">
               <HomeView
-                stats={stats}
-                docCounts={counts}
-                gaps={scopeCounts.gaps}
                 dashboardError={dashboardError}
                 onNavigate={navigateFromHome}
-                onOpenMission={openMissionFromHome}
                 onOpenInbox={openInboxFromHome}
-                onOpenDoc={openDoc}
               />
-            </ScrollArea>
+            </div>
           )}
 
           {/* ── 프로젝트 ── 미션→레포→Task 3단 읽기 전용 드릴다운 */}
           {activeView === "projects" && (
             <ScrollArea className="flex-1 min-h-0">
-              <ProjectView initialMissionId={projectMission} />
+              <ProjectView />
             </ScrollArea>
           )}
 

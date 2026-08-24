@@ -430,7 +430,7 @@ export function CalendarView() {
             <ChevronRight size={16} aria-hidden />
           </button>
           <h2 className="ml-1 min-w-28 text-base font-semibold tracking-[-0.025em] sm:text-lg">{formatMonth(month)}</h2>
-          <button type="button" onClick={goToday} className="rounded-lg border border-border px-2.5 py-1.5 text-[10px] font-semibold hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring">
+          <button type="button" onClick={goToday} className="min-h-11 rounded-lg border border-border px-2.5 py-1.5 text-[10px] font-semibold hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring">
             오늘
           </button>
         </div>
@@ -440,13 +440,13 @@ export function CalendarView() {
             <ModeButton active={mode === "month"} onClick={() => setMode("month")} icon={<CalendarDays size={12} />} label="월간" />
             <ModeButton active={mode === "list"} onClick={() => setMode("list")} icon={<List size={12} />} label="목록" />
           </div>
-          <button type="button" onClick={openTrash} className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-2 text-[11px] font-semibold hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring">
+          <button type="button" onClick={openTrash} className="inline-flex min-h-11 items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-2 text-[11px] font-semibold hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring">
             <Trash2 size={12} aria-hidden /> 휴지통
           </button>
-          <button type="button" onClick={() => openCreate("task")} className="rounded-lg border border-border bg-background px-3 py-2 text-[11px] font-semibold hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring">
+          <button type="button" onClick={() => openCreate("task")} className="min-h-11 rounded-lg border border-border bg-background px-3 py-2 text-[11px] font-semibold hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring">
             할 일 추가
           </button>
-          <button type="button" onClick={() => openCreate("event")} className="inline-flex items-center gap-1.5 rounded-lg bg-foreground px-3 py-2 text-[11px] font-semibold text-background hover:opacity-90 focus-visible:ring-2 focus-visible:ring-[#ff5c28]">
+          <button type="button" onClick={() => openCreate("event")} className="inline-flex min-h-11 items-center gap-1.5 rounded-lg bg-foreground px-3 py-2 text-[11px] font-semibold text-background hover:opacity-90 focus-visible:ring-2 focus-visible:ring-[#ff5c28]">
             <Plus size={13} aria-hidden /> 일정 추가
           </button>
         </div>
@@ -583,7 +583,7 @@ export function CalendarView() {
 
 function ModeButton({ active, onClick, icon, label }: { active: boolean; onClick: () => void; icon: React.ReactNode; label: string }) {
   return (
-    <button type="button" aria-pressed={active} onClick={onClick} className={cn("inline-flex items-center gap-1 rounded-md px-2.5 py-1.5 text-[10px] font-semibold transition-colors", active ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}>{icon}{label}</button>
+    <button type="button" aria-pressed={active} onClick={onClick} className={cn("inline-flex min-h-11 items-center gap-1 rounded-md px-2.5 py-1.5 text-[10px] font-semibold transition-colors", active ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}>{icon}{label}</button>
   )
 }
 
@@ -646,7 +646,7 @@ function DayAgenda({ className, date, items, pendingTaskId, onToggleTask, onEdit
         <div className="flex min-h-32 flex-col items-center justify-center text-center sm:min-h-52">
           <CalendarDays size={19} className="mb-2 text-muted-foreground" aria-hidden />
           <p className="text-xs font-medium">비어 있는 날입니다.</p>
-          <button type="button" onClick={onAddTask} className="mt-3 text-[10px] font-semibold text-[#d94718] hover:underline hover:underline-offset-4">할 일 추가</button>
+          <button type="button" onClick={onAddTask} className="mt-3 min-h-11 px-3 text-[10px] font-semibold text-[#d94718] hover:underline hover:underline-offset-4">할 일 추가</button>
         </div>
       ) : (
         <div className="mt-4 space-y-2">
@@ -672,7 +672,7 @@ function AgendaItem({ item, pending, onToggleTask, onEdit, onDelete }: {
   return (
     <div className={cn("flex items-start gap-2.5 rounded-xl border px-3 py-2.5", item.kind === "event" ? "border-[#ff5c28]/25 bg-[#ff5c28]/[0.055]" : "border-border bg-background", done && "opacity-60")}>
       {item.kind === "task" ? (
-        <button type="button" disabled={pending} onClick={() => onToggleTask(item)} aria-label={done ? `${item.title} 다시 열기` : `${item.title} 완료`} className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-md border border-border hover:border-foreground/40 focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50">
+        <button type="button" disabled={pending} onClick={() => onToggleTask(item)} aria-label={done ? `${item.title} 다시 열기` : `${item.title} 완료`} className="flex size-11 shrink-0 items-center justify-center rounded-md border border-border hover:border-foreground/40 focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50">
           {pending ? <Loader2 size={11} className="animate-spin" /> : done ? <Check size={12} /> : <Square size={10} className="text-transparent" />}
         </button>
       ) : <span className="mt-1 size-2 shrink-0 rounded-full bg-[#ff5c28]" aria-hidden />}
@@ -685,10 +685,10 @@ function AgendaItem({ item, pending, onToggleTask, onEdit, onDelete }: {
         </div>
       </div>
       <div className="flex shrink-0 items-center gap-0.5">
-        <button type="button" onClick={() => onEdit(item)} aria-label={`${item.title} 수정`} className="flex size-7 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring">
+        <button type="button" onClick={() => onEdit(item)} aria-label={`${item.title} 수정`} className="flex size-11 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring">
           <Pencil size={12} aria-hidden />
         </button>
-        <button type="button" onClick={() => onDelete(item)} aria-label={`${item.title} 휴지통으로 이동`} className="flex size-7 items-center justify-center rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive focus-visible:ring-2 focus-visible:ring-ring">
+        <button type="button" onClick={() => onDelete(item)} aria-label={`${item.title} 휴지통으로 이동`} className="flex size-11 items-center justify-center rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive focus-visible:ring-2 focus-visible:ring-ring">
           <Trash2 size={12} aria-hidden />
         </button>
       </div>

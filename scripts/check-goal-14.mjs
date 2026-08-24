@@ -61,8 +61,28 @@ if (!skipDeep) {
 }
 
 // ─── goal 14 고유 검증 (직접 추가) ───────────────────────────────
-// const read = (p) => existsSync(p) ? readFileSync(p, 'utf-8') : null
-// must(read('src/foo.ts')?.includes('bar'), 'foo.ts 에 bar 존재')
+const read = (p) => existsSync(p) ? readFileSync(p, 'utf-8') : null
+const homeView = read('src/components/home-view.tsx')
+const viewTabs = read('src/components/view-tabs.tsx')
+const designQa = read('design-qa.md')
+
+must(
+  homeView?.includes('useState<"overview" | "calendar">("overview")')
+    && homeView.includes('<CalendarView />'),
+  'Home 개요/캘린더 모드와 CalendarView 진입점 유지',
+)
+must(
+  homeView?.includes('aria-label="Home 보기 방식"')
+    && homeView.includes('aria-pressed={homeMode === "calendar"}')
+    && homeView.includes('min-h-11'),
+  'Home 모드 전환의 키보드 상태와 44px 조작 크기',
+)
+must((viewTabs?.match(/\{ id: "/g) ?? []).length === 5, '상단 탭 5개 상한 유지')
+must(
+  /# Goal 14 디자인 QA[\s\S]*final result: passed/.test(designQa ?? '')
+    && /현재 결함 수: P0 0 · P1 0 · P2 0/.test(designQa ?? ''),
+  'Goal 14 디자인 QA passed 및 P0·P1·P2 0건',
+)
 
 if (pass) { console.log('✅ goal 14 gate passes'); process.exit(0) }
 console.log('❌ goal 14 gate failed'); process.exit(1)

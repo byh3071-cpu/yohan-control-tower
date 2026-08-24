@@ -37,12 +37,16 @@
 ├── components.json
 ├── config/
 │   └── goal-status-extensions.yaml
+├── design-qa.md
 ├── docs/
 │   ├── adr/
 │   │   ├── ADR-000-template.md
 │   │   ├── ADR-001-local-inbox-cli-bridge.md
 │   │   └── ADR-002-local-calendar-markdown-store.md
 │   ├── ARCHITECTURE.md
+│   ├── design/
+│   │   ├── home-common-shell/
+│   │   └── knowledge-review/
 │   ├── ECOSYSTEM-CONTRACT-AUDIT.md
 │   ├── log/
 │   │   ├── 2026-07-28-dashboard-migration.md
@@ -58,7 +62,10 @@
 │   │   ├── 2026-08-07-mission-project-drilldown-lint.md
 │   │   ├── 2026-08-07-mission-rollup-f004.md
 │   │   ├── 2026-08-10-focus-feed-knowledge-review.md
-│   │   └── 2026-08-12-control-tower-review-vector-ux.md
+│   │   ├── 2026-08-12-control-tower-review-vector-ux.md
+│   │   ├── 2026-08-22-goal-13-approval-proof.md
+│   │   ├── 2026-08-22-goal-14-home-common-shell.md
+│   │   └── 2026-08-23-goal-14-home-calendar-completion.md
 │   ├── patterns/
 │   │   ├── auth-loopback-origin-dns-rebinding.md
 │   │   ├── README.md
@@ -83,6 +90,7 @@
 │   ├── 11-vhk-all-done-handoff.md
 │   ├── 12-korean-user-facing-artifacts.md
 │   ├── 13-focus-feed-knowledge-review-proof.md
+│   ├── 14-home-common-shell.md
 │   ├── 2-ecosystem-home-mvp.md
 │   ├── 2-focus-feed-knowledge-review-ui.md
 │   ├── 3-mission-project-drilldown-lint.md
@@ -93,6 +101,7 @@
 │   ├── 8-calendar-mobile-agenda-first.md
 │   ├── 9-vhk-session-continuity.md
 │   └── _meta.md
+├── next-env.d.ts
 ├── next.config.ts
 ├── package-lock.json
 ├── package.json
@@ -113,6 +122,7 @@
 │   ├── check-goal-11.mjs
 │   ├── check-goal-12.mjs
 │   ├── check-goal-13.mjs
+│   ├── check-goal-14.mjs
 │   ├── check-goal-2.mjs
 │   ├── check-goal-3.mjs
 │   ├── check-goal-4.mjs
@@ -144,6 +154,9 @@
 │   │   ├── full-charts.tsx
 │   │   ├── graph-view-2d.tsx
 │   │   ├── header.tsx
+│   │   ├── home-context-peek.tsx
+│   │   ├── home-quick-capture.tsx
+│   │   ├── home-recent-inbox.tsx
 │   │   ├── home-view.tsx
 │   │   ├── knowledge-review-panel.tsx
 │   │   ├── overnight-status-card.tsx
@@ -160,17 +173,22 @@
 │   │   ├── view-tabs.tsx
 │   │   └── yohan-inbox-panel.tsx
 │   └── lib/
+│       ├── approval-flow.test.ts
+│       ├── approval-flow.ts
 │       ├── audits.ts
 │       ├── calendar-route.test.ts
 │       ├── calendar.test.ts
 │       ├── calendar.ts
 │       ├── constellation-gravity.ts
 │       ├── constellation.ts
+│       ├── doc-scope.test.ts
 │       ├── doc-scope.ts
 │       ├── docs-cache.ts
 │       ├── domains.ts
 │       ├── ecosystem-projects.ts
 │       ├── force-sim-2d.ts
+│       ├── home-inbox.test.ts
+│       ├── home-inbox.ts
 │       ├── http-cache.ts
 │       ├── inbox-controller.test.ts
 │       ├── inbox-controller.ts
@@ -192,6 +210,7 @@
 │       ├── utils.ts
 │       └── vector/
 ├── tsconfig.json
+├── tsconfig.tsbuildinfo
 └── VISION.md
 ```
 
@@ -266,15 +285,17 @@
 - `vhk seo — SEO·수익 대시보드 (init: 사이트 등록 + 자격증명 보관)`
 - `vhk config — vhk 사용자 설정 (set-rules-file: 사용자 규칙 YAML, 재시작 불필요)`
 
-## Active Goal
+## 최근 활동 (git log — goals/blockers/memory 미사용 시 폴백)
 
-- **id**: 13
-- **title**: Focus Feed 지식 검토 근거와 정확히 1회 승인 증명
-- **status**: IN_PROGRESS
-- **priority**: P0
-- **file**: goals\13-focus-feed-knowledge-review-proof.md
+```
+cfee44a chore: Goal 14 작업 단위 활성화
+84a24aa docs: Goal 13 완료 증거 동기화
+c10df43 feat: 지식 검토 위계와 승인 후 흐름 완성
+cf61612 docs: yohan-inbox 화면 검수 캡처 회수 (dev 루트에 떠 있던 것)
+c048f8d chore(위생): 지식 검토 UI 목표 문서 커밋 + 런타임 산출물 무시
+```
 
 ---
 
-_생성: 2026. 8. 22. 오후 7:54:34_
-_vhk-context-git: cf61612c6b1cdfaa531669d21ddfe14c96dc07e4_
+_생성: 2026. 8. 23. 오후 6:17:27_
+_vhk-context-git: cfee44a7cd2c461389b77ef023af8b31b6a30eae_

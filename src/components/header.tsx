@@ -27,13 +27,12 @@ export function Header({ onOpenSearch, onOpenKnowledgeReview, onOpenMobileNav, s
   ]
 
   return (
-    <header className="h-12 shrink-0 border-b border-border bg-background/80 backdrop-blur-sm flex items-center px-3 sm:px-4 gap-2 sm:gap-3 z-50">
+    <header className="z-50 flex h-[var(--app-header-height)] shrink-0 items-center gap-2 border-b border-border bg-background/80 px-3 backdrop-blur-sm sm:gap-3 sm:px-4">
       {onOpenMobileNav && (
         <Button
           type="button"
           variant="ghost"
-          size="icon"
-          className="h-8 w-8 shrink-0 md:hidden"
+          className="h-11 w-11 shrink-0 md:hidden"
           aria-label="메뉴 열기"
           onClick={onOpenMobileNav}
         >
@@ -49,7 +48,7 @@ export function Header({ onOpenSearch, onOpenKnowledgeReview, onOpenMobileNav, s
 
       <button
         onClick={onOpenSearch}
-        className="flex-1 min-w-0 max-w-md flex items-center gap-2 h-8 px-2 sm:px-3 rounded-lg border border-border bg-muted/50 text-muted-foreground text-sm transition-colors hover:bg-muted outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+        className="flex h-11 min-h-11 min-w-0 max-w-md flex-1 items-center gap-2 rounded-lg border border-border bg-muted/50 px-2 text-sm text-muted-foreground outline-none transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring sm:px-3"
       >
         <Search size={14} className="shrink-0" />
         <span className="flex-1 text-left">검색…</span>
@@ -59,7 +58,7 @@ export function Header({ onOpenSearch, onOpenKnowledgeReview, onOpenMobileNav, s
       </button>
 
       <div className="ml-auto flex items-center gap-1">
-        <div className="mr-1 hidden items-center gap-4 text-xs md:flex lg:gap-5">
+        <div className="mr-1 hidden items-center gap-4 text-sm md:flex lg:gap-5">
           {metrics.map((m) => (
             <span key={m.label} className="flex items-baseline gap-1.5 whitespace-nowrap">
               <span className="text-muted-foreground">{m.label}</span>
@@ -83,7 +82,7 @@ export function Header({ onOpenSearch, onOpenKnowledgeReview, onOpenMobileNav, s
           <Button
             type="button"
             variant="ghost"
-            className="h-11 gap-1.5 px-2 text-xs sm:px-3"
+            className="h-11 gap-1.5 px-2 text-sm sm:px-3"
             onClick={onOpenKnowledgeReview}
             aria-label="지식 검토 열기"
             title="Focus Feed에서 담은 지식 검토"
@@ -94,8 +93,7 @@ export function Header({ onOpenSearch, onOpenKnowledgeReview, onOpenMobileNav, s
         ) : null}
         <Button
           variant="ghost"
-          size="icon"
-          className="h-8 w-8"
+          className="h-11 w-11"
           onClick={toggle}
           aria-label={theme === "dark" ? "라이트 테마로 변경" : "다크 테마로 변경"}
           title={theme === "dark" ? "라이트 테마로 변경" : "다크 테마로 변경"}

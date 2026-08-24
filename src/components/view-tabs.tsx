@@ -13,11 +13,11 @@ import { cn } from "@/lib/utils"
 export type ViewTab = "home" | "projects" | "docs" | "records" | "vector"
 
 const TABS: { id: ViewTab; label: string; icon: React.ReactNode }[] = [
-  { id: "home", label: "홈", icon: <House size={14} /> },
-  { id: "projects", label: "프로젝트", icon: <FolderKanban size={14} /> },
-  { id: "docs", label: "문서·검토", icon: <Table2 size={14} /> },
-  { id: "records", label: "기록", icon: <Clock size={14} /> },
-  { id: "vector", label: "벡터", icon: <Database size={14} /> },
+  { id: "home", label: "홈", icon: <House size={16} /> },
+  { id: "projects", label: "프로젝트", icon: <FolderKanban size={16} /> },
+  { id: "docs", label: "문서·검토", icon: <Table2 size={16} /> },
+  { id: "records", label: "기록", icon: <Clock size={16} /> },
+  { id: "vector", label: "벡터", icon: <Database size={16} /> },
 ]
 
 interface ViewTabsProps {
@@ -27,7 +27,10 @@ interface ViewTabsProps {
 
 export function ViewTabs({ active, onChange }: ViewTabsProps) {
   return (
-    <div className="flex items-center gap-0.5 px-2 sm:px-4 border-b border-border bg-background/60 overflow-x-auto overflow-y-hidden">
+    <nav
+      aria-label="관제탑 보기"
+      className="grid h-[var(--app-tabs-height)] shrink-0 grid-cols-5 items-center gap-0.5 overflow-hidden border-b border-border bg-background/60 px-1 sm:flex sm:px-4"
+    >
       {TABS.map((t) => (
         <button
           key={t.id}
@@ -35,7 +38,7 @@ export function ViewTabs({ active, onChange }: ViewTabsProps) {
           onClick={() => onChange(t.id)}
           aria-pressed={active === t.id}
           className={cn(
-            "relative flex shrink-0 items-center gap-1.5 px-2.5 sm:px-3 py-2.5 text-xs font-medium transition-colors whitespace-nowrap",
+            "relative flex h-11 min-h-11 min-w-0 items-center justify-center gap-1 whitespace-nowrap px-1.5 text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:ring-ring sm:shrink-0 sm:gap-1.5 sm:px-3 sm:text-sm",
             active === t.id
               ? "text-foreground"
               : "text-muted-foreground hover:text-foreground"
@@ -48,6 +51,6 @@ export function ViewTabs({ active, onChange }: ViewTabsProps) {
           )}
         </button>
       ))}
-    </div>
+    </nav>
   )
 }
