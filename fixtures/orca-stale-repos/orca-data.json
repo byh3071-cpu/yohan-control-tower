@@ -1,0 +1,11 @@
+{
+  "repos": [
+    {
+      "id": "fixture-stale-repo",
+      "path": "Z:\\does-not-exist\\stale-repo-fixture",
+      "displayName": "stale-repo-fixture"
+    }
+  ],
+  "projects": [],
+  "projectHostSetups": []
+}

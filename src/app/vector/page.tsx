@@ -1,4 +1,4 @@
-import { VectorPanel } from '@/components/vector/VectorPanel'
+import { VectorPanel } from '@/components/vector/vector-panel'
 
 /**
  * 벡터 인프라 독립 주소.

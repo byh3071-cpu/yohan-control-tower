@@ -49,6 +49,7 @@ function runVhk() {
   const needsConfiguredSource = existingCoreRules.includes("generated from configured rules file")
   const updatesCoreRules = args[0] === "sync" || args[0] === "inject-bootstrap"
   const selectsNextGoal = args[0] === "goal" && args[1] === "next"
+  const checksProjectRules = args[0] === "check"
 
   if (updatesCoreRules && needsConfiguredSource && !process.env.VHK_RULES_FILE) {
     console.error("VHK 규칙 동기화 중단 — 설정된 CORE-RULES 원본을 찾지 못했습니다.")
@@ -74,7 +75,23 @@ function runVhk() {
     process.exit(1)
   }
 
-  const exitCode = result.status ?? 1
+  const vhkExitCode = result.status ?? 1
+  let projectPolicyExitCode = 0
+  if (checksProjectRules) {
+    const policyScript = join(process.cwd(), "scripts", "check-project-policy.ts")
+    const policyResult = spawnSync(process.execPath, ["--import", "tsx", policyScript], {
+      cwd: process.cwd(),
+      env: process.env,
+      stdio: "inherit",
+    })
+    if (policyResult.error) {
+      console.error(`프로젝트 전용 정책 점검 실패: ${policyResult.error.message}`)
+      projectPolicyExitCode = 1
+    } else {
+      projectPolicyExitCode = policyResult.status ?? 1
+    }
+  }
+  const exitCode = vhkExitCode !== 0 ? vhkExitCode : projectPolicyExitCode
   if (exitCode === 0 && selectsNextGoal && allGoalsDone()) {
     if (writeAllDoneSnapshot()) console.log("  ✅ next-task.md 전체 완료 snapshot 보정 — VHK #558")
     else console.warn("  ⚠️ 수동 작성 next-task.md는 보정하지 않았습니다 — VHK #558")

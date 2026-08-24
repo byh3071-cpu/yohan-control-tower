@@ -1,0 +1,1 @@
+{"type":"effect-span","name":"git.exec","startTimeUnixNano":"1000000000000000000","attributes":{"kind":"git","cwd":"Z:\\does-not-exist\\agent-health-fixture"},"exit":{"_tag":"Failure","cause":"Error: spawn git ENOENT"}}
