@@ -24,3 +24,5 @@
 {"ts":"2026-08-07T11:49:37.429Z","action":"sync","channel":"cli","guard":"allow","ran":true,"reason":"low-risk","agent":"unknown"}
 {"ts":"2026-08-07T11:49:42.569Z","action":"sync","channel":"cli","guard":"allow","ran":true,"reason":"low-risk","agent":"unknown"}
 {"ts":"2026-08-07T14:18:18.420Z","action":"sync","channel":"cli","guard":"allow","ran":true,"reason":"low-risk","agent":"unknown"}
+{"ts":"2026-08-24T03:51:04.775Z","action":"verify","channel":"cli","guard":"allow","ran":true,"reason":"result-pass","result":"PASS","sha":"46da6ead111874d50cc01d8df04a2a2883caae93"}
+{"ts":"2026-08-24T03:56:38.294Z","action":"verify","channel":"cli","guard":"allow","ran":true,"reason":"result-pass","result":"PASS","sha":"46da6ead111874d50cc01d8df04a2a2883caae93"}

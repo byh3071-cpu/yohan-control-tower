@@ -14,7 +14,7 @@ import { YohanInboxPanel } from "@/components/yohan-inbox-panel"
 import { FullCharts } from "@/components/full-charts"
 import { TimelineView } from "@/components/timeline-view"
 import { TableView } from "@/components/table-view"
-import { HomeView } from "@/components/home-view"
+import { NowView } from "@/components/now-view"
 import { ProjectView } from "@/components/project-view"
 import { VectorPanel } from "@/components/vector/VectorPanel"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -102,12 +102,11 @@ export default function DashboardPage() {
   const [activeCategory, setActiveCategory] = useState<DocFilter>("all")
   const [selectedDoc, setSelectedDoc] = useState<string | null>(null)
   const [activeView, setActiveView] = useState<ViewTab>("home")
-  const [projectMission, setProjectMission] = useState<string | null>(null)
   const [docsMode, setDocsMode] = useState<DocsMode>("card")
   const [inboxOpen, setInboxOpen] = useState(true)
   const [cmdOpen, setCmdOpen] = useState(false)
   const [loading, setLoading] = useState(true)
-  const [dashboardError, setDashboardError] = useState<string | null>(null)
+  const [, setDashboardError] = useState<string | null>(null)
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [constellationData, setConstellationData] = useState<ConstellationData | null>(null)
   const [constellationAsOfYmd, setConstellationAsOfYmd] = useState<string | null>(null)
@@ -276,26 +275,8 @@ export default function DashboardPage() {
     setMobileNavOpen(false)
   }, [])
 
-  const navigateFromHome = useCallback((tab: ViewTab, category?: DocFilter) => {
-    if (category) {
-      setActiveCategory(category)
-      setDocsMode("card")
-    }
-    setActiveView(tab)
-    setMobileNavOpen(false)
-  }, [])
-
-  const openMissionFromHome = useCallback((missionId: string) => {
-    setProjectMission(missionId)
+  const openProjectsFromNow = useCallback(() => {
     setActiveView("projects")
-    setMobileNavOpen(false)
-  }, [])
-
-  const openInboxFromHome = useCallback(() => {
-    setActiveCategory("all")
-    setDocsMode("card")
-    setInboxOpen(true)
-    setActiveView("docs")
     setMobileNavOpen(false)
   }, [])
 
@@ -362,23 +343,14 @@ export default function DashboardPage() {
           {/* ── 홈 ── 한 화면 관제. 상세 기능은 기존 4개 원장으로 흡수한다. */}
           {activeView === "home" && (
             <ScrollArea className="flex-1 min-h-0">
-              <HomeView
-                stats={stats}
-                docCounts={counts}
-                gaps={scopeCounts.gaps}
-                dashboardError={dashboardError}
-                onNavigate={navigateFromHome}
-                onOpenMission={openMissionFromHome}
-                onOpenInbox={openInboxFromHome}
-                onOpenDoc={openDoc}
-              />
+              <NowView onOpenProjects={openProjectsFromNow} />
             </ScrollArea>
           )}
 
           {/* ── 프로젝트 ── 미션→레포→Task 3단 읽기 전용 드릴다운 */}
           {activeView === "projects" && (
             <ScrollArea className="flex-1 min-h-0">
-              <ProjectView initialMissionId={projectMission} />
+              <ProjectView />
             </ScrollArea>
           )}
 

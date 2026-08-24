@@ -46,7 +46,7 @@
     "yaml": "^2.9.0"
   },
   "devDependencies": {
-    "@byh3071/vhk": "2.12.0",
+    "@byh3071/vhk": "2.14.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

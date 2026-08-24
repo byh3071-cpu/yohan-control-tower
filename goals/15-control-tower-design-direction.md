@@ -3,8 +3,9 @@ vhk_format: 1
 type: goal
 id: 15
 title: 요한 관제탑 디자인 방향 선택과 기술 명세
-status: IN_PROGRESS
+status: DONE
 priority: P0
+completed: 2026-08-24
 ---
 
 # Goal 15: 요한 관제탑 디자인 방향 선택과 기술 명세
@@ -26,8 +27,8 @@ priority: P0
 - [x] 제품 목적, 사용자, SoT, 쓰기 경계, 탭 상한, 기존 자산과 현재 구현의 충돌을 기록한다.
 - [x] 외부 공식 레퍼런스가 각각 어떤 설계 질문에 답하는지 기록한다.
 - [x] 실제 시각 시안 세 개를 같은 조건으로 생성하고 비교한다.
-- [ ] 사용자가 한 방향을 선택하거나 조합·재생성을 명시한다.
-- [ ] 선택된 방향의 디자인·기술 명세와 검증 계획을 완성한다.
+- [x] 사용자가 한 방향을 선택하거나 조합·재생성을 명시한다.
+- [x] 선택된 방향의 디자인·기술 명세와 검증 계획을 완성한다.
 
 ## Forbidden
 
@@ -42,6 +43,10 @@ priority: P0
 - `docs/design/control-tower-vnext/design-context.md`
 - `docs/design/control-tower-vnext/research.md`
 - `docs/design/control-tower-vnext/decision-log.md`
+- `docs/design/control-tower-vnext/work-item-language-contract.md`
+- `docs/design/control-tower-vnext/design-spec.md`
+- `docs/prototypes/control-tower-now-mova-r3/index.html`
+- `docs/prototypes/control-tower-now-mova-r3/now-mova-r3-1440.png`
 
 ## 계보 메모
 

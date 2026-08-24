@@ -1,21 +1,22 @@
 # 요한 관제탑 디자인 세션 인수인계
 
-- Handoff version: 1.0
-- Prepared: 2026-08-23 (Asia/Seoul)
+- Handoff version: 1.3
+- Prepared: 2026-08-24 (Asia/Seoul)
 - Repository: `yohan-control-tower`
 - Branch: `codex/control-tower-design-direction`
-- Evidence baseline: `861c856`
-- Current direction: Candidate A
-- Production UI authorization: 없음
+- Evidence baseline: verified working tree based on `46da6ea`
+- Current direction: NOW-R3 approved · Goal 16 implemented and verified
+- Production UI authorization: Goal 16 범위 완료 · 후속 화면은 새 사람 게이트 필요
 
 ## 현재 상태
 
-- **기술 검증** — Candidate A browser QA 178/178 통과.
-- **적대 검수** — Claude Code 최종 검수에서 새 P0/P1 없음.
-- **시각 방향** — 2안의 간결한 골격·관계 표현과 3안의 행 밀도·아이콘을 Mova 밝은 중립 셸로 결합.
-- **사용자 승인** — 공통 시각 기반은 선택됐지만 목록 밀도, 검사 열 정보 순서, 반복 상태의 최종 미감 승인은 아직 없음.
-- **구현 경계** — production `src` 수정은 승인되지 않음.
-- **세션 전달** — 문서 준비 완료, 새 세션 수신 확인 대기.
+- **선택 방향** — NOW-R3의 `한 화면 한 주인공`, `단계 → 목표 → 작업`, 조건부 이슈, 빈 메타 숨김을 사용자가 2026-08-24 승인함.
+- **시각 언어** — Mova 밝은 중립 셸, 강한 단일 H1, 얇은 구분선, 제한된 청록 focus를 사용함.
+- **기술 명세** — `CONTROL-TOWER-VNEXT-SPEC-R3.1`이 다섯 화면 책임과 단계별 구현 순서를 소유함.
+- **구현 상태** — Goal 16에서 기존 5탭을 유지한 채 Home 진입을 `NowView`로 교체하고 실제 Goal·Completion Check를 연결함.
+- **검증 범위** — 360·432·768·1280·1440px, live·multiple·empty·error·loading, 키보드, 대비, 경로 allowlist, typecheck·lint·test·build를 통과함. 정본은 `design-qa.md`임.
+- **구현 경계** — Goal 16 밖의 `작업`, `지식·디자인`, `스킬·도구`, `운영 기록`, 전역 탐색명 전환은 아직 승인되지 않음.
+- **VHK 상태** — npm 설치 가능 최신판 `2.14.0`. Goal 15·16은 DONE이고 Goal 13만 IN_PROGRESS임.
 
 ## 먼저 읽을 정본
 
@@ -23,11 +24,11 @@
 2. `docs/design/control-tower-vnext/taste-profile.md`
 3. `docs/design/control-tower-vnext/design-operations-manual.md`
 4. `docs/design/control-tower-vnext/decision-log.md`
-5. `docs/design/control-tower-vnext/design-spec.md`
-6. `docs/prototypes/control-tower-asset-validation/design-qa.md`
-7. `docs/log/2026-08-23-control-tower-design-and-orca-investigation.md`
+5. `docs/design/control-tower-vnext/work-item-language-contract.md`
+6. `docs/design/control-tower-vnext/design-spec.md`
+7. `docs/design/control-tower-vnext/now-screen-options.md`
 
-최신 시각·검증 근거는 `docs/prototypes/control-tower-asset-validation/`에 있다.
+최신 승인 시각·검증 근거는 `docs/prototypes/control-tower-now-mova-r3/`에 있다. 이전 Candidate A 검증은 기술 계보로만 보존한다.
 
 ## 사용자의 확인된 취향
 
@@ -39,38 +40,35 @@
 - 스킬·MCP·훅·에이전트마다 맞는 상세 구조
 - 우측 검사는 간결한 관계·근거 중심, 전체 프롬프트 비노출
 - 장식용 상태·근거 없는 수량·반복 버튼 제거
+- 한국어 실제 이름을 우선하고 `PHASE / GOAL / TASK / NEXT`는 작은 분류 레이블로만 사용
+- `Ticket`을 계층으로 만들지 않고 실제 외부 추적 기록만 `이슈`로 연결
+- 값이 없는 이슈·담당자·기한·정의 카드는 영역 자체를 숨김
 
 세부 금지 패턴과 대화 규칙은 `taste-profile.md`가 정본이다.
 
 ## 다음 한 가지 작업
 
-`지금` 화면의 정보 구조만 검토한다. 다른 화면을 동시에 완성하지 않는다.
+다음 한 가지는 `design-spec.md` 권장 순서 2번인 `작업` 화면을 독립 구현 Goal로 분해하고 그 범위를 사람에게 승인받는 것이다.
 
-1. `지금` 화면이 답할 한 문장을 사용자와 확인한다.
-2. 현재 Home 요소를 `항상 필요 / 가끔 필요 / 기본 화면에는 불필요`로 나눈다.
-3. Candidate A의 셸·타입·아이콘 규칙은 유지하고, 1440px 기준 정보 구조가 다른 세 대안을 만든다. 색만 바꾼 변형은 금지한다.
-4. 모든 시안은 채팅 렌더와 프로젝트 상대경로를 함께 제공해 실제 표시를 확인한다.
-5. 사용자가 한 방향을 고른 뒤에만 해당 방향의 360px 상태를 만든다.
+다음 구현 Goal 후보:
 
-첫 결정 질문은 다음과 같이 좁힌다.
+> 기존 `할 일`, `일정`, `프로젝트` 기능을 삭제하지 않고 `작업` 화면의 세 형제 보기로 묶되, 각 보기의 완료 의미와 쓰기 경계를 유지한다.
 
-> `지금` 화면에서 가장 먼저 답해야 하는 문장을 “지금 이어갈 일”, “내 승인이 필요한 일”, “막힌 일” 중 무엇을 중심으로 합칠지, 실제 세 구조를 보고 하나씩 정하겠습니다.
+이 Goal에는 `지식·디자인`, `스킬·도구`, `운영 기록`의 본문 구현이나 다섯 상위 탐색명 일괄 전환을 섞지 않는다. 새 Goal을 만들기 전 현재 사용 흐름과 쓰기 경계를 먼저 확인하고, 아직 없는 화면을 빈 탭으로 노출하지 않는다.
 
 ## 팀과 도구 운용
 
-- 디자인 지휘자: GPT-5.6 Sol xhigh — 사용자 대화, 방향 합성, 승인 상태 관리
-- UX·제품 기획: 필요할 때 Terra — 작업 흐름과 정보 구조 검토
-- 레퍼런스 조사: 필요할 때 Luna — 검증 가능한 공식·원본 자료 수집
-- 비주얼 디자인: Sol + 내장 ImageGen — 실제 렌더 제작
-- 기술 설계: 필요할 때 Terra — Next.js/React 데이터 계약과 구현 가능성
-- 적대 검토: 다른 벤더 또는 독립 검수자 — read-only P0/P1 검토
+- 디자인 지휘·콘텐츠·기술·접근성·적대 검토: 현재 Codex 세션 + `design-team`
+- 공식 용어 근거: GitHub·Jira·Linear 공식 문서
+- 실제 시각 검증: Playwright + Windows Chromium
+- 최종 방향 선택: 사용자
 
 역할은 매번 전부 고용하지 않는다. 현재 결정에 필요한 최소 역할만 사용하고 결과를 지휘자가 합성한다.
 
 ## 새 세션 시작 프롬프트
 
 ```text
-요한 관제탑 디자인 세션을 이어받아라. production UI는 수정하지 말고 디자인 조사·시안·토큰·UX·기술 명세만 다룬다.
+요한 관제탑 디자인 세션을 이어받아라. 승인된 NOW-R3와 완료된 Goal 16을 다시 열지 말고, 후속 화면은 새 Goal 범위가 승인되기 전 production UI를 수정하지 마라.
 
 먼저 저장소 규칙과 현재 Git 상태를 확인하고, 아래 파일을 순서대로 읽어라.
 - docs/design/control-tower-vnext/design-context.md
@@ -81,14 +79,27 @@
 
 Yohan Agent Kit의 최신 design-team 세션 연속성 계약을 적용한다. 시작 응답에는 반드시 ① 읽은 branch/ref ② 현재 승인 상태 ③ 바로 할 한 가지를 한국어로 짧게 되말해 수신을 확인하라.
 
-이미 선택된 Candidate A와 해결된 취향을 다시 묻지 마라. 다음 작업은 `지금` 화면의 정보 구조 세 대안이며, 한 번에 중요한 결정 하나만 사용자와 티키타카한다. 이미지가 실제로 보이는지 확인하고 프로젝트 상대경로를 함께 남겨라. 사용자의 `ㅇㅇ/ㄱㄱ/계속`은 바로 앞 작업 진행 신호이지 최종 디자인 또는 production 구현 승인이 아니다.
+NOW-R3와 해결된 취향을 다시 묻지 마라. Goal 16은 production 구현·QA까지 완료됐다. 다음 작업은 `작업`의 할 일·일정·프로젝트 형제 보기를 독립 Goal로 분해하고 범위를 사람에게 승인받는 것이다. R3의 54px Task H1을 모든 목록 화면에 기계적으로 복제하지 말고, `한 화면 한 주인공·표준 용어·빈 메타 숨김`만 공통 불변식으로 적용하라.
 ```
 
 ## 전달 영수증
 
 | 단계 | 상태 | 근거 |
 | --- | --- | --- |
-| prepared | 완료 | 이 문서와 프로젝트 정본 묶음 |
+| prepared | 완료 | NOW-R3 승인·Goal 16 구현·QA·VHK 2.14.0 검증·프로젝트 정본 묶음 |
 | sent | 대기 | 새 독립 디자인 세션에 프롬프트 전송 필요 |
 | acknowledged | 대기 | 대상 세션의 branch/ref·승인 상태·다음 행동 회신 필요 |
 | current session closed | 대기 | 수신 확인과 최종 보고 뒤 종료 |
+
+## 2026-08-23 Resource Guard 종료 영수증
+
+- Guard: host commit 91.99%, current rollout 약 168MB.
+- 조치: 추가 브라우저 반복·새 옵션·360px·production src·commit·push를 중단했다.
+- Durable decision artifact: docs/design/control-tower-vnext/now-screen-options.md
+- Visual source: docs/prototypes/control-tower-now-options/index.html
+- Option A: docs/prototypes/control-tower-now-options/now-option-a-focus-runway-r1.png
+- Option B: docs/prototypes/control-tower-now-options/now-option-b-decision-ledger-r1.png
+- Option C: docs/prototypes/control-tower-now-options/now-option-c-exception-sweep-r1.png
+- Verification: 세 PNG 1440×1024, overflow 0, visible text 최소 14px, console·page error 0.
+- Historical gate: A/B/C 선택은 종료됐고 세 안 모두 기각됨. NOW-R3가 사용자 승인됨.
+- Production UI authorization: 없음.

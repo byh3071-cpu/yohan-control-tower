@@ -1,5 +1,25 @@
 # 요한 관제탑 vNext 결정 로그
 
+## 2026-08-24 — 실행 계층과 이슈 추적 객체를 분리
+
+- Status: approved
+- Decider: 사용자
+- Options considered: `Phase → Goal → Ticket → Task` 단일 계층 / 제품별 용어를 그대로 혼용 / `Phase → Goal → Task` 실행 계층과 조건부 `Issue` 연결
+- Decision and rationale: GitHub Issues는 작업·버그·기능을 추적하는 객체이고, Jira 기본 계층은 Epic 아래 Story·Task·Bug와 Subtask를 두며, Linear는 Initiative·Project·Issue·Sub-issue를 구분한다. 따라서 `Ticket`을 모든 제품에 통하는 고정 계층으로 넣는 것은 표준이 아니라 새 조어에 가깝다. 관제탑은 VHK 규칙과 맞는 `Phase → Goal → Task`를 실행 계층으로 고정하고, 장기 추적·외부 협업·크로스레포 의존이 있을 때만 GitHub `Issue`를 Goal 또는 Task에 연결한다. 사용자 화면에서는 `이슈`로 부르고 실제 연결이 없으면 표시하지 않는다.
+- Evidence: 2026-08-24 사용자 피드백과 R3 승인(`ㅇㅇ`), `work-item-language-contract.md`, GitHub About Issues, Jira work type hierarchy, Linear conceptual model 공식 문서
+- Consequences: NOW-R2의 상시 용어 정의, 중복 현재 Task, 빈 Issue 상태를 제거한 NOW-R3를 선택 방향으로 삼는다. 같은 언어·감축 문법을 다섯 화면 명세에 적용하되 production UI는 별도 구현 Goal 전까지 보류한다.
+- Revisit trigger: 실제 운영에서 Goal보다 크거나 Task보다 작은 추적 단위가 반복적으로 필요하고, 기존 Goal·Task·Issue 관계로 표현할 수 없다는 사례가 쌓일 때
+
+## 2026-08-24 — NOW-IA-R1 세 안을 기각하고 MOVA 작업 문법으로 재구성
+
+- Status: rejected · superseded
+- Decider: 사용자
+- Options considered: A 이어가기 중심 / B 승인 중심 / C 예외 중심 / MOVA 승인 화면의 작업 문법을 적용한 단일 교정안
+- Decision and rationale: A·B·C는 배치 우선순위만 바뀌고 무엇을 전달하는 화면인지, 현재 Task가 무엇인지, Phase·Goal 이름이 무엇인지 직접 읽히지 않았다. 사용자는 MOVA처럼 명칭·용어·문장을 통일하고 한 줄로 명확하게 표현하는 방향을 요구했다. 따라서 R1 세 안은 모두 거절 증거로 보존하고, MOVA의 직접적인 큰 제목, 하나의 객체·상태·행동, `NOW/NEXT/ALWAYS` 골격을 `Phase → Goal → Task` 작업 문법에 적용한다.
+- Evidence: 2026-08-24 사용자 피드백, `C:/Users/Public/dev/products/mova/docs/design/mova-ade/evidence/viewport-1440.png`, `docs/prototypes/control-tower-now-options/`
+- Consequences: Candidate A 셸을 고정 전제로 삼지 않는다. 새 탐색 3안을 만들지 않고 승인된 MOVA 기준을 충실히 적용한 `NOW-R2` 한 안을 먼저 검토한다. production UI는 계속 보류한다.
+- Revisit trigger: R2에서도 사용자가 화면 첫 문장만 보고 현재 Task와 다음 행동을 말할 수 없거나, `Phase / Goal / Task` 의미가 섞여 보일 때
+
 ## 2026-08-23 — 프로젝트 취향·운영·세션 인수인계 정본을 분리
 
 - Status: approved
