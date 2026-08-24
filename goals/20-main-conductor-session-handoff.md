@@ -3,12 +3,13 @@ vhk_format: 1
 type: goal
 id: 20
 title: 상시 지휘자 운영 정본과 새 세션 인수인계
-status: IN_PROGRESS
+status: DONE
 priority: P0
 size: L
 execution_provider: native-approved
 automatic_fallback: false
 started: 2026-08-24
+completed: 2026-08-24
 ---
 
 # Goal 20: 상시 지휘자 운영 정본과 새 세션 인수인계
@@ -35,13 +36,13 @@ started: 2026-08-24
 
 ## Completion Check
 
-- [ ] `main-conductor-session-protocol.md`가 상시 지휘자 정체성, 라우팅, 소유권, 영수증, 재시작과 종료 계약을 기존 범용 스킬에 연결한다.
-- [ ] handoff 번들이 모든 관련 worktree의 branch/ref/dirty, 검증 결과, 잔존 위험, 다음 행동과 사람 게이트를 기록한다.
-- [ ] Agent Kit의 세 공용 스킬은 source 구현, branch 통합, 홈 설치, 벤더 새 세션 발견 상태가 각각 구분된다.
-- [ ] 새 디자인 세션은 기존 NOW-R3·Goal 16을 다시 열지 않고 정확한 다음 디자인 게이트를 전달받는다.
-- [ ] 새 메인 지휘자 세션은 Goal 20, handoff bundle, 현재 작업 원장을 전달받고 첫 응답 ACK 계약을 가진다.
-- [ ] 전달 시도와 실제 ACK가 별도 영수증으로 기록되며 ACK 전 완료를 주장하지 않는다.
-- [ ] Goal 전용 검사와 프로젝트 검증이 통과하고 현재 세션의 마지막 안전 checkpoint가 로컬 commit에 보존된다.
+- [x] `main-conductor-session-protocol.md`가 상시 지휘자 정체성, 라우팅, 소유권, 영수증, 재시작과 종료 계약을 기존 범용 스킬에 연결한다.
+- [x] handoff 번들이 모든 관련 worktree의 branch/ref/dirty, 검증 결과, 잔존 위험, 다음 행동과 사람 게이트를 기록한다.
+- [x] Agent Kit의 세 공용 스킬은 source 구현, branch 통합, 홈 설치, 벤더 새 세션 발견 상태가 각각 구분된다.
+- [x] 새 디자인 세션은 기존 NOW-R3·Goal 16을 다시 열지 않고 정확한 다음 디자인 게이트를 전달받는다.
+- [x] 새 메인 지휘자 세션은 Goal 20, handoff bundle, 현재 작업 원장을 전달받고 첫 응답 ACK 계약을 가진다.
+- [x] 전달 시도와 실제 ACK가 별도 영수증으로 기록되며 ACK 전 완료를 주장하지 않는다.
+- [x] Goal 전용 검사와 프로젝트 검증이 통과하고 현재 세션의 마지막 안전 checkpoint가 로컬 commit에 보존된다.
 
 ## Forbidden
 
@@ -59,3 +60,12 @@ started: 2026-08-24
 - `docs/operations/current-workstreams.md`
 - `scripts/check-goal-20.mjs`
 - Git/VHK/Orca read receipts and new-session delivery receipts
+
+## Evidence
+
+- `npm run vhk -- goal check --id 20 --force`: typecheck·lint·test·build와 Goal 고유 14항목 PASS.
+- `npm run vhk -- goal done --id 20`: 같은 게이트 재통과 후 `DONE` 전이.
+- `npm run vhk -- goal next`: 모든 Goal 완료 snapshot으로 `docs/state/next-task.md` 보정.
+- `npm run vhk -- verify`: tsc·lint·test:run·build·secure scan PASS 5/5, fail·skip·warn 0.
+- design/main 전달 accepted와 receiver ACK를 분리해 durable handoff에 기록하고 이전 writer 종료를 확인.
+- local closeout commit에 Goal·protocol·handoff·workstreams·log·파생 context를 함께 보존.

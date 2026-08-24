@@ -67,6 +67,22 @@ Ticket을 고정 실행 계층으로 추가하지 않는다. 제품이 실제 Is
 
 보고서와 `worker_done`, content receipt와 delivery receipt를 각각 대조한다. 침묵은 마지막 근거 상태를 유지할 뿐 상태를 올리거나 내리지 않는다.
 
+### 주장 분류와 자원 소유권
+
+증거 채널을 나눠도 문장 안에서 관측과 해석을 섞으면 인수자가 잘못된 작업을 다시 열 수 있다. 중요한 주장은 다음 셋 중 하나로 표시한다.
+
+- `[사실]`: 경로·ref·명령 결과·수신 ACK처럼 다시 확인할 수 있는 근거를 함께 둔다.
+- `[추론·확신 높음|중간|낮음]`: 관측에서 도출한 해석과 이를 뒤집을 반증 조건을 함께 둔다.
+- `[미확인]`: 무엇을 더 확인해야 하는지와 미확인이 다음 단계에 미치는 영향을 적고 사실로 승격하지 않는다.
+
+handoff에는 기존 Non-Scope·하드게이트를 복제하지 않고 포인터로 연결하되 다음 필드를 명시한다.
+
+- `non-goals`: 이번 인계가 새로 열지 않는 범위
+- `resource ownership`: repo·worktree·branch·terminal·worker별 owner, writer/release 권한, ref·dirty
+- `stop`: 소유권 미확인, ref 불일치, 사람 하드게이트처럼 다음 상태 전이를 멈추는 조건
+
+자원 종료·release·정리는 기록된 owner 또는 승인된 release 권한만 수행한다. 소유권이 미확인이면 보존이 기본값이다.
+
 ## 6. 재시작·장애
 
 런타임 이상 시 새 worker를 먼저 만들지 않는다. 프로젝트 정본, ref·dirty, 기존 terminal/Run/Task/Dispatch, 보고서와 Inbox를 읽는다.

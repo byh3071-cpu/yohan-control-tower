@@ -81,11 +81,14 @@
 │   │   ├── 2026-08-23-focus-feed-knowledge-review-proof.md
 │   │   ├── 2026-08-23-vhk-policy-baseline.md
 │   │   ├── 2026-08-23-workstream-control-and-session-reconciliation.md
-│   │   └── 2026-08-24-autopilot.md
+│   │   ├── 2026-08-24-autopilot.md
+│   │   └── 2026-08-24-main-conductor-handoff.md
 │   ├── operations/
 │   │   ├── agent-session-recovery-runbook.md
 │   │   ├── current-workstreams.md
 │   │   ├── design-team-supervision-runbook.md
+│   │   ├── handoffs/
+│   │   ├── main-conductor-session-protocol.md
 │   │   ├── reports/
 │   │   └── supervised-session-skill-requirements.md
 │   ├── patterns/
@@ -125,6 +128,7 @@
 │   ├── 19-agent-session-runtime-recovery.md
 │   ├── 2-ecosystem-home-mvp.md
 │   ├── 2-focus-feed-knowledge-review-ui.md
+│   ├── 20-main-conductor-session-handoff.md
 │   ├── 3-mission-project-drilldown-lint.md
 │   ├── 4-local-calendar-mvp.md
 │   ├── 5-calendar-item-editing.md
@@ -164,6 +168,7 @@
 │   ├── check-goal-18.mjs
 │   ├── check-goal-19.mjs
 │   ├── check-goal-2.mjs
+│   ├── check-goal-20.mjs
 │   ├── check-goal-3.mjs
 │   ├── check-goal-4.mjs
 │   ├── check-goal-5.mjs
@@ -325,14 +330,14 @@
 ## 최근 활동 (git log — goals/blockers/memory 미사용 시 폴백)
 
 ```
+881b39b feat: 상시 지휘자 인수인계 정본 추가
 1b5b4fb fix: 관제탑 세션 복구와 운영 흐름 정비
 cf61612 docs: yohan-inbox 화면 검수 캡처 회수 (dev 루트에 떠 있던 것)
 c048f8d chore(위생): 지식 검토 UI 목표 문서 커밋 + 런타임 산출물 무시
 2ab0048 Merge pull request #31 from byh3071-cpu/knowledge-p0-control-tower-r2
-c144b6e docs: Control Tower 검토 PR 기록
 ```
 
 ---
 
-_생성: 2026. 8. 24. 오후 1:21:37_
-_vhk-context-git: 1b5b4fb9b469bcd66f29f62672bdcf8b49d7098f_
+_생성: 2026. 8. 24. 오후 2:17:17_
+_vhk-context-git: 881b39bde2deabb8b9bb626a7aa39f8dc3550f1a_
