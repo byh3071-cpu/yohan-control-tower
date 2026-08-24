@@ -1,7 +1,7 @@
 # 현재 작업흐름 관제 보드
 
 - Status: ACTIVE COORDINATION SNAPSHOT
-- Updated: 2026-08-24 13:05 KST
+- Updated: 2026-08-24 13:28 KST
 - Owner: 상시 지휘자
 - Scope: yohan-control-tower main · 독립 디자인팀 · Yohan Agent Kit
 - Durable method: `docs/operations/design-team-supervision-runbook.md`
@@ -22,17 +22,17 @@
 | --- | --- | --- | --- | --- | --- |
 | 메인 제품 | `tower-workbench` Goal 14 세션, 지휘자 감독 | `ACCEPTED_PENDING_HUMAN_REVIEW` | Calendar를 새 탭 없이 Home 내부 `개요 / 캘린더` 모드로 복원했다. typecheck·lint·81/81 test·build·VHK verify 5/5·Goal check/done·Playwright가 PASS했고 `design-qa.md`는 P0/P1/P2 0이다. Goal 14는 `DONE`; commit·push·PR은 하지 않았다. | 미커밋 diff와 5개 캡처를 검토하고 기존 전역 `npm run check` 진단 및 `.playwright-mcp/` 포함 여부를 정한 뒤 별도 commit 게이트 | 기존 전역 진단: `YOHAN_OS_ROOT` 오탐 2, vector `any` 2, 파일명 경고 20. 기존 PAT-002·NFT 경고 각 1. 범위 밖 보정 금지 |
 | 디자인 | `codex/control-tower-design-direction` | `NOW_R3_IMPLEMENTED_VERIFIED` | Goal 15·16은 DONE이다. NOW-R3는 실제 Goal 데이터와 360·432·768·1280·1440px, 상태 5종, 키보드·대비·경로 allowlist, VHK verify 5/5를 통과했고 로컬 commit `c176c3b`에 보존됐다. | `작업`의 할 일·일정·프로젝트 형제 보기를 다음 독립 Goal로 만들 범위 확정 | 후속 Goal 승인 전 다른 네 화면·전역 탐색명·배포 수정 금지. 디자인 commit은 push하지 않음 |
-| 스킬 | Yohan Agent Kit 표준 스킬 승격 | `STRUCTURE_AUDITED · WRITE_GATE_PENDING` | Agent Kit의 `skills/<name>` → manifest → registry/catalog → Codex·Cursor·Claude Code·Antigravity 배포 구조와 설치본/정본 SHA-256 일치를 확인했다. 기존 main worktree에는 사용자 변경 `goals/5`, `goals/10`이 있어 직접 수정하지 않는다. 범용 신규 후보는 `restart-safe-handoff`, `supervised-session-conductor`, `runtime-incident-investigator`이며 `design-team`·외부 `orchestration`에 백링크한다. | 별도 Agent Kit worktree 생성·Goal 활성화 후 3개 스킬, manifest, registry/catalog, fixture/검증을 구현 | 현재 저장소 밖 쓰기와 새 worktree 생성은 사람/플랫폼 게이트. 실홈 설치·벤더 호출·release·push·PR·merge·publish는 별도 게이트 |
+| 스킬 | Yohan Agent Kit 표준 스킬 승격 | `SOURCE_VERIFIED · MAIN_ALIGNED · HOME_NOT_INSTALLED` | `feat/design-team-session-continuity` HEAD `a5aa50d`에서 세 운영 스킬과 최신 local main을 정렬했다. 공용 스킬 validator 4개, Goal 15, catalog 216자산, 멀티벤더 상태 전이 233 assertions가 PASS했고 worktree는 clean이다. 사용자 홈 표준 대상은 source Check 당시 각각 `Installable`이었으며 실제 설치는 하지 않았다. | feature branch push·Draft PR 준비 후 사람 merge 게이트. merge 뒤 canonical checkout에서 새 PlanDigest로 Check | current Brain↔MCP retrieval 계약 ref drift 때문에 Goal 16 cross-repo handshake는 현재 canonical checkout에서 FAIL. canonical Agent Kit main의 `goals/5`, `goals/10` dirty 보존. 실홈 설치·벤더 새 세션 호출·release·PR Ready·merge·publish는 별도 게이트 |
 
 ## 2. 세션 유지·정산 판정
 
 | 대상 | 판정 | 근거 | 허용 행동 |
 | --- | --- | --- | --- |
-| 현재 지휘 세션 | 유지 | Goal 13·15·16·17·18·19 DONE, VHK 2.14.0, Goal 19·policy·verify PASS. master 복구 산출물은 로컬 commit 직전 | master 로컬 commit 후 Agent Kit 별도 worktree 쓰기 게이트 상신 |
+| 현재 지휘 세션 | Goal 20 handoff 준비 후 종료 예정 | Goal 13·15·16·17·18·19 DONE, VHK 2.14.0, verify PASS, master 복구 commit `1b5b4fb`. Goal 20이 운영 정본과 새 세션 전달을 소유한다. | handoff content checkpoint 후 새 디자인·메인 세션에 full handoff하고 감시 중단 |
 | `permit` 디자인 세션 | crash 원본으로 격리 보존 | Codex child의 512MB allocation 실패, rollout 203.75MB. 원본 rollout·thread DB·terminal history를 별도 백업 | resume·중복 지시 금지. 증거 회수에만 사용 |
-| 새 디자인팀 세션 `term_5edaee34-...` | 인계 후 작업 완료 | 실제 디자인 worktree에서 Goal 15·16을 완료하고 NOW-R3 구현·QA를 `c176c3b`로 커밋 | 같은 방향을 다시 탐색하지 않고 후속 `작업` Goal 범위 승인 대기 |
-| 새 메인 세션 `term_c3a2619a-...` | 인계 완료·사람 검토 대기 | HEAD `cfee44a`, dirty 37파일, Goal 14 DONE, 기존 test/build/Playwright/QA 증거와 다음 게이트 ACK | 사람 검토 전 commit·push·PR·dirty 정리 금지 |
-| Yohan Agent Kit main worktree | 사용자 변경 보존 | branch `main`, `goals/5`, `goals/10` dirty | 직접 수정 금지. 신규 표준 스킬은 승인 후 별도 worktree에서만 작업 |
+| 이전 디자인팀 세션 `term_5edaee34-...` | 작업 완료 후 현재 terminal 없음 | 실제 디자인 worktree에서 Goal 15·16을 완료하고 NOW-R3 구현·QA를 `c176c3b`로 커밋 | 새 독립 디자인 세션에 project handoff를 전달하고 ACK 전 구현 금지 |
+| 이전 메인 세션 `term_c3a2619a-...` | Goal 14 인계 뒤 현재 terminal 없음 | `tower-workbench` HEAD `cfee44a`, dirty 구현·검증 증거 보존 | 새 메인 지휘자가 사람 검토 전 commit·push·PR·dirty 정리를 금지한다고 ACK |
+| Yohan Agent Kit main worktree | 사용자 변경 보존 | branch `main`, HEAD `3a8b067`, origin보다 12 commit 앞, `goals/5`, `goals/10` dirty | 직접 수정·병합 금지. feature 통합은 `feat/design-team-session-continuity` 격리 worktree에서만 수행 |
 | Goal 13 재검수 worker | 정산 시도 완료, `release_unknown` | `worker_done`, clean worktree, transcript archive 완료. `worker-show`는 exact worker `exited`, connected false, residual resources `[]`이나 Windows stop 확인이 불가하다. | 재시도·broad close 금지, Orca bookkeeping 잔여로 기록 |
 | 디자인 독립 QA worker | 보존 | 보고는 수신됐지만 release가 `stop_unverified`로 남고 디자인 worktree가 dirty다. | 디자인 coordinator가 인수할 때까지 건드리지 않음 |
 | 장애 조사 worker·외부 terminal | 보존 | provider 기동 증거가 없고 release가 `unknown` 또는 external이다. | 보고서 유무만 감사, 강제 종료 금지 |
@@ -55,8 +55,8 @@
 1. runtime stale 등록 13개는 공식 제거됐고 최근 10분 누락 cwd ENOENT는 0건이다. 128MB 이상 rollout 4개와 Windows commit 85% 초과는 계속 경고한다.
 2. 메인 Goal 14는 `ACCEPTED_PENDING_HUMAN_REVIEW`로 인수했다. 미커밋 diff와 캡처는 다음 제품 검토 게이트까지 보존한다.
 3. 디자인팀은 NOW-R3 선택과 첫 production 슬라이스를 완료했다. 다음은 `작업`의 세 형제 보기를 별도 Goal로 분리하며 다른 화면을 섞지 않는다.
-4. 범용 스킬은 Agent Kit의 기존 배포 평면에 신규 정본으로 승격하며 프로젝트 문서는 요구사항·사고 증거·포인터만 소유한다.
-5. 사용자에게는 명령별 승인이 아니라 Agent Kit 별도 worktree 쓰기 한 게이트만 먼저 올린다. 실홈 설치·release·push·PR·merge·publish는 여기에 포함하지 않는다.
+4. 범용 스킬 소스 구현과 최신 local main 정렬은 `a5aa50d`에서 완료됐다. source 구현·canonical merge·home install·vendor discovery를 서로 다른 상태로 보고한다.
+5. 다음 사람 게이트는 feature branch의 Draft PR/merge다. merge 뒤 canonical Check의 exact PlanDigest를 새로 산출하고 사용자 홈 쓰기는 별도 승인받는다.
 
 ### Goal 14 Calendar 지휘 결정
 

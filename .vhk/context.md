@@ -5,15 +5,30 @@
 
 ## 원본 지도 (Source of Truth)
 
-> 무엇을 고칠 땀 "원본" 한 곳만 고치세요. 나머지는 파생본이라 자동 생성됩니다.
+> 같은 사실은 원본 한 곳에서만 고치세요. 스냅샷은 원본을 읽어 다시 만듭니다.
 
 - **규칙(원본)**: `RULES.md` — 규칙은 여기 한 곳에서만 수정
-- **작업 상태**: `docs/state/next-task.md`, `docs/state/blockers.md`
+- **작업 정의·수용 기준**: `RULES.md`나 프로젝트 문서가 지정한 추적 원본 — 경로를 추측하지 않음
+- **로컬 Goal 실행 상태**: `goals/*.md` frontmatter — 원본에서 만든 비추적 실행 카드
+- **Goal 검사 스크립트(파생)**: `scripts/check-goal-<번호>.mjs` — 직접 수정 금지, `vhk goal sync`로 재생성
+- **파생 스냅샷**: `.vhk/context.md`, `docs/state/next-task.md` — 원본 아님
+- **로컬 차단 기록**: `docs/state/blockers.md` — append-only, 작업 정의 원본 아님
 - **버전·릴리스**: `package.json`, `CHANGELOG.md`
 - **명령 목록**: `COMMANDS.md` (+ `vhk help`)
 - **파생본(직접 수정 금지)**: `.cursorrules`·`.windsurfrules`·`.github/copilot-instructions.md`·`AGENTS.md`·`GEMINI.md` 등 7종 + `CLAUDE.md` 규칙 영역 → `vhk sync` 로 생성
 
 ## 기술 스택
+
+> 기술 스택 상태: 확정
+
+### 선언된 기술 스택 (RULES.md)
+
+- Next.js 16 · React 19 · TypeScript (strict)
+- Tailwind CSS 4 + shadcn (style: base-nova)
+- Qdrant (벡터 저장) · Ollama (로컬 임베딩 bge-m3, 1024d) · Notion API (읽기)
+- gray-matter (md frontmatter) · recharts · three.js
+
+### 실제 감지된 기술 스택 (package.json)
 
 - **프레임워크**: Next.js 16.2.9
 - **언어**: TypeScript ^5
@@ -60,12 +75,15 @@
 │   │   ├── 2026-08-07-mission-rollup-f004.md
 │   │   ├── 2026-08-10-focus-feed-knowledge-review.md
 │   │   ├── 2026-08-12-control-tower-review-vector-ux.md
+│   │   ├── 2026-08-23-agent-session-runtime-recovery.md
 │   │   ├── 2026-08-23-design-team-intake-and-runtime-incident.md
 │   │   ├── 2026-08-23-design-team-supervision-protocol.md
 │   │   ├── 2026-08-23-focus-feed-knowledge-review-proof.md
 │   │   ├── 2026-08-23-vhk-policy-baseline.md
-│   │   └── 2026-08-23-workstream-control-and-session-reconciliation.md
+│   │   ├── 2026-08-23-workstream-control-and-session-reconciliation.md
+│   │   └── 2026-08-24-autopilot.md
 │   ├── operations/
+│   │   ├── agent-session-recovery-runbook.md
 │   │   ├── current-workstreams.md
 │   │   ├── design-team-supervision-runbook.md
 │   │   ├── reports/
@@ -87,6 +105,12 @@
 │   │   └── TS-001-vhk-doctor-agents-md-false-drift.md
 │   └── yohan-inbox-visual-qa.png
 ├── eslint.config.mjs
+├── fixtures/
+│   ├── agent-session-health/
+│   │   ├── codex-runtime-home/
+│   │   └── logs/
+│   └── orca-stale-repos/
+│       └── orca-data.json
 ├── GEMINI.md
 ├── goals/
 │   ├── 1-yohan-inbox-operations.md
@@ -98,6 +122,7 @@
 │   ├── 16-design-team-supervision-protocol.md
 │   ├── 17-design-team-intake-and-runtime-incident.md
 │   ├── 18-workstream-control-and-session-reconciliation.md
+│   ├── 19-agent-session-runtime-recovery.md
 │   ├── 2-ecosystem-home-mvp.md
 │   ├── 2-focus-feed-knowledge-review-ui.md
 │   ├── 3-mission-project-drilldown-lint.md
@@ -127,6 +152,7 @@
 ├── README.md
 ├── RULES.md
 ├── scripts/
+│   ├── check-agent-session-health.mjs
 │   ├── check-goal-1.mjs
 │   ├── check-goal-10.mjs
 │   ├── check-goal-11.mjs
@@ -136,6 +162,7 @@
 │   ├── check-goal-16.mjs
 │   ├── check-goal-17.mjs
 │   ├── check-goal-18.mjs
+│   ├── check-goal-19.mjs
 │   ├── check-goal-2.mjs
 │   ├── check-goal-3.mjs
 │   ├── check-goal-4.mjs
@@ -146,7 +173,9 @@
 │   ├── check-goal-9.mjs
 │   ├── check-local-setup.mjs
 │   ├── check-project-policy.ts
+│   ├── recover-orca-stale-repos.mjs
 │   ├── run-vhk.mjs
+│   ├── set-orca-repo-visibility.mjs
 │   ├── vector/
 │   │   ├── incremental-cron.ts
 │   │   └── init-collections.ts
@@ -288,7 +317,7 @@
 - `vhk watch — 무인 세션 정지 감시 — idle 초과 시 텔레그램·콘솔 알림`
 - `vhk resume — .vhk/HARD_STOP 해제 (--confirm 필요)`
 - `vhk pattern — 반복 패턴 감지·목록 (avoid/reinforce)`
-- `vhk evolve — 패턴 → 룰 후보 제안·반영·undo`
+- `vhk evolve — 패턴 → 7일 룰 후보 표시·사람 승인·되돌리기`
 - `vhk loop — 자가진화 조율 1틱 — 다음 한 수 (읽기 전용)`
 - `vhk seo — SEO·수익 대시보드 (init: 사이트 등록 + 자격증명 보관)`
 - `vhk config — vhk 사용자 설정 (set-rules-file: 사용자 규칙 YAML, 재시작 불필요)`
@@ -296,14 +325,14 @@
 ## 최근 활동 (git log — goals/blockers/memory 미사용 시 폴백)
 
 ```
+1b5b4fb fix: 관제탑 세션 복구와 운영 흐름 정비
 cf61612 docs: yohan-inbox 화면 검수 캡처 회수 (dev 루트에 떠 있던 것)
 c048f8d chore(위생): 지식 검토 UI 목표 문서 커밋 + 런타임 산출물 무시
 2ab0048 Merge pull request #31 from byh3071-cpu/knowledge-p0-control-tower-r2
 c144b6e docs: Control Tower 검토 PR 기록
-c4b76bd fix: 벡터 실행 API를 로컬 요청으로 제한
 ```
 
 ---
 
-_생성: 2026. 8. 23. 오후 5:25:33_
-_vhk-context-git: cf61612c6b1cdfaa531669d21ddfe14c96dc07e4_
+_생성: 2026. 8. 24. 오후 1:21:37_
+_vhk-context-git: 1b5b4fb9b469bcd66f29f62672bdcf8b49d7098f_
