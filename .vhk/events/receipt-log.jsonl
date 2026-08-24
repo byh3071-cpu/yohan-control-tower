@@ -1,1 +1,2 @@
 {"ts":"2026-08-07T11:07:46.656Z","decision":"block","sha":"7aaea1779a29a83d3218c92cdaf08f012f7f4513","shortSha":"7aaea17","red":false,"gateStatus":"PASS","dirty":true,"stale":null,"diffCoverRatio":null,"diffCoverUncovered":null,"forbiddenHits":0,"scopeWarnings":0,"agent":"unknown"}
+{"ts":"2026-08-22T09:29:58.274Z","decision":"block","sha":"cf61612c6b1cdfaa531669d21ddfe14c96dc07e4","shortSha":"cf61612","red":false,"gateStatus":"PASS","dirty":true,"stale":null,"diffCoverRatio":null,"diffCoverUncovered":null,"forbiddenHits":0,"scopeWarnings":0,"agent":"unknown"}
