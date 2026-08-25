@@ -1,0 +1,1208 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="data:," />
+    <title>요한 관제탑 — 지금 화면 정보 구조 3안</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --fog: #e7ecee;
+        --paper: #f7f9f9;
+        --paper-strong: #ffffff;
+        --ink: #172326;
+        --slate: #526367;
+        --hairline: #ced8db;
+        --hover: #eef3f6;
+        --selected: #e7eff5;
+        --current: #146c94;
+        --current-dark: #0f5574;
+        --caution: #a84f18;
+        --caution-wash: #fff4eb;
+        --success: #237a49;
+        --success-wash: #edf7f1;
+        --sidebar: 216px;
+        --inspector: 320px;
+        --topbar: 56px;
+        --radius: 8px;
+        font-family: "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        width: 100%;
+        min-width: 1280px;
+        min-height: 100%;
+        margin: 0;
+        background: var(--fog);
+        color: var(--ink);
+      }
+
+      body {
+        font-size: 16px;
+        line-height: 26px;
+      }
+
+      button {
+        min-height: 44px;
+        color: inherit;
+        font: inherit;
+      }
+
+      button:focus-visible,
+      a:focus-visible {
+        outline: 3px solid color-mix(in srgb, var(--current) 65%, white);
+        outline-offset: 2px;
+      }
+
+      svg.icon {
+        width: 18px;
+        height: 18px;
+        flex: 0 0 auto;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .app {
+        width: 100%;
+        min-height: 100vh;
+        display: grid;
+        grid-template:
+          "top top top" var(--topbar)
+          "nav main inspector" calc(100vh - var(--topbar))
+          / var(--sidebar) minmax(720px, 1fr) var(--inspector);
+        background: var(--paper);
+      }
+
+      .topbar {
+        grid-area: top;
+        display: grid;
+        grid-template-columns: var(--sidebar) minmax(0, 1fr) var(--inspector);
+        align-items: center;
+        background: var(--paper-strong);
+        border-bottom: 1px solid var(--hairline);
+      }
+
+      .brand {
+        height: 100%;
+        display: flex;
+        align-items: center;
+        padding: 0 20px;
+        border-right: 1px solid var(--hairline);
+        font-size: 16px;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+      }
+
+      .top-context {
+        min-width: 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 0 20px 0 32px;
+      }
+
+      .fixture-note,
+      .revision {
+        color: var(--slate);
+        font-size: 14px;
+        line-height: 20px;
+      }
+
+      .fixture-note strong {
+        color: var(--ink);
+        font-weight: 600;
+      }
+
+      .top-tools {
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 8px;
+        padding: 0 16px;
+        border-left: 1px solid var(--hairline);
+      }
+
+      .icon-button,
+      .capture-button,
+      .quiet-button,
+      .primary-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        border: 1px solid var(--hairline);
+        border-radius: var(--radius);
+        background: var(--paper-strong);
+        cursor: default;
+      }
+
+      .icon-button {
+        width: 44px;
+        padding: 0;
+      }
+
+      .capture-button,
+      .quiet-button,
+      .primary-button {
+        padding: 0 14px;
+        font-size: 14px;
+        font-weight: 600;
+      }
+
+      .primary-button {
+        border-color: var(--current);
+        background: var(--current);
+        color: white;
+      }
+
+      .sidebar {
+        grid-area: nav;
+        min-width: 0;
+        display: grid;
+        grid-template-rows: 1fr auto;
+        overflow: hidden;
+        background: var(--paper-strong);
+        border-right: 1px solid var(--hairline);
+      }
+
+      .nav-list,
+      .nav-children,
+      .utility-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+
+      .nav-list {
+        padding: 18px 12px;
+      }
+
+      .nav-item,
+      .nav-group,
+      .nav-child,
+      .utility-item {
+        width: 100%;
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 0 14px;
+        border: 0;
+        border-radius: var(--radius);
+        background: transparent;
+        color: var(--ink);
+        font-size: 14px;
+        text-align: left;
+      }
+
+      .nav-item[aria-current="page"] {
+        background: var(--selected);
+        color: var(--current-dark);
+        font-weight: 700;
+      }
+
+      .nav-group {
+        margin-top: 4px;
+        font-weight: 600;
+      }
+
+      .nav-children {
+        margin: 0 0 8px 28px;
+      }
+
+      .nav-child {
+        min-height: 38px;
+        padding-left: 14px;
+        color: var(--slate);
+      }
+
+      .utility-list {
+        margin: 0 12px;
+        padding: 12px 0 16px;
+        border-top: 1px solid var(--hairline);
+      }
+
+      .utility-item {
+        justify-content: space-between;
+      }
+
+      .utility-label {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .attention-count {
+        min-width: 24px;
+        height: 24px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        background: var(--caution-wash);
+        color: var(--caution);
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      main {
+        grid-area: main;
+        min-width: 0;
+        overflow: hidden;
+        padding: 30px 32px 34px;
+        background: var(--paper);
+      }
+
+      .content-head {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 24px;
+        margin-bottom: 22px;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin-top: 0;
+      }
+
+      h1 {
+        margin-bottom: 5px;
+        font-size: 24px;
+        line-height: 32px;
+        font-weight: 700;
+        letter-spacing: -0.025em;
+      }
+
+      .subtitle {
+        max-width: 670px;
+        margin-bottom: 0;
+        color: var(--slate);
+        font-size: 16px;
+        line-height: 26px;
+      }
+
+      .option-tag {
+        flex: 0 0 auto;
+        padding: 7px 10px;
+        border: 1px solid var(--hairline);
+        border-radius: 999px;
+        background: var(--paper-strong);
+        color: var(--slate);
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 20px;
+      }
+
+      .section-kicker,
+      .row-kicker {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0;
+        color: var(--current-dark);
+        font-size: 14px;
+        line-height: 20px;
+        font-weight: 700;
+      }
+
+      .section-title {
+        margin: 0;
+        font-size: 15px;
+        line-height: 22px;
+        font-weight: 600;
+      }
+
+      .focus-title {
+        max-width: 680px;
+        margin: 10px 0 8px;
+        font-size: 20px;
+        line-height: 29px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+      }
+
+      .body-copy {
+        margin: 0;
+        color: var(--slate);
+        font-size: 16px;
+        line-height: 26px;
+      }
+
+      .meta,
+      .meta-row,
+      .badge,
+      .source-line {
+        font-size: 14px;
+        line-height: 20px;
+      }
+
+      .meta,
+      .source-line {
+        color: var(--slate);
+      }
+
+      .meta-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 16px;
+        color: var(--slate);
+      }
+
+      .meta-row strong,
+      .source-line strong {
+        color: var(--ink);
+        font-weight: 600;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        width: fit-content;
+        padding: 4px 8px;
+        border-radius: 999px;
+        background: var(--selected);
+        color: var(--current-dark);
+        font-weight: 600;
+      }
+
+      .badge.caution {
+        background: var(--caution-wash);
+        color: var(--caution);
+      }
+
+      .badge.success {
+        background: var(--success-wash);
+        color: var(--success);
+      }
+
+      .focus-runway {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 24px;
+        padding: 24px;
+        border: 1px solid var(--hairline);
+        border-radius: var(--radius);
+        background: var(--paper-strong);
+      }
+
+      .focus-actions {
+        min-width: 132px;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: space-between;
+        gap: 14px;
+      }
+
+      .next-check {
+        max-width: 680px;
+        margin: 18px 0 16px;
+        display: grid;
+        grid-template-columns: 24px minmax(0, 1fr);
+        gap: 12px;
+        align-items: start;
+        padding: 14px 16px;
+        border-left: 3px solid var(--current);
+        background: var(--selected);
+      }
+
+      .next-check p {
+        margin: 0;
+      }
+
+      .next-check .label {
+        color: var(--current-dark);
+        font-size: 14px;
+        line-height: 20px;
+        font-weight: 700;
+      }
+
+      .next-check .value {
+        margin-top: 2px;
+        font-size: 16px;
+        line-height: 26px;
+        font-weight: 600;
+      }
+
+      .two-up {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 16px;
+        margin-top: 16px;
+      }
+
+      .section-block {
+        min-width: 0;
+        border-top: 1px solid var(--hairline);
+        border-bottom: 1px solid var(--hairline);
+        background: var(--paper);
+      }
+
+      .section-block > header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 14px 2px 12px;
+      }
+
+      .item-row {
+        min-height: 66px;
+        display: grid;
+        grid-template-columns: 24px minmax(0, 1fr) auto;
+        gap: 10px;
+        align-items: center;
+        padding: 11px 2px;
+        border-top: 1px solid var(--hairline);
+      }
+
+      .item-row .icon-wrap {
+        color: var(--current-dark);
+      }
+
+      .item-row.caution-row .icon-wrap {
+        color: var(--caution);
+      }
+
+      .item-title {
+        margin: 0;
+        font-size: 14px;
+        line-height: 21px;
+        font-weight: 600;
+      }
+
+      .item-note {
+        margin: 2px 0 0;
+        color: var(--slate);
+        font-size: 14px;
+        line-height: 20px;
+      }
+
+      .support-rail {
+        display: grid;
+        grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+        gap: 16px;
+        margin-top: 18px;
+        padding-top: 16px;
+        border-top: 1px solid var(--hairline);
+      }
+
+      .support-cell {
+        min-width: 0;
+        display: grid;
+        grid-template-columns: 24px minmax(0, 1fr);
+        gap: 10px;
+        align-items: start;
+      }
+
+      .support-cell h3 {
+        margin: 0 0 2px;
+        font-size: 14px;
+        line-height: 21px;
+        font-weight: 600;
+      }
+
+      .support-cell p {
+        margin: 0;
+        color: var(--slate);
+        font-size: 14px;
+        line-height: 20px;
+      }
+
+      .decision-ledger {
+        border-top: 1px solid var(--hairline);
+        border-bottom: 1px solid var(--hairline);
+      }
+
+      .ledger-head,
+      .ledger-row {
+        display: grid;
+        grid-template-columns: minmax(220px, 1.45fr) minmax(180px, 1fr) minmax(150px, 0.8fr) 118px;
+        gap: 16px;
+        align-items: center;
+      }
+
+      .ledger-head {
+        min-height: 44px;
+        padding: 0 14px;
+        color: var(--slate);
+        font-size: 14px;
+        line-height: 20px;
+        font-weight: 600;
+      }
+
+      .ledger-row {
+        min-height: 82px;
+        padding: 12px 14px;
+        border-top: 1px solid var(--hairline);
+        background: var(--paper-strong);
+      }
+
+      .ledger-row.selected {
+        background: var(--selected);
+      }
+
+      .ledger-title {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        font-size: 14px;
+        line-height: 21px;
+        font-weight: 600;
+      }
+
+      .ledger-text,
+      .ledger-source {
+        color: var(--slate);
+        font-size: 14px;
+        line-height: 20px;
+      }
+
+      .ledger-source {
+        overflow-wrap: anywhere;
+      }
+
+      .current-strip {
+        display: grid;
+        grid-template-columns: 24px minmax(0, 1fr) auto;
+        gap: 12px;
+        align-items: center;
+        margin-top: 18px;
+        padding: 15px 16px;
+        border: 1px solid var(--hairline);
+        border-radius: var(--radius);
+        background: var(--paper-strong);
+      }
+
+      .current-strip h2 {
+        margin: 0 0 2px;
+        font-size: 15px;
+        line-height: 22px;
+        font-weight: 600;
+      }
+
+      .current-strip p {
+        margin: 0;
+        color: var(--slate);
+        font-size: 14px;
+        line-height: 20px;
+      }
+
+      .exception-lead {
+        display: grid;
+        grid-template-columns: 54px minmax(0, 1fr);
+        gap: 16px;
+        padding: 20px;
+        border: 1px solid color-mix(in srgb, var(--caution) 35%, var(--hairline));
+        border-radius: var(--radius);
+        background: var(--caution-wash);
+      }
+
+      .exception-symbol {
+        width: 54px;
+        height: 54px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: white;
+        color: var(--caution);
+      }
+
+      .exception-symbol .icon {
+        width: 24px;
+        height: 24px;
+      }
+
+      .exception-lead h2 {
+        margin: 7px 0 5px;
+        font-size: 20px;
+        line-height: 29px;
+        font-weight: 700;
+      }
+
+      .exception-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1px;
+        margin-top: 18px;
+        border: 1px solid var(--hairline);
+        background: var(--hairline);
+      }
+
+      .exception-cell {
+        min-height: 104px;
+        padding: 14px;
+        background: var(--paper-strong);
+      }
+
+      .exception-cell h3 {
+        margin: 0 0 6px;
+        color: var(--slate);
+        font-size: 14px;
+        line-height: 20px;
+        font-weight: 600;
+      }
+
+      .exception-cell p {
+        margin: 0;
+        font-size: 14px;
+        line-height: 21px;
+      }
+
+      .triage-two-up {
+        display: grid;
+        grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+        gap: 18px;
+        margin-top: 18px;
+      }
+
+      .work-thread {
+        padding: 16px;
+        border: 1px solid var(--hairline);
+        border-radius: var(--radius);
+        background: var(--paper-strong);
+      }
+
+      .work-thread h2 {
+        margin: 0 0 12px;
+        font-size: 15px;
+        line-height: 22px;
+        font-weight: 600;
+      }
+
+      .thread-line {
+        display: grid;
+        grid-template-columns: 18px minmax(0, 1fr);
+        gap: 10px;
+        padding: 10px 0;
+        border-top: 1px solid var(--hairline);
+      }
+
+      .thread-line:first-of-type {
+        border-top: 0;
+      }
+
+      .thread-line p {
+        margin: 0;
+        font-size: 14px;
+        line-height: 21px;
+      }
+
+      .thread-line .sub {
+        margin-top: 2px;
+        color: var(--slate);
+        line-height: 20px;
+      }
+
+      .inspector {
+        grid-area: inspector;
+        min-width: 0;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        overflow: hidden;
+        background: var(--paper-strong);
+        border-left: 1px solid var(--hairline);
+      }
+
+      .inspector-head {
+        padding: 24px 20px 18px;
+        border-bottom: 1px solid var(--hairline);
+      }
+
+      .kind-line {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 9px;
+        color: var(--current-dark);
+        font-size: 14px;
+        line-height: 20px;
+        font-weight: 600;
+      }
+
+      .inspector h2 {
+        margin: 0 0 7px;
+        font-size: 18px;
+        line-height: 26px;
+        font-weight: 600;
+      }
+
+      .inspector-head .body-copy {
+        font-size: 16px;
+        line-height: 26px;
+      }
+
+      .inspector-body {
+        min-height: 0;
+        overflow: auto;
+        padding: 0 20px 24px;
+      }
+
+      .inspector-section {
+        padding: 20px 0;
+        border-bottom: 1px solid var(--hairline);
+      }
+
+      .inspector-section:last-child {
+        border-bottom: 0;
+      }
+
+      .inspector-section h3 {
+        margin: 0 0 12px;
+        font-size: 15px;
+        line-height: 22px;
+        font-weight: 600;
+      }
+
+      .data-list {
+        display: grid;
+        grid-template-columns: 90px minmax(0, 1fr);
+        gap: 10px 12px;
+        margin: 0;
+        font-size: 14px;
+        line-height: 21px;
+      }
+
+      .data-list dt {
+        color: var(--slate);
+      }
+
+      .data-list dd {
+        margin: 0;
+        text-align: right;
+        overflow-wrap: anywhere;
+      }
+
+      .relation {
+        padding: 10px 0;
+        border-top: 1px solid var(--hairline);
+      }
+
+      .relation:first-of-type {
+        padding-top: 0;
+        border-top: 0;
+      }
+
+      .relation p {
+        margin: 0;
+        font-size: 14px;
+        line-height: 21px;
+      }
+
+      .relation .target {
+        margin-top: 2px;
+        color: var(--slate);
+        line-height: 20px;
+        overflow-wrap: anywhere;
+      }
+
+      .inspector-footer {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        padding: 14px 20px;
+        border-top: 1px solid var(--hairline);
+        background: var(--paper-strong);
+      }
+
+      .option-content[hidden] {
+        display: none;
+      }
+
+      @media (max-height: 920px) {
+        main {
+          overflow: auto;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Lucide React 1.27.0 named icon nodes, ISC license. -->
+    <svg aria-hidden="true" width="0" height="0" style="position:absolute">
+      <symbol id="i-house" viewBox="0 0 24 24">
+        <path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"></path>
+        <path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+      </symbol>
+      <symbol id="i-list-checks" viewBox="0 0 24 24">
+        <path d="M13 5h8"></path><path d="M13 12h8"></path><path d="M13 19h8"></path>
+        <path d="m3 17 2 2 4-4"></path><path d="m3 7 2 2 4-4"></path>
+      </symbol>
+      <symbol id="i-book-open" viewBox="0 0 24 24">
+        <path d="M12 5v16"></path>
+        <path d="M20.001 19A2 2 0 0022 17V5a2 2 0 00-1.999-2L16 3.002A5 5 0 0012 5a5 5 0 00-4-2H4a2 2 0 00-2 2v12a2 2 0 001.999 2H8a5 5 0 014 2 5 5 0 014-2z"></path>
+      </symbol>
+      <symbol id="i-workflow" viewBox="0 0 24 24">
+        <rect width="8" height="8" x="3" y="3" rx="2"></rect>
+        <path d="M7 11v4a2 2 0 0 0 2 2h4"></path>
+        <rect width="8" height="8" x="13" y="13" rx="2"></rect>
+      </symbol>
+      <symbol id="i-clock" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10"></circle><path d="M12 6v6h4"></path>
+      </symbol>
+      <symbol id="i-search" viewBox="0 0 24 24">
+        <path d="m21 21-4.34-4.34"></path><circle cx="11" cy="11" r="8"></circle>
+      </symbol>
+      <symbol id="i-inbox" viewBox="0 0 24 24">
+        <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline>
+        <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path>
+      </symbol>
+      <symbol id="i-circle-dot" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="1"></circle>
+      </symbol>
+      <symbol id="i-circle-check" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10"></circle><path d="m9 12 2 2 4-4"></path>
+      </symbol>
+      <symbol id="i-circle-alert" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10"></circle><line x1="12" x2="12" y1="8" y2="12"></line><line x1="12" x2="12.01" y1="16" y2="16"></line>
+      </symbol>
+      <symbol id="i-triangle-alert" viewBox="0 0 24 24">
+        <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"></path>
+        <path d="M12 9v4"></path><path d="M12 17h.01"></path>
+      </symbol>
+      <symbol id="i-calendar" viewBox="0 0 24 24">
+        <path d="M8 2v4"></path><path d="M16 2v4"></path><rect width="18" height="18" x="3" y="4" rx="2"></rect><path d="M3 10h18"></path>
+        <path d="M8 14h.01"></path><path d="M12 14h.01"></path><path d="M16 14h.01"></path>
+      </symbol>
+      <symbol id="i-folder-kanban" viewBox="0 0 24 24">
+        <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"></path>
+        <path d="M8 10v4"></path><path d="M12 10v2"></path><path d="M16 10v6"></path>
+      </symbol>
+      <symbol id="i-file-text" viewBox="0 0 24 24">
+        <path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"></path>
+        <path d="M14 2v5a1 1 0 0 0 1 1h5"></path><path d="M16 13H8"></path><path d="M16 17H8"></path>
+      </symbol>
+      <symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"></path></symbol>
+      <symbol id="i-plug" viewBox="0 0 24 24">
+        <path d="M6.3 20.3a2.4 2.4 0 0 0 3.4 0L12 18l-6-6-2.3 2.3a2.4 2.4 0 0 0 0 3.4Z"></path>
+        <path d="m2 22 3-3"></path><path d="M7.5 13.5 10 11"></path><path d="M10.5 16.5 13 14"></path><path d="m18 3-4 4h6l-4 4"></path>
+      </symbol>
+      <symbol id="i-settings" viewBox="0 0 24 24">
+        <path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"></path>
+        <circle cx="12" cy="12" r="3"></circle>
+      </symbol>
+    </svg>
+
+    <div class="app">
+      <header class="topbar">
+        <div class="brand">Yohan Control Tower</div>
+        <div class="top-context">
+          <div class="fixture-note"><strong>예시 데이터</strong> · 2026-08-23 프로젝트 문서 기준</div>
+          <div class="revision" id="revisionLabel">NOW-IA-R1 · Option A</div>
+        </div>
+        <div class="top-tools">
+          <button class="icon-button" type="button" aria-label="검색"><svg class="icon"><use href="#i-search"></use></svg></button>
+          <button class="capture-button" type="button"><svg class="icon"><use href="#i-inbox"></use></svg>빠른 메모</button>
+        </div>
+      </header>
+
+      <nav class="sidebar" aria-label="주요 화면">
+        <ul class="nav-list">
+          <li><div class="nav-item" aria-current="page"><svg class="icon"><use href="#i-house"></use></svg>지금</div></li>
+          <li>
+            <div class="nav-group"><svg class="icon"><use href="#i-list-checks"></use></svg>작업</div>
+            <ul class="nav-children">
+              <li><div class="nav-child">할 일</div></li>
+              <li><div class="nav-child">일정</div></li>
+              <li><div class="nav-child">프로젝트</div></li>
+            </ul>
+          </li>
+          <li><div class="nav-item"><svg class="icon"><use href="#i-book-open"></use></svg>지식·디자인</div></li>
+          <li><div class="nav-item"><svg class="icon"><use href="#i-workflow"></use></svg>스킬·도구</div></li>
+          <li><div class="nav-item"><svg class="icon"><use href="#i-clock"></use></svg>운영 기록</div></li>
+        </ul>
+        <ul class="utility-list">
+          <li>
+            <div class="utility-item">
+              <span class="utility-label"><svg class="icon"><use href="#i-plug"></use></svg>연결 관리</span>
+              <span class="attention-count" aria-label="확인 필요 1건">1</span>
+            </div>
+          </li>
+          <li><div class="utility-item"><span class="utility-label"><svg class="icon"><use href="#i-settings"></use></svg>설정</span></div></li>
+        </ul>
+      </nav>
+
+      <main>
+        <section class="option-content" data-option="a">
+          <header class="content-head">
+            <div>
+              <h1>지금</h1>
+              <p class="subtitle">이어갈 한 가지를 중심에 두고, 승인과 막힘은 놓치지 않게 곁에 둡니다.</p>
+            </div>
+            <span class="option-tag">A · 이어가기 중심</span>
+          </header>
+
+          <section class="focus-runway" aria-labelledby="a-focus-title">
+            <div>
+              <p class="section-kicker"><svg class="icon"><use href="#i-circle-dot"></use></svg>이어갈 일</p>
+              <h2 class="focus-title" id="a-focus-title">Goal 15 · 요한 관제탑 디자인 방향 선택과 기술 명세</h2>
+              <p class="body-copy">Candidate A의 시각 계약을 유지한 채, 지금 화면의 정보 구조 세 안을 비교합니다.</p>
+              <div class="next-check">
+                <svg class="icon"><use href="#i-circle-check"></use></svg>
+                <div>
+                  <p class="label">다음 Completion Check</p>
+                  <p class="value">사용자가 한 방향을 선택하거나 조합·재생성을 명시한다.</p>
+                </div>
+              </div>
+              <div class="meta-row">
+                <span><strong>상태</strong> IN_PROGRESS</span>
+                <span><strong>우선순위</strong> P0</span>
+                <span><strong>근거</strong> goals/15-control-tower-design-direction.md</span>
+              </div>
+            </div>
+            <div class="focus-actions">
+              <span class="badge success">계속 가능</span>
+              <button class="primary-button" type="button">Goal 열기</button>
+            </div>
+          </section>
+
+          <div class="two-up">
+            <section class="section-block" aria-labelledby="a-approval-title">
+              <header>
+                <h2 class="section-title" id="a-approval-title">내 승인이 필요한 일</h2>
+                <span class="meta">예시 2건</span>
+              </header>
+              <div class="item-row">
+                <span class="icon-wrap"><svg class="icon"><use href="#i-circle-check"></use></svg></span>
+                <div><p class="item-title">지금 화면 정보 구조 선택</p><p class="item-note">A·B·C 비교 · Goal 15 Completion Check</p></div>
+                <svg class="icon"><use href="#i-chevron-right"></use></svg>
+              </div>
+              <div class="item-row">
+                <span class="icon-wrap"><svg class="icon"><use href="#i-file-text"></use></svg></span>
+                <div><p class="item-title">Focus Feed 실제 항목 1건 승인</p><p class="item-note">쓰기 발생 · Goal 13 사람 게이트</p></div>
+                <svg class="icon"><use href="#i-chevron-right"></use></svg>
+              </div>
+            </section>
+
+            <section class="section-block" aria-labelledby="a-blocker-title">
+              <header>
+                <h2 class="section-title" id="a-blocker-title">확인할 예외</h2>
+                <span class="badge caution">1건</span>
+              </header>
+              <div class="item-row caution-row">
+                <span class="icon-wrap"><svg class="icon"><use href="#i-circle-alert"></use></svg></span>
+                <div><p class="item-title">VHK active Goal이 2개입니다</p><p class="item-note">goal peek은 13을 선택 · 이번 브랜치는 Goal 15만 진행</p></div>
+                <svg class="icon"><use href="#i-chevron-right"></use></svg>
+              </div>
+              <div class="item-row">
+                <span class="icon-wrap"><svg class="icon"><use href="#i-circle-check"></use></svg></span>
+                <div><p class="item-title">production 경계 유지</p><p class="item-note">src 수정 없음 · 사람 선택 전 구현 금지</p></div>
+                <span class="badge success">유지</span>
+              </div>
+            </section>
+          </div>
+
+          <section class="support-rail" aria-label="보조 맥락">
+            <div class="support-cell">
+              <svg class="icon"><use href="#i-calendar"></use></svg>
+              <div><h3>오늘 일정</h3><p>Calendar 원장 미연결 상태를 정상 상태로 표시합니다.</p></div>
+            </div>
+            <div class="support-cell">
+              <svg class="icon"><use href="#i-folder-kanban"></use></svg>
+              <div><h3>미션 지평선</h3><p>관제탑 · Agent Kit · Focus Feed 관계만 압축하고 상세는 프로젝트로 보냅니다.</p></div>
+            </div>
+          </section>
+        </section>
+
+        <section class="option-content" data-option="b" hidden>
+          <header class="content-head">
+            <div>
+              <h1>지금</h1>
+              <p class="subtitle">내 판단을 기다리는 일을 먼저 끝내고, 이어갈 작업과 예외를 뒤에 연결합니다.</p>
+            </div>
+            <span class="option-tag">B · 승인 중심</span>
+          </header>
+
+          <section aria-labelledby="b-ledger-title">
+            <div class="row-kicker" id="b-ledger-title"><svg class="icon"><use href="#i-circle-check"></use></svg>내 결정 대기</div>
+            <div class="decision-ledger">
+              <div class="ledger-head" aria-hidden="true">
+                <span>결정</span><span>왜 지금</span><span>영향</span><span>근거</span>
+              </div>
+              <div class="ledger-row selected">
+                <div class="ledger-title"><svg class="icon"><use href="#i-circle-check"></use></svg><span>Goal 15 · 지금 화면 정보 구조 선택</span></div>
+                <div class="ledger-text">세 안의 우선순위가 달라 다음 화면 설계를 잠급니다.</div>
+                <div><span class="badge">디자인만</span></div>
+                <div class="ledger-source">Goal 15<br />Completion Check</div>
+              </div>
+              <div class="ledger-row">
+                <div class="ledger-title"><svg class="icon"><use href="#i-file-text"></use></svg><span>Focus Feed 실제 항목 1건 승인</span></div>
+                <div class="ledger-text">Brain RESOURCE·SUMMARY 정확히 1회 생성을 검증합니다.</div>
+                <div><span class="badge caution">쓰기 발생</span></div>
+                <div class="ledger-source">Goal 13<br />사람 게이트</div>
+              </div>
+            </div>
+          </section>
+
+          <section class="current-strip" aria-labelledby="b-current-title">
+            <svg class="icon"><use href="#i-circle-dot"></use></svg>
+            <div><h2 id="b-current-title">이어갈 일 · Goal 15 정보 구조 세 안 비교</h2><p>다음 Check: 사용자가 한 방향을 선택하거나 조합·재생성을 명시</p></div>
+            <span class="badge success">계속 가능</span>
+          </section>
+
+          <div class="two-up">
+            <section class="section-block" aria-labelledby="b-exception-title">
+              <header><h2 class="section-title" id="b-exception-title">결정 전에 확인할 예외</h2><span class="badge caution">1건</span></header>
+              <div class="item-row caution-row">
+                <span class="icon-wrap"><svg class="icon"><use href="#i-circle-alert"></use></svg></span>
+                <div><p class="item-title">VHK active Goal 2개</p><p class="item-note">goal peek 13 · 현재 디자인 브랜치는 Goal 15로 제한</p></div>
+                <svg class="icon"><use href="#i-chevron-right"></use></svg>
+              </div>
+            </section>
+            <section class="section-block" aria-labelledby="b-context-title">
+              <header><h2 class="section-title" id="b-context-title">오늘의 맥락</h2><span class="meta">기본 비확장</span></header>
+              <div class="item-row">
+                <span class="icon-wrap"><svg class="icon"><use href="#i-calendar"></use></svg></span>
+                <div><p class="item-title">일정 원장 확인 전</p><p class="item-note">확인되지 않은 시간을 만들지 않음</p></div>
+                <span class="badge">미확인</span>
+              </div>
+            </section>
+          </div>
+
+          <section class="support-rail" aria-label="보조 맥락">
+            <div class="support-cell">
+              <svg class="icon"><use href="#i-folder-kanban"></use></svg>
+              <div><h3>미션 지평선은 접어서 유지</h3><p>승인 결과가 어느 프로젝트와 Goal을 움직이는지만 필요할 때 엽니다.</p></div>
+            </div>
+            <div class="support-cell">
+              <svg class="icon"><use href="#i-file-text"></use></svg>
+              <div><h3>근거 우선</h3><p>모든 결정 행은 영향과 source를 함께 보여 장식용 승인 큐가 되지 않게 합니다.</p></div>
+            </div>
+          </section>
+        </section>
+
+        <section class="option-content" data-option="c" hidden>
+          <header class="content-head">
+            <div>
+              <h1>지금</h1>
+              <p class="subtitle">계속하기 전에 우선순위를 흐리는 충돌과 미확인 상태부터 걷어냅니다.</p>
+            </div>
+            <span class="option-tag">C · 예외 중심</span>
+          </header>
+
+          <section class="exception-lead" aria-labelledby="c-exception-title">
+            <div class="exception-symbol"><svg class="icon"><use href="#i-triangle-alert"></use></svg></div>
+            <div>
+              <p class="section-kicker">가장 먼저 확인</p>
+              <h2 id="c-exception-title">VHK active Goal이 2개라 다음 작업 포인터가 갈립니다.</h2>
+              <p class="body-copy">goal peek은 Goal 13을 가리키지만, 이번 승인·브랜치·handoff는 Goal 15만 허용합니다.</p>
+            </div>
+          </section>
+
+          <div class="exception-grid" aria-label="예외 진단">
+            <div class="exception-cell"><h3>관찰</h3><p>Goal 13과 15가 모두 IN_PROGRESS입니다.</p></div>
+            <div class="exception-cell"><h3>영향</h3><p>자동 next 포인터가 디자인 범위와 다른 Goal을 선택할 수 있습니다.</p></div>
+            <div class="exception-cell"><h3>현재 경계</h3><p>상태를 쓰지 않고 Goal 15 디자인 산출물만 계속합니다.</p></div>
+          </div>
+
+          <div class="triage-two-up">
+            <section class="work-thread" aria-labelledby="c-thread-title">
+              <h2 id="c-thread-title">예외와 무관하게 이어갈 일</h2>
+              <div class="thread-line">
+                <svg class="icon"><use href="#i-circle-dot"></use></svg>
+                <div><p>Goal 15 · 지금 화면 세 안 비교</p><p class="sub">다음 Check: 사용자 방향 선택</p></div>
+              </div>
+              <div class="thread-line">
+                <svg class="icon"><use href="#i-circle-check"></use></svg>
+                <div><p>production 경계 유지</p><p class="sub">src 수정·commit·push 없음</p></div>
+              </div>
+            </section>
+
+            <section class="work-thread" aria-labelledby="c-approval-title">
+              <h2 id="c-approval-title">내 결정 대기</h2>
+              <div class="thread-line">
+                <svg class="icon"><use href="#i-circle-check"></use></svg>
+                <div><p>지금 화면 정보 구조 선택</p><p class="sub">A·B·C · 디자인 산출물만 변경</p></div>
+              </div>
+              <div class="thread-line">
+                <svg class="icon"><use href="#i-file-text"></use></svg>
+                <div><p>Focus Feed 실제 항목 1건 승인</p><p class="sub">Goal 13 · Brain 쓰기 발생 · 이번 범위 밖</p></div>
+              </div>
+            </section>
+          </div>
+
+          <section class="support-rail" aria-label="보조 맥락">
+            <div class="support-cell">
+              <svg class="icon"><use href="#i-calendar"></use></svg>
+              <div><h3>오늘 일정</h3><p>Calendar 원장 확인 전 · 확인되지 않은 일정은 표시하지 않습니다.</p></div>
+            </div>
+            <div class="support-cell">
+              <svg class="icon"><use href="#i-folder-kanban"></use></svg>
+              <div><h3>미션 지평선</h3><p>예외가 미션 전체를 가리지 않도록 관계만 한 줄로 남깁니다.</p></div>
+            </div>
+          </section>
+        </section>
+      </main>
+
+      <aside class="inspector" aria-labelledby="inspector-title">
+        <header class="inspector-head">
+          <div class="kind-line"><svg class="icon"><use href="#i-folder-kanban"></use></svg>Goal · 예시 데이터</div>
+          <h2 id="inspector-title">Goal 15</h2>
+          <p class="body-copy">요한 관제탑 디자인 방향 선택과 기술 명세</p>
+        </header>
+        <div class="inspector-body">
+          <section class="inspector-section" aria-labelledby="status-title">
+            <h3 id="status-title">현재 상태</h3>
+            <dl class="data-list">
+              <dt>진행</dt><dd>IN_PROGRESS</dd>
+              <dt>우선순위</dt><dd>P0</dd>
+              <dt>다음 게이트</dt><dd>사용자 방향 선택</dd>
+              <dt>production</dt><dd>승인 없음</dd>
+            </dl>
+          </section>
+          <section class="inspector-section" aria-labelledby="source-title">
+            <h3 id="source-title">근거와 최신성</h3>
+            <dl class="data-list">
+              <dt>Goal</dt><dd>goals/15-control-tower-design-direction.md</dd>
+              <dt>handoff</dt><dd>session-handoff.md v1.0</dd>
+              <dt>기준일</dt><dd>2026-08-23</dd>
+            </dl>
+          </section>
+          <section class="inspector-section" aria-labelledby="relations-title">
+            <h3 id="relations-title">연결</h3>
+            <div class="relation"><p>Goal 15가 다음 작업을 정의</p><p class="target">지금 화면 IA 세 안 · 사용자 선택 대기</p></div>
+            <div class="relation"><p>Candidate A가 시각 계약을 제공</p><p class="target">밝은 중립 셸 · 행 위계 · 관계형 검사 열</p></div>
+            <div class="relation"><p>Goal 13과 상태가 충돌</p><p class="target">VHK active Goal 2개 · 이번 범위에서 수정 안 함</p></div>
+          </section>
+        </div>
+        <footer class="inspector-footer">
+          <button class="quiet-button" type="button">근거 보기</button>
+          <button class="primary-button" type="button">Goal 열기</button>
+        </footer>
+      </aside>
+    </div>
+
+    <script>
+      const params = new URLSearchParams(window.location.search);
+      const requested = params.get("option");
+      const option = ["a", "b", "c"].includes(requested) ? requested : "a";
+      const labels = {
+        a: "NOW-IA-R1 · Option A",
+        b: "NOW-IA-R1 · Option B",
+        c: "NOW-IA-R1 · Option C"
+      };
+
+      document.documentElement.dataset.option = option;
+      document.title = "요한 관제탑 — 지금 화면 " + option.toUpperCase();
+      document.getElementById("revisionLabel").textContent = labels[option];
+      document.querySelectorAll(".option-content").forEach((section) => {
+        section.hidden = section.dataset.option !== option;
+      });
+    </script>
+  </body>
+</html>

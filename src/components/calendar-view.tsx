@@ -1,6 +1,6 @@
 "use client"
 
-import { FormEvent, useCallback, useEffect, useMemo, useState } from "react"
+import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import {
   CalendarDays,
   Check,
@@ -27,6 +27,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { cn } from "@/lib/utils"
+import { resolveCalendarViewState, seoulDate } from "@/lib/work-navigation"
 import type {
   CalendarCreateInput,
   CalendarItemKind,
@@ -41,6 +42,13 @@ const WEEKDAYS = ["월", "화", "수", "목", "금", "토", "일"]
 
 type CalendarMode = "month" | "list"
 
+interface CalendarViewProps {
+  initialDate?: string
+  initialMode?: CalendarMode
+  selectedItemId?: string | null
+  onLocationChange?: (location: { date?: string; mode?: CalendarMode; item?: string }, replace?: boolean) => void
+}
+
 interface CreateFormState {
   kind: CalendarItemKind
   title: string
@@ -53,8 +61,11 @@ interface CreateFormState {
   notes: string
 }
 
-function todaySeoul(): string {
-  return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Seoul" }).format(new Date())
+interface CalendarRangeState {
+  key: string
+  status: "loading" | "ready" | "error"
+  data: CalendarResponse | null
+  error: string | null
 }
 
 function parseYmd(value: string): Date {
@@ -148,21 +159,29 @@ function recurrenceLabel(item: CalendarOccurrence): string {
   return item.recurrenceInterval === 1 ? `${unit === "일" ? "매일" : unit === "주" ? "매주" : "매월"}` : `${item.recurrenceInterval}${unit}마다`
 }
 
-async function fetchCalendarRange(from: string, to: string): Promise<CalendarResponse> {
-  const response = await fetch(`/api/calendar?from=${from}&to=${to}&t=${Date.now()}`, { cache: "no-store" })
+async function fetchCalendarRange(from: string, to: string, signal?: AbortSignal): Promise<CalendarResponse> {
+  const response = await fetch(`/api/calendar?from=${from}&to=${to}&t=${Date.now()}`, { cache: "no-store", signal })
   const payload = await response.json() as CalendarResponse
   if (!response.ok || !payload.ok) throw new Error(payload.error ?? `HTTP ${response.status}`)
   return payload
 }
 
-export function CalendarView() {
-  const today = useMemo(() => todaySeoul(), [])
-  const [month, setMonth] = useState(today.slice(0, 7))
-  const [selectedDate, setSelectedDate] = useState(today)
-  const [mode, setMode] = useState<CalendarMode>("month")
-  const [data, setData] = useState<CalendarResponse | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [loading, setLoading] = useState(true)
+export function CalendarView({
+  initialDate,
+  initialMode,
+  selectedItemId = null,
+  onLocationChange,
+}: CalendarViewProps = {}) {
+  const today = seoulDate()
+  const urlState = useMemo(
+    () => resolveCalendarViewState(initialDate, initialMode, today),
+    [initialDate, initialMode, today],
+  )
+  const [month, setMonth] = useState(urlState.month)
+  const [selectedDate, setSelectedDate] = useState(urlState.selectedDate)
+  const [mode, setMode] = useState<CalendarMode>(urlState.mode)
+  const [rangeState, setRangeState] = useState<CalendarRangeState>({ key: "", status: "loading", data: null, error: null })
+  const [actionError, setActionError] = useState<string | null>(null)
   const [createOpen, setCreateOpen] = useState(false)
   const [editingItem, setEditingItem] = useState<CalendarOccurrence | null>(null)
   const [form, setForm] = useState<CreateFormState>(() => emptyForm(today))
@@ -178,35 +197,67 @@ export function CalendarView() {
   const [trashLoading, setTrashLoading] = useState(false)
   const [trashError, setTrashError] = useState<string | null>(null)
   const [restoringTrashId, setRestoringTrashId] = useState<string | null>(null)
-
-  const grid = useMemo(() => monthGrid(month), [month])
-
-  const load = useCallback(async () => {
-    try {
-      setData(await fetchCalendarRange(grid.from, grid.to))
-    } catch (loadError: unknown) {
-      setError(loadError instanceof Error ? loadError.message : String(loadError))
-    } finally {
-      setLoading(false)
-    }
-  }, [grid.from, grid.to])
+  const requestSequenceRef = useRef(0)
+  const activeRequestRef = useRef<{ id: number; key: string; controller: AbortController } | null>(null)
+  const editTriggerRef = useRef<HTMLButtonElement | null>(null)
+  const fallbackFocusRef = useRef<HTMLButtonElement | null>(null)
+  const dismissedSelectionRef = useRef<string | null>(null)
 
   useEffect(() => {
-    let alive = true
-    fetchCalendarRange(grid.from, grid.to)
-      .then((payload) => {
-        if (alive) setData(payload)
+    const timer = setTimeout(() => {
+      setSelectedDate(urlState.selectedDate)
+      setMonth(urlState.month)
+      setMode(urlState.mode)
+    }, 0)
+    return () => clearTimeout(timer)
+  }, [urlState])
+
+  const grid = useMemo(() => monthGrid(month), [month])
+  const rangeKey = `${grid.from}:${grid.to}`
+  const locationMonth = initialDate?.slice(0, 7) ?? month
+  const locationRangePending = locationMonth !== month
+  const rangeIsCurrent = !locationRangePending && rangeState.key === rangeKey
+  const data = rangeIsCurrent ? rangeState.data : null
+  const loading = !rangeIsCurrent || rangeState.status === "loading"
+  const error = loading ? null : rangeState.status === "error" ? rangeState.error : actionError
+  const locationDate = initialDate ?? selectedDate
+  const locationMode = initialMode ?? mode
+
+  const load = useCallback(async () => {
+    const requestId = requestSequenceRef.current + 1
+    requestSequenceRef.current = requestId
+    activeRequestRef.current?.controller.abort()
+    const controller = new AbortController()
+    activeRequestRef.current = { id: requestId, key: rangeKey, controller }
+    setRangeState((current) => current.key === rangeKey && current.data
+      ? { key: rangeKey, status: "loading", data: current.data, error: null }
+      : { key: rangeKey, status: "loading", data: null, error: null })
+    setActionError(null)
+    try {
+      const payload = await fetchCalendarRange(grid.from, grid.to, controller.signal)
+      if (activeRequestRef.current?.id !== requestId) return
+      setRangeState({ key: rangeKey, status: "ready", data: payload, error: null })
+    } catch (loadError: unknown) {
+      if (controller.signal.aborted || activeRequestRef.current?.id !== requestId) return
+      setRangeState({
+        key: rangeKey,
+        status: "error",
+        data: null,
+        error: loadError instanceof Error ? loadError.message : String(loadError),
       })
-      .catch((loadError: unknown) => {
-        if (alive) setError(loadError instanceof Error ? loadError.message : String(loadError))
-      })
-      .finally(() => {
-        if (alive) setLoading(false)
-      })
-    return () => {
-      alive = false
+    } finally {
+      if (activeRequestRef.current?.id === requestId) activeRequestRef.current = null
     }
-  }, [grid.from, grid.to])
+  }, [grid.from, grid.to, rangeKey])
+
+  useEffect(() => {
+    const timer = setTimeout(() => void load(), 0)
+    return () => {
+      clearTimeout(timer)
+      const active = activeRequestRef.current
+      if (active?.key === rangeKey) active.controller.abort()
+    }
+  }, [load, rangeKey])
 
   const byDate = useMemo(() => {
     const grouped = new Map<string, CalendarOccurrence[]>()
@@ -233,36 +284,90 @@ export function CalendarView() {
     return groups
   }, [monthItems])
 
+  const selectedOccurrenceId = selectedItemId?.startsWith("calendar:")
+    ? selectedItemId.slice("calendar:".length)
+    : null
+  const restoredSelection = selectedOccurrenceId
+    ? (data?.occurrences ?? []).find((item) => item.id === selectedOccurrenceId) ?? null
+    : null
+
+  const resolveEditFinalFocus = useCallback((): HTMLElement | false => {
+    const trigger = editTriggerRef.current
+    if (trigger?.isConnected) return trigger
+    const fallback = fallbackFocusRef.current
+    return fallback?.isConnected ? fallback : false
+  }, [])
+
+  useEffect(() => {
+    if (!editingItem) return
+    const editingItemKey = `calendar:${editingItem.id}`
+    if (selectedItemId === editingItemKey) return
+    if (!selectedItemId) dismissedSelectionRef.current = null
+    const timer = setTimeout(() => {
+      setCreateOpen(false)
+      setEditingItem(null)
+      setSaveError(null)
+    }, 0)
+    return () => clearTimeout(timer)
+  }, [editingItem, selectedItemId])
+
+  useEffect(() => {
+    if (!selectedItemId || loading || !data || error) return
+    if (dismissedSelectionRef.current && dismissedSelectionRef.current !== selectedItemId) {
+      dismissedSelectionRef.current = null
+    }
+    if (dismissedSelectionRef.current === selectedItemId) return
+    const timer = setTimeout(() => {
+      if (!restoredSelection) {
+        onLocationChange?.({ date: locationDate, mode: locationMode }, true)
+        return
+      }
+      if (editingItem?.id !== restoredSelection.id) {
+        setEditingItem(restoredSelection)
+        setForm(formFromOccurrence(restoredSelection))
+        setSaveError(null)
+        setCreateOpen(true)
+      }
+    }, 0)
+    return () => clearTimeout(timer)
+  }, [data, editingItem?.id, error, loading, locationDate, locationMode, onLocationChange, restoredSelection, selectedItemId])
+
   function openCreate(kind: CalendarItemKind) {
+    editTriggerRef.current = null
     setEditingItem(null)
     setForm(emptyForm(selectedDate, kind))
     setSaveError(null)
     setCreateOpen(true)
   }
 
-  function openEdit(item: CalendarOccurrence) {
+  function openEdit(item: CalendarOccurrence, trigger: HTMLButtonElement) {
+    editTriggerRef.current = trigger
+    dismissedSelectionRef.current = null
     setEditingItem(item)
     setForm(formFromOccurrence(item))
     setSaveError(null)
     setCreateOpen(true)
+    onLocationChange?.({ date: item.date, mode, item: `calendar:${item.id}` })
   }
 
   function moveMonth(amount: number) {
     const next = shiftMonth(month, amount)
-    setLoading(true)
-    setError(null)
+    const nextDate = `${next}-01`
+    setActionError(null)
     setMonth(next)
-    setSelectedDate(`${next}-01`)
+    setSelectedDate(nextDate)
+    onLocationChange?.({ date: nextDate, mode })
   }
 
   function goToday() {
-    const targetMonth = today.slice(0, 7)
+    const targetDate = seoulDate()
+    const targetMonth = targetDate.slice(0, 7)
     if (targetMonth !== month) {
-      setLoading(true)
-      setError(null)
+      setActionError(null)
       setMonth(targetMonth)
     }
-    setSelectedDate(today)
+    setSelectedDate(targetDate)
+    onLocationChange?.({ date: targetDate, mode })
   }
 
   async function submitItem(event: FormEvent<HTMLFormElement>) {
@@ -293,12 +398,15 @@ export function CalendarView() {
       })
       const payload = await response.json() as { ok?: boolean; setupRequired?: boolean; error?: string }
       if (!response.ok || !payload.ok) throw new Error(payload.error ?? `HTTP ${response.status}`)
+      if (selectedItemId) {
+        dismissedSelectionRef.current = selectedItemId
+        onLocationChange?.({ date: form.date, mode }, true)
+      }
       setCreateOpen(false)
       setEditingItem(null)
       const targetMonth = form.date.slice(0, 7)
       setSelectedDate(form.date)
-      setLoading(true)
-      setError(null)
+      setActionError(null)
       if (targetMonth === month) await load()
       else setMonth(targetMonth)
     } catch (submitError: unknown) {
@@ -310,7 +418,7 @@ export function CalendarView() {
 
   async function toggleTask(item: CalendarOccurrence) {
     setPendingTaskId(item.id)
-    setError(null)
+    setActionError(null)
     try {
       const response = await fetch("/api/calendar", {
         method: "PATCH",
@@ -326,7 +434,7 @@ export function CalendarView() {
       if (!response.ok || !payload.ok) throw new Error(payload.error ?? `HTTP ${response.status}`)
       await load()
     } catch (toggleError: unknown) {
-      setError(toggleError instanceof Error ? toggleError.message : String(toggleError))
+      setActionError(toggleError instanceof Error ? toggleError.message : String(toggleError))
     } finally {
       setPendingTaskId(null)
     }
@@ -385,7 +493,7 @@ export function CalendarView() {
   async function restoreTrashItem(item: CalendarTrashItem) {
     setRestoringTrashId(item.trashId)
     setTrashError(null)
-    setError(null)
+    setActionError(null)
     try {
       const response = await fetch("/api/calendar", {
         method: "PATCH",
@@ -400,7 +508,7 @@ export function CalendarView() {
     } catch (restoreError: unknown) {
       const message = restoreError instanceof Error ? restoreError.message : String(restoreError)
       if (trashOpen) setTrashError(message)
-      else setError(message)
+      else setActionError(message)
     } finally {
       setRestoringTrashId(null)
     }
@@ -420,7 +528,7 @@ export function CalendarView() {
   }
 
   return (
-    <section aria-label="로컬 캘린더" className="space-y-4">
+    <section aria-label="로컬 캘린더" data-calendar-date={selectedDate} data-calendar-mode={mode} className="space-y-4">
       <div className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-3 sm:flex-row sm:items-center sm:justify-between sm:p-4">
         <div className="flex min-w-0 items-center gap-2">
           <button type="button" onClick={() => moveMonth(-1)} aria-label="이전 달" className="calendar-icon-button">
@@ -430,15 +538,15 @@ export function CalendarView() {
             <ChevronRight size={16} aria-hidden />
           </button>
           <h2 className="ml-1 min-w-28 text-base font-semibold tracking-[-0.025em] sm:text-lg">{formatMonth(month)}</h2>
-          <button type="button" onClick={goToday} className="rounded-lg border border-border px-2.5 py-1.5 text-[10px] font-semibold hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring">
+          <button ref={fallbackFocusRef} type="button" data-calendar-focus-fallback onClick={goToday} className="rounded-lg border border-border px-2.5 py-1.5 text-[10px] font-semibold hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring">
             오늘
           </button>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
           <div className="flex rounded-lg bg-muted p-0.5" aria-label="Calendar 보기 방식">
-            <ModeButton active={mode === "month"} onClick={() => setMode("month")} icon={<CalendarDays size={12} />} label="월간" />
-            <ModeButton active={mode === "list"} onClick={() => setMode("list")} icon={<List size={12} />} label="목록" />
+            <ModeButton active={mode === "month"} onClick={() => { setMode("month"); onLocationChange?.({ date: selectedDate, mode: "month" }) }} icon={<CalendarDays size={12} />} label="월간" />
+            <ModeButton active={mode === "list"} onClick={() => { setMode("list"); onLocationChange?.({ date: selectedDate, mode: "list" }) }} icon={<List size={12} />} label="목록" />
           </div>
           <button type="button" onClick={openTrash} className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-2 text-[11px] font-semibold hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring">
             <Trash2 size={12} aria-hidden /> 휴지통
@@ -507,7 +615,7 @@ export function CalendarView() {
                   today={today}
                   selected={date === selectedDate}
                   items={byDate.get(date) ?? []}
-                  onClick={() => setSelectedDate(date)}
+                  onClick={() => { setSelectedDate(date); onLocationChange?.({ date, mode }) }}
                 />
               ))}
             </div>
@@ -532,7 +640,7 @@ export function CalendarView() {
             <div className="divide-y divide-border">
               {monthGroups.map((group) => (
                 <div key={group.date} className="grid gap-2 px-4 py-4 sm:grid-cols-[150px_1fr] sm:px-5">
-                  <button type="button" onClick={() => { setSelectedDate(group.date); setMode("month") }} className="self-start text-left text-xs font-semibold hover:underline hover:underline-offset-4">
+                  <button type="button" onClick={() => { setSelectedDate(group.date); setMode("month"); onLocationChange?.({ date: group.date, mode: "month" }) }} className="self-start min-h-11 text-left text-sm font-semibold hover:underline hover:underline-offset-4 focus-visible:ring-2 focus-visible:ring-[#146c94]">
                     {formatSelectedDate(group.date)}
                   </button>
                   <div className="space-y-2">
@@ -549,8 +657,16 @@ export function CalendarView() {
         open={createOpen}
         onOpenChange={(open) => {
           setCreateOpen(open)
-          if (!open) setEditingItem(null)
+          if (!open) {
+            const wasEditing = editingItem !== null
+            if (wasEditing && selectedItemId) {
+              dismissedSelectionRef.current = selectedItemId
+              onLocationChange?.({ date: locationDate, mode: locationMode }, true)
+            }
+            setEditingItem(null)
+          }
         }}
+        finalFocus={resolveEditFinalFocus}
         editing={editingItem}
         form={form}
         setForm={setForm}
@@ -583,7 +699,7 @@ export function CalendarView() {
 
 function ModeButton({ active, onClick, icon, label }: { active: boolean; onClick: () => void; icon: React.ReactNode; label: string }) {
   return (
-    <button type="button" aria-pressed={active} onClick={onClick} className={cn("inline-flex items-center gap-1 rounded-md px-2.5 py-1.5 text-[10px] font-semibold transition-colors", active ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}>{icon}{label}</button>
+    <button type="button" aria-pressed={active} onClick={onClick} className={cn("inline-flex items-center gap-1 rounded-md px-2.5 py-1.5 text-[10px] font-semibold transition-colors", active ? "bg-[#e7eff5] text-[#172326] ring-1 ring-inset ring-[#146c94]/35" : "text-muted-foreground hover:text-foreground")}>{icon}{label}</button>
   )
 }
 
@@ -606,7 +722,7 @@ function CalendarDay({ date, currentMonth, today, selected, items, onClick }: {
         "relative min-h-16 min-w-0 border-r border-b border-border p-1.5 text-left outline-none transition-colors [border-right-width:1px] sm:min-h-24 sm:p-2",
         "nth-[7n]:border-r-0 hover:bg-muted/50 focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
         !inMonth && "bg-muted/20 text-muted-foreground/50",
-        selected && "bg-[#ff5c28]/6 ring-1 ring-inset ring-[#ff5c28]/45"
+        selected && "bg-[#e7eff5] ring-1 ring-inset ring-[#146c94]"
       )}
     >
       <span className={cn("inline-flex size-5 items-center justify-center rounded-full text-[10px] font-semibold tabular-nums sm:size-6 sm:text-[11px]", date === today && "bg-[#ff5c28] text-white")}>{Number(date.slice(-2))}</span>
@@ -629,7 +745,7 @@ function DayAgenda({ className, date, items, pendingTaskId, onToggleTask, onEdit
   items: CalendarOccurrence[]
   pendingTaskId: string | null
   onToggleTask: (item: CalendarOccurrence) => void
-  onEdit: (item: CalendarOccurrence) => void
+  onEdit: (item: CalendarOccurrence, trigger: HTMLButtonElement) => void
   onDelete: (item: CalendarOccurrence) => void
   onAddTask: () => void
 }) {
@@ -665,7 +781,7 @@ function AgendaItem({ item, pending, onToggleTask, onEdit, onDelete }: {
   item: CalendarOccurrence
   pending: boolean
   onToggleTask: (item: CalendarOccurrence) => void
-  onEdit: (item: CalendarOccurrence) => void
+  onEdit: (item: CalendarOccurrence, trigger: HTMLButtonElement) => void
   onDelete: (item: CalendarOccurrence) => void
 }) {
   const done = item.status === "done"
@@ -685,7 +801,7 @@ function AgendaItem({ item, pending, onToggleTask, onEdit, onDelete }: {
         </div>
       </div>
       <div className="flex shrink-0 items-center gap-0.5">
-        <button type="button" onClick={() => onEdit(item)} aria-label={`${item.title} 수정`} className="flex size-7 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring">
+        <button type="button" data-calendar-edit-id={item.id} onClick={(event) => onEdit(item, event.currentTarget)} aria-label={`${item.title} 수정`} className="flex size-7 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring">
           <Pencil size={12} aria-hidden />
         </button>
         <button type="button" onClick={() => onDelete(item)} aria-label={`${item.title} 휴지통으로 이동`} className="flex size-7 items-center justify-center rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive focus-visible:ring-2 focus-visible:ring-ring">
@@ -705,7 +821,7 @@ function DeleteCalendarDialog({ item, deleting, error, onOpenChange, onConfirm }
 }) {
   return (
     <Dialog open={item !== null} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent data-work-calendar-dialog className="[&_button]:min-h-[45px] [&_button]:min-w-[45px] sm:max-w-md">
         <DialogHeader>
           <DialogTitle>휴지통으로 이동</DialogTitle>
           <DialogDescription>원본 파일은 삭제되지 않으며 휴지통에서 다시 복구할 수 있습니다.</DialogDescription>
@@ -743,7 +859,7 @@ function TrashCalendarDialog({ open, onOpenChange, data, loading, error, restori
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
+      <DialogContent data-work-calendar-dialog className="max-h-[85vh] overflow-y-auto [&_button]:min-h-[45px] [&_button]:min-w-[45px] sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Calendar 휴지통</DialogTitle>
           <DialogDescription>항목은 영구 삭제되지 않습니다. 필요한 항목을 원래 Calendar로 복구할 수 있습니다.</DialogDescription>
@@ -783,9 +899,10 @@ function TrashCalendarDialog({ open, onOpenChange, data, loading, error, restori
   )
 }
 
-function CreateCalendarDialog({ open, onOpenChange, editing, form, setForm, saving, error, onSubmit }: {
+function CreateCalendarDialog({ open, onOpenChange, finalFocus, editing, form, setForm, saving, error, onSubmit }: {
   open: boolean
   onOpenChange: (open: boolean) => void
+  finalFocus: () => HTMLElement | false
   editing: CalendarOccurrence | null
   form: CreateFormState
   setForm: React.Dispatch<React.SetStateAction<CreateFormState>>
@@ -796,7 +913,7 @@ function CreateCalendarDialog({ open, onOpenChange, editing, form, setForm, savi
   const recurrenceUnit = form.recurrence === "daily" ? "일" : form.recurrence === "weekly" ? "주" : "개월"
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
+      <DialogContent finalFocus={finalFocus} data-work-calendar-dialog className="max-h-[90vh] overflow-y-auto [&_button]:min-h-[45px] [&_button]:min-w-[45px] [&_input]:min-h-[45px] [&_select]:min-h-[45px] [&_textarea]:min-h-[45px] sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{editing ? form.kind === "event" ? "일정 수정" : "할 일 수정" : form.kind === "event" ? "새 일정" : "새 할 일"}</DialogTitle>
           <DialogDescription>

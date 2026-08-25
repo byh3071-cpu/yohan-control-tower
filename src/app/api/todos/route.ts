@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server"
-import { createHash } from "node:crypto"
 import { readdir, readFile } from "node:fs/promises"
 import { join, relative } from "node:path"
-import { resolveRepoRoot } from "@/lib/paths"
+import { isSafeRepoSlug, loadProjectsDocument } from "@/lib/ecosystem-projects"
+import { parseGoalCompletionTasks, stableTodoId } from "@/lib/goal-tasks"
+import { resolveRepoRoot, resolveReposRoot } from "@/lib/paths"
 import { isDocPathAllowed } from "@/lib/memory"
 import type { TodoItem, TodoOrigin, TodosResponse } from "@/lib/types"
 
@@ -20,13 +21,11 @@ export const dynamic = "force-dynamic"
  * 필터 실측 비교: 무필터 157 / 신선도30일 130 / 헤딩만 89 / **경로+헤딩 17**.
  * 배제된 14파일 전수 확인 결과 14/14가 ②③ 유형 = 오탈락 0.
  */
-// goal 은 레포 루트 `goals/` 다 — `memory/goals` 는 존재한 적이 없다. 오타 한 줄 때문에
-// status(ACTIVE|BACKLOG|DONE)·priority(P0~P2) 를 갖춘 정형 goal 16건이 통째로 안 보였다.
-// collectMd 가 없는 경로를 조용히 삼켜서(아래) 아무도 눈치채지 못했다.
+// Goal은 Brain 단일 폴더가 아니라 projects.yaml에 등록된 active 프로젝트의 `<repo>/goals`에서 읽는다.
+// `memory/goals` 같은 추론 폴백은 쓰지 않고, 프로젝트명만 브라우저 payload에 남긴다.
 const SCAN_DIRS = [
   "memory/decisions",
   "memory/projects",
-  "goals",
   "docs/yohanthinking/notes",
   "docs/vision",
 ] as const
@@ -52,12 +51,6 @@ async function collectMd(dir: string, missing?: string[]): Promise<string[]> {
     missing?.push(dir)
   }
   return out
-}
-
-/** 할일 텍스트 → 짧은 안정 해시. 같은 문서에 같은 문장이 둘이면 id 가 겹치지만,
- *  그 경우는 사람 눈에도 같은 항목이라 실질 피해가 없다. */
-function todoHash(text: string): string {
-  return createHash("sha1").update(text).digest("hex").slice(0, 8)
 }
 
 /**
@@ -95,7 +88,7 @@ function parseTodos(text: string, relPath: string, origin: TodoOrigin): TodoItem
     const raw = m[1].trim()
     if (!raw) continue
     items.push({
-      id: `${relPath}#${todoHash(raw)}`,
+      id: stableTodoId(relPath, raw, i + 1),
       text: raw.replace(/\*\*/g, "").replace(/`/g, ""),
       relPath,
       line: i + 1,
@@ -139,19 +132,25 @@ function parseFrontmatter(text: string): Record<string, string> {
   return fm
 }
 
-async function collectGoals(goalsDir: string, root: string, missing?: string[]): Promise<TodoItem[]> {
+async function collectGoals(
+  goalsDir: string,
+  repoRoot: string,
+  projectName: string,
+  missing?: string[],
+): Promise<TodoItem[]> {
   const items: TodoItem[] = []
   let entries
   try {
     entries = await readdir(/* turbopackIgnore: true */ goalsDir, { withFileTypes: true })
   } catch {
-    missing?.push("goals")
+    missing?.push(`${projectName}/goals`)
     return items
   }
   for (const e of entries) {
     if (!e.isFile() || !e.name.endsWith(".md") || e.name === "_meta.md") continue
     const abs = join(/* turbopackIgnore: true */ goalsDir, e.name)
-    const rel = relative(root, abs).replace(/\\/g, "/")
+    const repoRel = relative(repoRoot, abs).replace(/\\/g, "/")
+    const rel = `${projectName}/${repoRel}`
     let text: string
     try {
       text = await readFile(abs, "utf8")
@@ -166,11 +165,17 @@ async function collectGoals(goalsDir: string, root: string, missing?: string[]):
     const goalTitle = fm.title || rel.split("/").pop()!.replace(/\.md$/, "")
     const origin: TodoOrigin = {
       kind: "goal",
+      projectName,
       goalId: Number.isFinite(goalId) ? goalId : undefined,
       goalTitle,
       goalStatus: status,
       priority: normPriority(fm.priority),
       openPath: deriveOpenPath(rel), // goals/ 는 코퍼스 밖 → 항상 undefined (클릭 불가 라벨)
+    }
+    const completion = parseGoalCompletionTasks(text, rel, origin)
+    if (completion.hasCompletionChecks) {
+      items.push(...completion.items)
+      continue
     }
     // 의도 헤딩 아래 체크박스 우선, 없으면 goal 제목 1건
     const scoped = parseTodos(text, rel, origin)
@@ -190,6 +195,38 @@ async function collectGoals(goalsDir: string, root: string, missing?: string[]):
   return items
 }
 
+async function collectConfiguredProjectGoals(
+  brainRoot: string,
+  missingDirs: string[],
+): Promise<{ items: TodoItem[]; configuredProjects: number; localProjects: number }> {
+  const document = await loadProjectsDocument(brainRoot)
+  if (!document) throw new Error("프로젝트 원장이 없습니다.")
+
+  const reposRoot = resolveReposRoot()
+  const repoEntries = await readdir(/* turbopackIgnore: true */ reposRoot, { withFileTypes: true })
+  const localRepos = new Set(repoEntries.filter((entry) => entry.isDirectory()).map((entry) => entry.name))
+  const configured = document.projects.filter((project) => (
+    project.mission !== "unassigned" && project.status?.toLowerCase() === "active"
+  ))
+  const items: TodoItem[] = []
+  let localProjects = 0
+
+  for (const project of configured) {
+    if (!isSafeRepoSlug(project.name)) throw new Error("유효하지 않은 프로젝트 이름입니다.")
+    if (!localRepos.has(project.name)) continue
+    localProjects += 1
+    const repoRoot = join(/* turbopackIgnore: true */ reposRoot, project.name)
+    items.push(...await collectGoals(
+      join(/* turbopackIgnore: true */ repoRoot, "goals"),
+      repoRoot,
+      project.name,
+      missingDirs,
+    ))
+  }
+
+  return { items, configuredProjects: configured.length, localProjects }
+}
+
 export async function GET() {
   const root = resolveRepoRoot()
   const todos: TodoItem[] = []
@@ -197,19 +234,27 @@ export async function GET() {
 
   const missingDirs: string[] = []
 
+  let goalScope: TodosResponse["goalScope"]
+  try {
+    const projectGoals = await collectConfiguredProjectGoals(root, missingDirs)
+    todos.push(...projectGoals.items)
+    if (projectGoals.items.length) bySource["projects/*/goals"] = projectGoals.items.length
+    goalScope = {
+      ok: true,
+      configuredProjects: projectGoals.configuredProjects,
+      localProjects: projectGoals.localProjects,
+    }
+  } catch {
+    goalScope = {
+      ok: false,
+      configuredProjects: 0,
+      localProjects: 0,
+      error: "프로젝트 Goal 원장을 읽지 못했습니다.",
+    }
+  }
+
   for (const dir of SCAN_DIRS) {
     const abs = join(/* turbopackIgnore: true */ root, dir)
-
-    // goals 는 frontmatter·status 규칙이 달라 전용 수집기로 분기.
-    // (collectGoals 가 경로 부재 시 missingDirs 에 "goals" 를 직접 기록한다)
-    if (dir === "goals") {
-      const found = await collectGoals(abs, root, missingDirs)
-      if (found.length) {
-        todos.push(...found)
-        bySource[dir] = found.length
-      }
-      continue
-    }
 
     const missedHere: string[] = []
     for (const file of await collectMd(abs, missedHere)) {
@@ -239,8 +284,9 @@ export async function GET() {
     todos,
     total: todos.length,
     bySource,
-    scanned: [...SCAN_DIRS],
+    scanned: ["memory/core/projects.yaml → <repo>/goals", ...SCAN_DIRS],
     missingDirs,
+    goalScope,
     generatedAt: new Date().toISOString(),
   }
   return NextResponse.json(body, { headers: { "Cache-Control": "no-store" } })

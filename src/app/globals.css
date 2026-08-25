@@ -139,4 +139,35 @@
   .calendar-input {
     @apply block min-h-9 w-full rounded-lg border border-input bg-background px-3 py-2 text-xs outline-none transition-colors placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/20 disabled:cursor-not-allowed disabled:opacity-50;
   }
+
+  .work-shell {
+    --background: #f7f9f9;
+    --foreground: #172326;
+    --card: #f7f9f9;
+    --card-foreground: #172326;
+    --popover: #f7f9f9;
+    --popover-foreground: #172326;
+    --muted: #e7ecee;
+    --muted-foreground: #526367;
+    --accent: #e7eff5;
+    --accent-foreground: #172326;
+    --border: #b9c5c8;
+    --input: #aebbbf;
+    --ring: #146c94;
+  }
+
+  .work-shell button,
+  .work-shell [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .work-shell .text-\[8px\],
+  .work-shell .text-\[9px\],
+  .work-shell .text-\[10px\],
+  .work-shell .text-\[11px\],
+  .work-shell .text-xs {
+    font-size: 14px !important;
+    line-height: 1.5 !important;
+  }
 }

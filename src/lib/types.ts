@@ -28,6 +28,8 @@ export interface DocMeta {
  *  goal 이면 status·priority 로 "진행 중 / 대기"를 가른다. doc 이면 그냥 문서 액션. */
 export interface TodoOrigin {
   kind: "goal" | "doc"
+  /** configured project의 Goal일 때 projects.yaml key. 브라우저에는 절대경로를 보내지 않는다. */
+  projectName?: string
   /** goal 일 때만 */
   goalId?: number
   goalTitle?: string
@@ -35,6 +37,13 @@ export interface TodoOrigin {
   goalStatus?: string
   /** allowlist 통과값 또는 부재 시 "P2" */
   priority?: "P0" | "P1" | "P2"
+  /** Goal Completion Check 전체 진행률. Completion Check가 선언된 Goal에만 존재한다. */
+  goalProgress?: {
+    total: number
+    done: number
+  }
+  /** 전체 Completion Check에서 이 미완료 Task가 놓인 1-based 순서. */
+  goalTaskIndex?: number
   /** 출처 문서를 `/api/docs` 뷰어로 열 수 있을 때의 코퍼스 상대경로.
    *  코퍼스 밖(goals/·docs/) 이면 undefined → UI 는 클릭 불가 라벨로 표시(죽은 버튼 방지) */
   openPath?: string
@@ -66,6 +75,13 @@ export interface TodosResponse {
   scanned: string[]
   /** 존재하지 않는 스캔 경로 — 오타가 "0건"으로 위장하지 않게 표면화한다 */
   missingDirs: string[]
+  /** projects.yaml → 로컬 repo/goals 연결 상태. false면 NOW가 Brain Goal로 대체 선택하면 안 된다. */
+  goalScope: {
+    ok: boolean
+    configuredProjects: number
+    localProjects: number
+    error?: string
+  }
   generatedAt: string
 }
 

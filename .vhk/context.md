@@ -59,6 +59,8 @@
 │   │   ├── ADR-002-local-calendar-markdown-store.md
 │   │   └── ADR-003-vhk-policy-enforcement.md
 │   ├── ARCHITECTURE.md
+│   ├── design/
+│   │   └── control-tower-vnext/
 │   ├── ECOSYSTEM-CONTRACT-AUDIT.md
 │   ├── log/
 │   │   ├── 2026-07-28-dashboard-migration.md
@@ -75,14 +77,18 @@
 │   │   ├── 2026-08-07-mission-rollup-f004.md
 │   │   ├── 2026-08-10-focus-feed-knowledge-review.md
 │   │   ├── 2026-08-12-control-tower-review-vector-ux.md
+│   │   ├── 2026-08-22-control-tower-design-refinement.md
 │   │   ├── 2026-08-23-agent-session-runtime-recovery.md
+│   │   ├── 2026-08-23-control-tower-design-and-orca-investigation.md
 │   │   ├── 2026-08-23-design-team-intake-and-runtime-incident.md
 │   │   ├── 2026-08-23-design-team-supervision-protocol.md
 │   │   ├── 2026-08-23-focus-feed-knowledge-review-proof.md
 │   │   ├── 2026-08-23-vhk-policy-baseline.md
 │   │   ├── 2026-08-23-workstream-control-and-session-reconciliation.md
 │   │   ├── 2026-08-24-autopilot.md
-│   │   └── 2026-08-24-main-conductor-handoff.md
+│   │   ├── 2026-08-24-goal-16-now-r3.md
+│   │   ├── 2026-08-24-main-conductor-handoff.md
+│   │   └── 2026-08-25-work-sibling-views.md
 │   ├── operations/
 │   │   ├── agent-session-recovery-runbook.md
 │   │   ├── current-workstreams.md
@@ -96,6 +102,11 @@
 │   │   ├── README.md
 │   │   └── ux-client-filter-after-pagination-false-zero.md
 │   ├── PRD.md
+│   ├── prototypes/
+│   │   ├── control-tower-asset-validation/
+│   │   ├── control-tower-now-mova-r2/
+│   │   ├── control-tower-now-mova-r3/
+│   │   └── control-tower-now-options/
 │   ├── rfc/
 │   │   ├── 0001-notion-backed-common-workbench.md
 │   │   └── README.md
@@ -121,14 +132,17 @@
 │   ├── 11-vhk-all-done-handoff.md
 │   ├── 12-korean-user-facing-artifacts.md
 │   ├── 13-focus-feed-knowledge-review-proof.md
+│   ├── 14-focus-feed-knowledge-review-ui.md
 │   ├── 15-vhk-policy-baseline.md
 │   ├── 16-design-team-supervision-protocol.md
 │   ├── 17-design-team-intake-and-runtime-incident.md
 │   ├── 18-workstream-control-and-session-reconciliation.md
 │   ├── 19-agent-session-runtime-recovery.md
 │   ├── 2-ecosystem-home-mvp.md
-│   ├── 2-focus-feed-knowledge-review-ui.md
 │   ├── 20-main-conductor-session-handoff.md
+│   ├── 21-control-tower-design-direction.md
+│   ├── 22-live-now-r3.md
+│   ├── 23-work-sibling-views.md
 │   ├── 3-mission-project-drilldown-lint.md
 │   ├── 4-local-calendar-mvp.md
 │   ├── 5-calendar-item-editing.md
@@ -138,8 +152,94 @@
 │   ├── 9-vhk-session-continuity.md
 │   └── _meta.md
 ├── logs/
-│   ├── knowledge-review-dev.err.log
-│   └── knowledge-review-dev.out.log
+│   ├── chrome-work-qa-profile/
+│   │   ├── ActorSafetyLists/
+│   │   ├── AmountExtractionHeuristicRegexes/
+│   │   ├── BrowserMetrics-spare.pma
+│   │   ├── CaptchaProviders/
+│   │   ├── CertificateRevocation/
+│   │   ├── component_crx_cache/
+│   │   ├── Crashpad/
+│   │   ├── CrashpadMetrics-active.pma
+│   │   ├── Crowd Deny/
+│   │   ├── Default/
+│   │   ├── en-US-10-1.bdic
+│   │   ├── extensions_crx_cache/
+│   │   ├── FileTypePolicies/
+│   │   ├── FirstPartySetsPreloaded/
+│   │   ├── first_party_sets.db
+│   │   ├── first_party_sets.db-journal
+│   │   ├── GPUPersistentCache/
+│   │   ├── GrShaderCache/
+│   │   ├── hyphen-data/
+│   │   ├── ko-3-0.bdic
+│   │   ├── Last Browser
+│   │   ├── Last Version
+│   │   ├── Local State
+│   │   ├── MEIPreload/
+│   │   ├── OptimizationHints/
+│   │   ├── optimization_guide_model_store/
+│   │   ├── OriginTrials/
+│   │   ├── PKIMetadata/
+│   │   ├── PrivacySandboxAttestationsPreloaded/
+│   │   ├── RecoveryImproved/
+│   │   ├── Safe Browsing/
+│   │   ├── SafetyTips/
+│   │   ├── segmentation_platform/
+│   │   ├── ShaderCache/
+│   │   ├── SSLErrorAssistant/
+│   │   ├── Subresource Filter/
+│   │   ├── TrustTokenKeyCommitments/
+│   │   ├── Variations
+│   │   ├── WasmTtsEngine/
+│   │   ├── WidevineCdm/
+│   │   └── ZxcvbnData/
+│   ├── work-qa-next.err.log
+│   ├── work-qa-next.out.log
+│   ├── work-screen-chrome-profile/
+│   │   ├── ActorSafetyLists/
+│   │   ├── AmountExtractionHeuristicRegexes/
+│   │   ├── BrowserMetrics-spare.pma
+│   │   ├── CaptchaProviders/
+│   │   ├── CertificateRevocation/
+│   │   ├── component_crx_cache/
+│   │   ├── Crashpad/
+│   │   ├── CrashpadMetrics-active.pma
+│   │   ├── Crowd Deny/
+│   │   ├── Default/
+│   │   ├── en-US-10-1.bdic
+│   │   ├── extensions_crx_cache/
+│   │   ├── FileTypePolicies/
+│   │   ├── FirstPartySetsPreloaded/
+│   │   ├── first_party_sets.db
+│   │   ├── first_party_sets.db-journal
+│   │   ├── GPUPersistentCache/
+│   │   ├── GrShaderCache/
+│   │   ├── hyphen-data/
+│   │   ├── ko-3-0.bdic
+│   │   ├── Last Browser
+│   │   ├── Last Version
+│   │   ├── Local State
+│   │   ├── MEIPreload/
+│   │   ├── OptimizationHints/
+│   │   ├── optimization_guide_model_store/
+│   │   ├── OriginTrials/
+│   │   ├── PKIMetadata/
+│   │   ├── PrivacySandboxAttestationsPreloaded/
+│   │   ├── RecoveryImproved/
+│   │   ├── Safe Browsing/
+│   │   ├── SafetyTips/
+│   │   ├── segmentation_platform/
+│   │   ├── ShaderCache/
+│   │   ├── SSLErrorAssistant/
+│   │   ├── Subresource Filter/
+│   │   ├── TrustTokenKeyCommitments/
+│   │   ├── Variations
+│   │   ├── WasmTtsEngine/
+│   │   ├── WidevineCdm/
+│   │   └── ZxcvbnData/
+│   └── work-screen-final-blocking/
+│       └── chrome-profile/
 ├── next-env.d.ts
 ├── next.config.ts
 ├── package-lock.json
@@ -162,6 +262,7 @@
 │   ├── check-goal-11.mjs
 │   ├── check-goal-12.mjs
 │   ├── check-goal-13.mjs
+│   ├── check-goal-14.mjs
 │   ├── check-goal-15.mjs
 │   ├── check-goal-16.mjs
 │   ├── check-goal-17.mjs
@@ -169,6 +270,9 @@
 │   ├── check-goal-19.mjs
 │   ├── check-goal-2.mjs
 │   ├── check-goal-20.mjs
+│   ├── check-goal-21.mjs
+│   ├── check-goal-22.mjs
+│   ├── check-goal-23.mjs
 │   ├── check-goal-3.mjs
 │   ├── check-goal-4.mjs
 │   ├── check-goal-5.mjs
@@ -178,6 +282,7 @@
 │   ├── check-goal-9.mjs
 │   ├── check-local-setup.mjs
 │   ├── check-project-policy.ts
+│   ├── qa-work-screen.mjs
 │   ├── recover-orca-stale-repos.mjs
 │   ├── run-vhk.mjs
 │   ├── set-orca-repo-visibility.mjs
@@ -204,6 +309,7 @@
 │   │   ├── header.tsx
 │   │   ├── home-view.tsx
 │   │   ├── knowledge-review-panel.tsx
+│   │   ├── now-view.tsx
 │   │   ├── overnight-status-card.tsx
 │   │   ├── project-view.tsx
 │   │   ├── publish-status-card.tsx
@@ -214,8 +320,10 @@
 │   │   ├── timeline-view.tsx
 │   │   ├── todo-view.tsx
 │   │   ├── ui/
+│   │   ├── use-responsive-dialog.ts
 │   │   ├── vector/
 │   │   ├── view-tabs.tsx
+│   │   ├── work-view.tsx
 │   │   └── yohan-inbox-panel.tsx
 │   └── lib/
 │       ├── audits.ts
@@ -229,6 +337,8 @@
 │       ├── domains.ts
 │       ├── ecosystem-projects.ts
 │       ├── force-sim-2d.ts
+│       ├── goal-tasks.test.ts
+│       ├── goal-tasks.ts
 │       ├── http-cache.ts
 │       ├── inbox-controller.test.ts
 │       ├── inbox-controller.ts
@@ -240,9 +350,14 @@
 │       ├── memory.ts
 │       ├── missions.test.ts
 │       ├── missions.ts
+│       ├── now-task.test.ts
+│       ├── now-task.ts
 │       ├── paths.ts
 │       ├── project-policy.test.ts
 │       ├── project-policy.ts
+│       ├── project-route.test.ts
+│       ├── project-work-model.test.ts
+│       ├── project-work-model.ts
 │       ├── projects.test.ts
 │       ├── projects.ts
 │       ├── publish.ts
@@ -250,7 +365,11 @@
 │       ├── server-cache.ts
 │       ├── types.ts
 │       ├── utils.ts
-│       └── vector/
+│       ├── vector/
+│       ├── work-items.test.ts
+│       ├── work-items.ts
+│       ├── work-navigation.test.ts
+│       └── work-navigation.ts
 ├── tsconfig.json
 ├── tsconfig.tsbuildinfo
 └── VISION.md
@@ -330,14 +449,14 @@
 ## 최근 활동 (git log — goals/blockers/memory 미사용 시 폴백)
 
 ```
+3e6c38e Merge pull request #32 from byh3071-cpu/feat/session-operations-recovery
+002793b chore: 관제탑 출고 검증 증거 기록
+62c2f5a docs: 상시 지휘자 인수인계 마감
 881b39b feat: 상시 지휘자 인수인계 정본 추가
 1b5b4fb fix: 관제탑 세션 복구와 운영 흐름 정비
-cf61612 docs: yohan-inbox 화면 검수 캡처 회수 (dev 루트에 떠 있던 것)
-c048f8d chore(위생): 지식 검토 UI 목표 문서 커밋 + 런타임 산출물 무시
-2ab0048 Merge pull request #31 from byh3071-cpu/knowledge-p0-control-tower-r2
 ```
 
 ---
 
-_생성: 2026. 8. 24. 오후 2:17:17_
-_vhk-context-git: 881b39bde2deabb8b9bb626a7aa39f8dc3550f1a_
+_생성: 2026. 8. 25. 오전 4:10:33_
+_vhk-context-git: 3e6c38ecd8a29a13c861a4796dbd655f46081777_

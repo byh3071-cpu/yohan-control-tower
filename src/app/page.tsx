@@ -14,12 +14,13 @@ import { YohanInboxPanel } from "@/components/yohan-inbox-panel"
 import { FullCharts } from "@/components/full-charts"
 import { TimelineView } from "@/components/timeline-view"
 import { TableView } from "@/components/table-view"
-import { HomeView } from "@/components/home-view"
-import { ProjectView } from "@/components/project-view"
+import { NowView } from "@/components/now-view"
+import { WorkView } from "@/components/work-view"
 import { VectorPanel } from "@/components/vector/vector-panel"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { countByScope, docScope, matchesFilter, type DocFilter } from "@/lib/doc-scope"
 import { cn } from "@/lib/utils"
+import { parseWorkSearch, resolveTopViewAction, serializeWorkLocation, type WorkLocation } from "@/lib/work-navigation"
 import type { DocMeta, Stats, ChartData, GitCommit, DecisionEntry, SessionLog } from "@/lib/types"
 import {
   type ConstellationData,
@@ -102,12 +103,12 @@ export default function DashboardPage() {
   const [activeCategory, setActiveCategory] = useState<DocFilter>("all")
   const [selectedDoc, setSelectedDoc] = useState<string | null>(null)
   const [activeView, setActiveView] = useState<ViewTab>("home")
-  const [projectMission, setProjectMission] = useState<string | null>(null)
+  const [workLocation, setWorkLocation] = useState<Extract<WorkLocation, { kind: "work" }>>({ kind: "work", surface: "todo" })
   const [docsMode, setDocsMode] = useState<DocsMode>("card")
   const [inboxOpen, setInboxOpen] = useState(true)
   const [cmdOpen, setCmdOpen] = useState(false)
   const [loading, setLoading] = useState(true)
-  const [dashboardError, setDashboardError] = useState<string | null>(null)
+  const [, setDashboardError] = useState<string | null>(null)
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [constellationData, setConstellationData] = useState<ConstellationData | null>(null)
   const [constellationAsOfYmd, setConstellationAsOfYmd] = useState<string | null>(null)
@@ -165,6 +166,28 @@ export default function DashboardPage() {
     }
     mq.addEventListener("change", onChange)
     return () => mq.removeEventListener("change", onChange)
+  }, [])
+
+  useEffect(() => {
+    const restoreFromUrl = () => {
+      const parsed = parseWorkSearch(window.location.search)
+      if (parsed.kind === "work") {
+        const canonical = serializeWorkLocation(parsed)
+        if (window.location.search !== canonical) {
+          window.history.replaceState(null, "", `${window.location.pathname}${canonical}`)
+        }
+        setWorkLocation(parsed)
+        setActiveView("projects")
+      } else {
+        setActiveView((current) => current === "projects" ? "home" : current)
+      }
+    }
+    const timer = setTimeout(restoreFromUrl, 0)
+    window.addEventListener("popstate", restoreFromUrl)
+    return () => {
+      clearTimeout(timer)
+      window.removeEventListener("popstate", restoreFromUrl)
+    }
   }, [])
 
   const graphActive = activeView === "docs" && docsMode === "graph"
@@ -269,6 +292,9 @@ export default function DashboardPage() {
   }, [runServerAction])
 
   const openDoc = useCallback((relPath: string) => {
+    if (parseWorkSearch(window.location.search).kind === "work") {
+      window.history.pushState(null, "", window.location.pathname)
+    }
     setActiveCategory("all")
     setSelectedDoc(relPath)
     setActiveView("docs")
@@ -276,30 +302,40 @@ export default function DashboardPage() {
     setMobileNavOpen(false)
   }, [])
 
-  const navigateFromHome = useCallback((tab: ViewTab, category?: DocFilter) => {
-    if (category) {
-      setActiveCategory(category)
-      setDocsMode("card")
-    }
-    setActiveView(tab)
-    setMobileNavOpen(false)
-  }, [])
-
-  const openMissionFromHome = useCallback((missionId: string) => {
-    setProjectMission(missionId)
+  const navigateWork = useCallback((location: Extract<WorkLocation, { kind: "work" }>, replace = false) => {
+    const href = `${window.location.pathname}${serializeWorkLocation(location)}`
+    window.history[replace ? "replaceState" : "pushState"](null, "", href)
+    setWorkLocation(location)
     setActiveView("projects")
     setMobileNavOpen(false)
   }, [])
 
-  const openInboxFromHome = useCallback(() => {
-    setActiveCategory("all")
-    setDocsMode("card")
-    setInboxOpen(true)
+  const openProjectsFromNow = useCallback(() => {
+    navigateWork({ kind: "work", surface: "projects" })
+  }, [navigateWork])
+
+  const changeTopView = useCallback((tab: ViewTab) => {
+    const action = resolveTopViewAction(activeView, tab)
+    if (action === "no-op") return
+    if (action === "navigate-work") {
+      navigateWork(workLocation)
+      return
+    }
+    if (window.location.search) {
+      window.history.pushState(null, "", window.location.pathname)
+    }
+    setActiveView(tab)
+  }, [activeView, navigateWork, workLocation])
+
+  const openKnowledgeReview = useCallback(() => {
+    if (parseWorkSearch(window.location.search).kind === "work") {
+      window.history.pushState(null, "", window.location.pathname)
+    }
     setActiveView("docs")
-    setMobileNavOpen(false)
+    setInboxOpen(true)
   }, [])
 
-  if (loading) {
+  if (loading && activeView !== "projects") {
     return (
       <div className="h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-3">
@@ -318,15 +354,12 @@ export default function DashboardPage() {
     <div className="h-screen flex flex-col overflow-hidden">
       <Header
         onOpenSearch={() => setCmdOpen(true)}
-        onOpenKnowledgeReview={() => {
-          setActiveView("docs")
-          setInboxOpen(true)
-        }}
+        onOpenKnowledgeReview={openKnowledgeReview}
         onOpenMobileNav={() => setMobileNavOpen(true)}
         stats={stats}
         gaps={scopeCounts.gaps}
       />
-      <ViewTabs active={activeView} onChange={setActiveView} />
+      <ViewTabs active={activeView} onChange={changeTopView} />
 
       <div className="relative flex flex-1 overflow-hidden">
         {/* 사이드바 = 문서 카테고리축. 다른 탭과 교집합이 없어 288px 를 상시 점유할 이유가 없다.
@@ -362,23 +395,14 @@ export default function DashboardPage() {
           {/* ── 홈 ── 한 화면 관제. 상세 기능은 기존 4개 원장으로 흡수한다. */}
           {activeView === "home" && (
             <ScrollArea className="flex-1 min-h-0">
-              <HomeView
-                stats={stats}
-                docCounts={counts}
-                gaps={scopeCounts.gaps}
-                dashboardError={dashboardError}
-                onNavigate={navigateFromHome}
-                onOpenMission={openMissionFromHome}
-                onOpenInbox={openInboxFromHome}
-                onOpenDoc={openDoc}
-              />
+              <NowView onOpenProjects={openProjectsFromNow} />
             </ScrollArea>
           )}
 
-          {/* ── 프로젝트 ── 미션→레포→Task 3단 읽기 전용 드릴다운 */}
+          {/* ── 작업 ── 할 일·일정·프로젝트 형제 보기. 공통 URL 상태는 WorkView가 소유한다. */}
           {activeView === "projects" && (
             <ScrollArea className="flex-1 min-h-0">
-              <ProjectView initialMissionId={projectMission} />
+              <WorkView location={workLocation} onLocationChange={navigateWork} onSelectDoc={openDoc} />
             </ScrollArea>
           )}
 
@@ -603,10 +627,7 @@ export default function DashboardPage() {
           {activeView === "vector" && (
             <ScrollArea className="flex-1 min-h-0">
               <VectorPanel
-                onOpenReview={() => {
-                  setActiveView("docs")
-                  setInboxOpen(true)
-                }}
+                onOpenReview={openKnowledgeReview}
               />
             </ScrollArea>
           )}

@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import {
   AlertTriangle,
   CheckCircle2,
@@ -10,9 +10,13 @@ import {
   FolderKanban,
   Loader2,
   RefreshCw,
+  X,
 } from "lucide-react"
 
+import { useResponsiveDialog } from "@/components/use-responsive-dialog"
+import { buildProjectWorkModel, resolveProjectSelection } from "@/lib/project-work-model"
 import { cn } from "@/lib/utils"
+import type { WorkSourceResult } from "@/lib/work-items"
 import type {
   GoalTask,
   LintIssue,
@@ -25,6 +29,8 @@ import type {
 
 interface ProjectViewProps {
   initialMissionId?: string | null
+  selectedProjectName?: string | null
+  onSelectionChange?: (missionId: string | null, projectName: string | null, replace?: boolean) => void
 }
 
 function taskSummary(project: ProjectSummary): string {
@@ -52,52 +58,62 @@ function pickMission(data: ProjectsResponse | null, missionId: string | null): P
   return data.missions.find((mission) => mission.id === missionId) ?? data.missions[0] ?? null
 }
 
-export function ProjectView({ initialMissionId = null }: ProjectViewProps) {
-  const [data, setData] = useState<ProjectsResponse | null>(null)
-  const [lint, setLint] = useState<LintResponse | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [missionId, setMissionId] = useState<string | null>(initialMissionId)
-  const [projectName, setProjectName] = useState<string | null>(null)
+export function ProjectView({
+  initialMissionId = null,
+  selectedProjectName = null,
+  onSelectionChange,
+}: ProjectViewProps) {
+  const [projectsResult, setProjectsResult] = useState<WorkSourceResult<ProjectsResponse>>({ status: "loading" })
+  const [lintResult, setLintResult] = useState<WorkSourceResult<LintResponse>>({ status: "loading" })
   const [detailState, setDetailState] = useState<{ slug: string; data: ProjectDetailResponse | null; error: string | null }>({
     slug: "",
     data: null,
     error: null,
   })
   const [reloadKey, setReloadKey] = useState(0)
+  const projectRefs = useRef(new Map<string, HTMLButtonElement>())
+  const selectedProjectRef = useRef<string | null>(null)
 
   useEffect(() => {
     let alive = true
-    Promise.all([
-      fetch("/api/projects", { cache: "no-store" }).then(async (response) => {
-        const payload = await response.json() as ProjectsResponse
-        if (!response.ok || !payload.ok) throw new Error(payload.error ?? `HTTP ${response.status}`)
-        return payload
-      }),
-      fetch("/api/lint", { cache: "no-store" }).then(async (response) => {
-        const payload = await response.json() as LintResponse
-        if (!response.ok || !payload.ok) throw new Error(payload.error ?? `HTTP ${response.status}`)
-        return payload
-      }),
-    ])
-      .then(([projects, lintResult]) => {
-        if (!alive) return
-        setData(projects)
-        setLint(lintResult)
-        setError(null)
-      })
-      .catch((cause: unknown) => {
-        if (alive) setError(cause instanceof Error ? cause.message : String(cause))
-      })
+    const timer = setTimeout(() => {
+      setProjectsResult({ status: "loading" })
+      setLintResult({ status: "loading" })
+      void fetch("/api/projects", { cache: "no-store" })
+        .then(async (response) => {
+          const payload = await response.json() as ProjectsResponse
+          if (!response.ok || !payload.ok) throw new Error(payload.error ?? `HTTP ${response.status}`)
+          return payload
+        })
+        .then((projects) => { if (alive) setProjectsResult({ status: "ready", data: projects }) })
+        .catch((cause: unknown) => { if (alive) setProjectsResult({ status: "error", error: cause instanceof Error ? cause.message : String(cause) }) })
+      void fetch("/api/lint", { cache: "no-store" })
+        .then(async (response) => {
+          const payload = await response.json() as LintResponse
+          if (!response.ok || !payload.ok) throw new Error(payload.error ?? `HTTP ${response.status}`)
+          return payload
+        })
+        .then((lint) => { if (alive) setLintResult({ status: "ready", data: lint }) })
+        .catch((cause: unknown) => { if (alive) setLintResult({ status: "error", error: cause instanceof Error ? cause.message : String(cause) }) })
+    }, 0)
     return () => {
       alive = false
+      clearTimeout(timer)
     }
   }, [reloadKey])
 
-  const mission = pickMission(data, missionId)
-  const project = mission?.projects.find((item) => item.name === projectName)
-    ?? mission?.projects.find((item) => item.local)
-    ?? mission?.projects[0]
-    ?? null
+  const model = useMemo(() => buildProjectWorkModel(projectsResult, lintResult), [lintResult, projectsResult])
+  const data = model.projects
+  const lint = model.lint
+  const selection = data ? resolveProjectSelection(data, initialMissionId, selectedProjectName) : null
+  const mission = pickMission(data, selection?.missionId ?? null)
+  const project = mission?.projects.find((item) => item.name === selection?.projectName) ?? null
+
+  useEffect(() => {
+    if (projectsResult.status !== "ready" || !selection?.stale || !onSelectionChange) return
+    const timer = setTimeout(() => onSelectionChange(selection.missionId, null, true), 0)
+    return () => clearTimeout(timer)
+  }, [onSelectionChange, projectsResult.status, selection])
 
   useEffect(() => {
     if (!project) return
@@ -123,13 +139,41 @@ export function ProjectView({ initialMissionId = null }: ProjectViewProps) {
   const projectIssues = lint?.issues.filter((item) => item.project === project?.name) ?? []
 
   const chooseMission = (id: string) => {
-    setMissionId(id)
-    setProjectName(null)
+    onSelectionChange?.(id, null)
   }
 
   const reload = () => setReloadKey((value) => value + 1)
 
-  if (!data && !error) {
+  const closeDetail = useCallback(() => {
+    const previous = selectedProjectRef.current
+    onSelectionChange?.(mission?.id ?? null, null)
+    requestAnimationFrame(() => {
+      if (previous) projectRefs.current.get(previous)?.focus()
+    })
+  }, [mission?.id, onSelectionChange])
+
+  useEffect(() => {
+    if (project) selectedProjectRef.current = project.name
+  }, [project])
+
+  const handleProjectKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>, index: number) => {
+    if (event.key === "Enter") {
+      event.preventDefault()
+      const selected = mission?.projects[index]
+      if (selected) {
+        selectedProjectRef.current = selected.name
+        onSelectionChange?.(mission?.id ?? null, selected.name)
+      }
+      return
+    }
+    if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return
+    event.preventDefault()
+    const projects = mission?.projects ?? []
+    const next = Math.max(0, Math.min(projects.length - 1, index + (event.key === "ArrowDown" ? 1 : -1)))
+    projectRefs.current.get(projects[next]?.name ?? "")?.focus()
+  }
+
+  if (model.state === "loading") {
     return (
       <div className="flex min-h-[55vh] items-center justify-center gap-2 text-xs text-muted-foreground">
         <Loader2 size={15} className="animate-spin" aria-hidden /> 프로젝트 지도를 읽는 중
@@ -137,11 +181,11 @@ export function ProjectView({ initialMissionId = null }: ProjectViewProps) {
     )
   }
 
-  if (error) {
+  if (model.state === "error") {
     return (
       <div className="mx-auto mt-10 max-w-xl rounded-2xl border border-amber-300/70 bg-amber-50/60 p-6 text-center dark:bg-amber-950/20">
         <CircleAlert size={20} className="mx-auto text-amber-600" aria-hidden />
-        <h1 className="mt-3 text-sm font-semibold">프로젝트 지도를 불러오지 못했습니다.</h1>
+        <h2 className="mt-3 text-base font-semibold">프로젝트 지도를 불러오지 못했습니다.</h2>
         <p className="mt-1 text-xs leading-relaxed text-muted-foreground">원장을 확인한 뒤 다시 시도해 주세요.</p>
         <button type="button" onClick={reload} className="mt-4 inline-flex min-h-11 items-center gap-1.5 rounded-lg border border-border bg-background px-4 py-2 text-xs font-semibold">
           <RefreshCw size={12} aria-hidden /> 다시 읽기
@@ -154,7 +198,7 @@ export function ProjectView({ initialMissionId = null }: ProjectViewProps) {
     return (
       <div className="mx-auto mt-10 max-w-xl rounded-2xl border border-dashed border-border bg-card p-7 text-center">
         <FolderKanban size={22} className="mx-auto text-muted-foreground" aria-hidden />
-        <h1 className="mt-3 text-base font-semibold">미션 taxonomy 설정이 필요합니다.</h1>
+        <h2 className="mt-3 text-base font-semibold">미션 taxonomy 설정이 필요합니다.</h2>
         <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
           <code>YOHAN_OS_ROOT</code>가 가리키는 Brain에 <code>memory/core/projects.yaml</code>을 동기화한 뒤 다시 읽으세요.
         </p>
@@ -172,7 +216,7 @@ export function ProjectView({ initialMissionId = null }: ProjectViewProps) {
           <p className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
             <span className="size-1.5 rounded-full bg-[#ff5c28]" aria-hidden /> Mission / Project / Task
           </p>
-          <h1 className="mt-2 text-2xl font-semibold tracking-[-0.035em] sm:text-3xl">프로젝트 지도</h1>
+          <h2 className="mt-2 text-2xl font-semibold tracking-[-0.035em] sm:text-3xl">프로젝트 지도</h2>
           <p className="mt-1.5 text-sm text-muted-foreground">Brain 배속을 기준으로 로컬 레포와 Goal을 읽기 전용으로 펼칩니다.</p>
         </div>
         <div className="flex items-center gap-2 self-start sm:self-auto">
@@ -190,6 +234,13 @@ export function ProjectView({ initialMissionId = null }: ProjectViewProps) {
         </div>
       </header>
 
+      {model.state === "partial" && (
+        <div role="status" className="mt-4 flex items-start gap-2 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:bg-amber-950/20 dark:text-amber-200">
+          <AlertTriangle size={16} className="mt-0.5 shrink-0" aria-hidden />
+          <span><strong>프로젝트 목록은 유지됩니다.</strong> {model.errors.join(" · ")}</span>
+        </div>
+      )}
+
       <nav aria-label="미션 선택" className="mt-6 flex gap-2 overflow-x-auto pb-1">
         {data?.missions.map((item) => {
           const active = item.id === mission?.id
@@ -202,11 +253,11 @@ export function ProjectView({ initialMissionId = null }: ProjectViewProps) {
               onClick={() => chooseMission(item.id)}
               className={cn(
                 "min-w-max rounded-xl border px-3 py-2 text-left transition-colors focus-visible:ring-2 focus-visible:ring-ring",
-                active ? "border-foreground bg-foreground text-background" : "border-border bg-card hover:bg-muted/60"
+                active ? "border-[#146c94] bg-[#e7eff5] text-[#172326]" : "border-border bg-card hover:bg-muted/60"
               )}
             >
               <span className="block text-[11px] font-semibold">{item.label}</span>
-              <span className={cn("mt-0.5 block text-[9px] tabular-nums", active ? "text-background/65" : "text-muted-foreground")}>
+              <span className={cn("mt-0.5 block text-[9px] tabular-nums", active ? "text-[#526367]" : "text-muted-foreground")}>
                 로컬 {local}/{item.projects.length}
               </span>
             </button>
@@ -223,18 +274,27 @@ export function ProjectView({ initialMissionId = null }: ProjectViewProps) {
             </div>
             <p className="mt-1 text-[10px] text-muted-foreground">로컬 프로젝트를 먼저 표시합니다.</p>
           </div>
-          <div className="divide-y divide-border">
-            {mission?.projects.map((item) => {
+          <div className="divide-y divide-border" role="listbox" aria-label="프로젝트 목록">
+            {mission?.projects.map((item, index) => {
               const active = item.name === project?.name
               return (
                 <button
                   key={item.name}
                   type="button"
-                  onClick={() => setProjectName(item.name)}
-                  aria-pressed={active}
+                  ref={(node) => {
+                    if (node) projectRefs.current.set(item.name, node)
+                    else projectRefs.current.delete(item.name)
+                  }}
+                  role="option"
+                  onClick={() => {
+                    selectedProjectRef.current = item.name
+                    onSelectionChange?.(mission?.id ?? null, item.name)
+                  }}
+                  onKeyDown={(event) => handleProjectKeyDown(event, index)}
+                  aria-selected={active}
                   className={cn(
                     "group flex w-full items-center gap-3 px-4 py-3 text-left transition-colors focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
-                    active ? "bg-foreground/[0.055]" : "hover:bg-muted/50"
+                    active ? "bg-[#e7eff5]" : "hover:bg-muted/50"
                   )}
                 >
                   <span className={cn("flex size-8 shrink-0 items-center justify-center rounded-lg border", item.local ? "border-foreground/15 bg-background" : "border-dashed border-border text-muted-foreground")}>
@@ -260,6 +320,7 @@ export function ProjectView({ initialMissionId = null }: ProjectViewProps) {
           detail={detailState.slug === project?.name ? detailState.data : null}
           detailError={detailState.slug === project?.name ? detailState.error : null}
           issues={projectIssues}
+          onClose={closeDetail}
         />
       </div>
 
@@ -291,18 +352,38 @@ function ProjectDetail({
   detail,
   detailError,
   issues,
+  onClose,
 }: {
   project: ProjectSummary | null
   detail: ProjectDetailResponse | null
   detailError: string | null
   issues: LintIssue[]
+  onClose: () => void
 }) {
+  const { containerRef, initialFocusRef, isModal } = useResponsiveDialog(Boolean(project), onClose)
   if (!project) {
     return <div className="flex min-h-64 items-center justify-center rounded-2xl border border-dashed border-border text-xs text-muted-foreground">프로젝트를 선택하세요.</div>
   }
   const loading = !detail && !detailError
   return (
-    <section aria-labelledby="project-detail-heading" className="overflow-hidden rounded-2xl border border-border bg-card lg:min-h-80">
+    <>
+      <button
+        type="button"
+        tabIndex={-1}
+        data-work-dialog-backdrop="projects"
+        aria-label="프로젝트 상세 배경 닫기"
+        onClick={onClose}
+        className="fixed inset-0 z-[55] bg-[#172326]/25 lg:hidden"
+      />
+      <aside
+        ref={containerRef}
+        data-work-detail-sheet="projects"
+        role={isModal ? "dialog" : undefined}
+        aria-modal={isModal ? true : undefined}
+        aria-labelledby="project-detail-heading"
+        tabIndex={isModal ? -1 : undefined}
+        className="fixed inset-0 z-[60] overflow-y-auto bg-card md:inset-y-0 md:left-auto md:w-[420px] md:border-l md:border-border md:shadow-xl lg:static lg:z-auto lg:w-auto lg:min-h-80 lg:overflow-hidden lg:rounded-2xl lg:border lg:shadow-none"
+      >
       <div className="border-b border-border px-4 py-4 sm:px-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
@@ -312,9 +393,12 @@ function ProjectDetail({
             </div>
             <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">{project.role ?? "역할 설명 없음"}</p>
           </div>
-          <span className={cn("rounded-full border px-2 py-1 text-[9px] font-semibold", project.local ? "border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-300" : "border-border bg-muted text-muted-foreground")}>
-            {project.local ? "LOCAL" : "NOT CLONED"}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className={cn("rounded-full border px-2 py-1 text-[9px] font-semibold", project.local ? "border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-300" : "border-border bg-muted text-muted-foreground")}>
+              {project.local ? "LOCAL" : "NOT CLONED"}
+            </span>
+            <button ref={initialFocusRef} type="button" onClick={onClose} aria-label="프로젝트 상세 닫기" className="inline-flex size-11 items-center justify-center rounded-lg focus-visible:ring-2 focus-visible:ring-[#146c94]"><X size={18} aria-hidden /></button>
+          </div>
         </div>
         {issues.length > 0 && (
           <div className="mt-3 flex items-start gap-2 rounded-lg border border-amber-300/70 bg-amber-50/60 px-3 py-2 text-[10px] text-amber-700 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-300">
@@ -354,7 +438,8 @@ function ProjectDetail({
           </div>
         )}
       </div>
-    </section>
+      </aside>
+    </>
   )
 }
 
