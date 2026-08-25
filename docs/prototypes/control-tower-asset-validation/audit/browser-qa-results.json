@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "executedAt": "2026-08-23T06:24:59.438Z",
+  "tool": "Playwright MCP browser_run_code_unsafe",
+  "script": "../browser-qa.js",
+  "server": "python -m http.server 4175 --bind 127.0.0.1",
+  "requestedViewports": [360, 432, 768, 1279, 1280, 1440],
+  "variants": ["candidate", "misleading"],
+  "checkCount": 178,
+  "passed": true,
+  "failures": [],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "readings": {
+    "desktop1280": {
+      "horizontalOverflowPx": 0,
+      "assetRowHeightPx": 57.99715805053711,
+      "bodyType": "16px/26px",
+      "tableType": "14px/21px",
+      "inspectorTitleType": "18px/26px/600",
+      "sectionTitleType": "15px/22px/600",
+      "fontFamily": "Malgun Gothic, Apple SD Gothic Neo, Noto Sans KR, sans-serif",
+      "malgunGothicAvailable": true,
+      "brandIconComputedPx": 33.9915
+    },
+    "desktop1440": {
+      "horizontalOverflowPx": 0,
+      "assetRowHeightPx": 57.99715805053711,
+      "bodyType": "16px/26px",
+      "tableType": "14px/21px",
+      "inspectorTitleType": "18px/26px/600",
+      "sectionTitleType": "15px/22px/600",
+      "malgunGothicAvailable": true,
+      "brandIconComputedPx": 33.9915
+    },
+    "misleading360": {
+      "horizontalOverflowPx": 0,
+      "warningVisible": true,
+      "ariaDescribedBy": "comparisonWarning inspectorSummary",
+      "backgroundInert": true
+    },
+    "fixtureLabels": {
+      "list": "예시 데이터 · 대표 8개 / 정본 수량 201 · 2026-08-22 catalog 기준",
+      "inspector": "예시 데이터",
+      "verifiedViewports": "12/12"
+    }
+  },
+  "captures": [
+    "03-final-asset-detail-1440.png",
+    "04-final-asset-detail-360.png",
+    "05-misleading-safety-360.png"
+  ]
+}

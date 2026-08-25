@@ -1,14 +1,14 @@
 ---
 vhk_format: 1
 type: goal
-id: 2
+id: 14
 title: Focus Feed 지식 검토·승인 UI 연결
 status: DONE
 priority: P0
 completed: 2026-08-22
 ---
 
-# Goal 2: Focus Feed 지식 검토·승인 UI 연결
+# Goal 14: Focus Feed 지식 검토·승인 UI 연결
 
 ## 목적
 
@@ -126,7 +126,7 @@ Control Tower의 ‘승인 완료’ 메시지는 Brain CLI가 RESOURCE·SUMMARY
 ## 코딩 에이전트 시작 프롬프트
 
 ```text
-AGENTS.md·RULES.md와 goals/2-focus-feed-knowledge-review-ui.md를 읽고,
+AGENTS.md·RULES.md와 goals/14-focus-feed-knowledge-review-ui.md를 읽고,
 yohan-brain/docs/specs/KNOWLEDGE-WORKFLOW-P0-AGENT-PLAN.md의 인터페이스를 정본으로 사용해.
 PR #29·Brain Goal 18·ADR-017 선행 게이트가 실제로 끝났는지 먼저 확인해.
 Goal 1의 YohanInboxPanel과 고정 CLI 실행기를 재사용하되 큐·타입은 합치지 마.

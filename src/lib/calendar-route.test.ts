@@ -7,6 +7,8 @@ import test from "node:test"
 import { NextRequest } from "next/server"
 
 import { DELETE, GET, PATCH, POST } from "@/app/api/calendar/route"
+import { projectCalendarTasks } from "@/lib/work-items"
+import type { CalendarResponse } from "@/lib/types"
 
 function request(method: string, body?: Record<string, unknown>, origin = "http://localhost:3001") {
   return new NextRequest("http://localhost:3001/api/calendar", {
@@ -72,6 +74,30 @@ test("Calendar API는 same-origin 삭제·409 충돌·휴지통 목록·복구�
     ))
     const active = await activeResponse.json() as { occurrences: Array<{ title: string }> }
     assert.deepEqual(active.occurrences.map((entry) => entry.title), ["API 휴지통 검증"])
+
+    const taskResponse = await POST(request("POST", {
+      kind: "task",
+      title: "작업 보기 투영",
+      date: "2026-08-07",
+      recurrence: "none",
+    }))
+    assert.equal(taskResponse.status, 201)
+
+    const projectionResponse = await GET(new NextRequest(
+      "http://localhost:3001/api/calendar?from=2026-08-07&to=2026-08-07",
+      { headers: { host: "localhost:3001" } },
+    ))
+    assert.equal(projectionResponse.status, 200)
+    const projection = await projectionResponse.json() as CalendarResponse
+    assert.deepEqual(projectCalendarTasks(projection).map((entry) => entry.title), ["작업 보기 투영"])
+
+    const completedResponse = await PATCH(request("PATCH", {
+      action: "set_task_completion",
+      id: projection.occurrences.find((entry) => entry.kind === "task")?.sourceId,
+      occurrenceDate: "2026-08-07",
+      done: true,
+    }))
+    assert.equal(completedResponse.status, 200)
   } finally {
     if (previousRoot === undefined) delete process.env.YOHAN_CALENDAR_ROOT
     else process.env.YOHAN_CALENDAR_ROOT = previousRoot

@@ -1,0 +1,1694 @@
+{
+  "generatedAt": "2026-08-24T19:35:13.918Z",
+  "appUrl": "http://127.0.0.1:3101/",
+  "browser": {
+    "protocolVersion": "1.3",
+    "product": "Edg/151.0.4129.101",
+    "revision": "@cc1d9f4080fd9140611a9600b8d1615db310105d",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0",
+    "jsVersion": "15.1.23.9",
+    "navigatorUserAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0"
+  },
+  "viewports": [
+    360,
+    432,
+    768,
+    1280,
+    1440
+  ],
+  "readings": [
+    {
+      "url": "/?view=work&surface=todo",
+      "title": "할 일",
+      "h1Count": 1,
+      "currentSurface": "할 일Goal·문서·Calendar task",
+      "overflow": 0,
+      "doubleScroll": false,
+      "shortTargets": [],
+      "portalControlTargets": {
+        "total": 0,
+        "measurements": [],
+        "failures": []
+      },
+      "modal": null,
+      "minimumParagraphPx": 14,
+      "selectedCount": 1,
+      "bodyFontPx": 16,
+      "text": "할 일\nGoal·문서·Calendar task\n일정\n시간과 Calendar 원장\n프로젝트\n프로젝트·Goal·정합성\n\nWORK · TODO\n\n할 일\n\n서로 다른 원장의 완료 의미를 섞지 않고, 지금 확인할 작업을 한곳에서 봅니다.\n\n통합 할 일\n\n각 행의 source가 완료 권한을 결정합니다.\n\n새로고침\n전체\n6\n지금\n1\n오늘\n1\n예정\n1\n대기\n3\n지금\n1\nGoal\n작업 URL 복원 계약을 검증한다\nyohan-control-tower\n오늘\n1\nCalendar\n작업 형제 보기 QA를 마친다\n2026-08-25\n예정\n1\nCalendar\nKST 자정 뒤 오늘로 재분류한다\n2026-08-26\n대기\n3\n문서\n디자인 QA 결과를 확인한다\n읽기 전용\nGoal\n동일 Completion Check parser 키를 검증한다\nyohan-control-tower\nGoal\n동일 Completion Check parser 키를 검증한다\nyohan-control-tower\n\n수집 범위: goals · memory/decisions\n\nCALENDAR\n\n오늘 일정\n\n2026-08-25 · 일반 할 일과 별도인 시간 블록입니다.\n\n15:00\n주간 검토\n15:00–16:00",
+      "surface": "todo",
+      "state": "success",
+      "viewport": 360,
+      "consoleErrors": []
+    },
+    {
+      "url": "/?view=work&surface=calendar&date=2026-08-25&mode=month",
+      "title": "일정",
+      "h1Count": 1,
+      "currentSurface": "일정시간과 Calendar 원장",
+      "overflow": 0,
+      "doubleScroll": false,
+      "shortTargets": [],
+      "portalControlTargets": {
+        "total": 0,
+        "measurements": [],
+        "failures": []
+      },
+      "modal": null,
+      "minimumParagraphPx": 14,
+      "selectedCount": 1,
+      "bodyFontPx": 16,
+      "text": "할 일\nGoal·문서·Calendar task\n일정\n시간과 Calendar 원장\n프로젝트\n프로젝트·Goal·정합성\n\nWORK · CALENDAR\n\n일정\n\nCalendar 원장에서 시간과 날짜를 관리합니다. 모바일에서는 선택일 agenda를 먼저 봅니다.\n\n2026년 8월\n오늘\n월간\n목록\n휴지통\n할 일 추가\n일정 추가\n\nSELECTED DAY\n\n8월 25일 화요일\n2\n\n작업 형제 보기 QA를 마친다\n\n시간 없는 할 일\n\n주간 검토\n\n15:00–16:00\n일정\n할 일\n월\n화\n수\n목\n금\n토\n일\n27\n28\n29\n30\n31\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17\n18\n19\n20\n21\n22\n23\n24\n25\n26\n27\n28\n29\n30\n31\n1\n2\n3\n4\n5\n6",
+      "surface": "calendar",
+      "state": "success",
+      "viewport": 360,
+      "consoleErrors": []
+    },
+    {
+      "url": "/?view=work&surface=projects&mission=work",
+      "title": "프로젝트",
+      "h1Count": 1,
+      "currentSurface": "프로젝트프로젝트·Goal·정합성",
+      "overflow": 0,
+      "doubleScroll": false,
+      "shortTargets": [],
+      "portalControlTargets": {
+        "total": 0,
+        "measurements": [],
+        "failures": []
+      },
+      "modal": null,
+      "minimumParagraphPx": 14,
+      "selectedCount": 1,
+      "bodyFontPx": 16,
+      "text": "할 일\nGoal·문서·Calendar task\n일정\n시간과 Calendar 원장\n프로젝트\n프로젝트·Goal·정합성\n\nWORK · PROJECTS\n\n프로젝트\n\n프로젝트에서 Goal과 Completion Check를 읽고, 정합성 제안은 자동 수정 없이 확인합니다.\n\nMISSION / PROJECT / TASK\n\n프로젝트 지도\n\nBrain 배속을 기준으로 로컬 레포와 Goal을 읽기 전용으로 펼칩니다.\n\n정합성 정상\n제품 작업\n로컬 2/2\n제품 작업\n2 projects\n\n로컬 프로젝트를 먼저 표시합니다.\n\nyohan-control-tower\n진행 1 · 완료 1\nyohan-brain\n진행 1 · 완료 1\n프로젝트를 선택하세요.",
+      "surface": "projects",
+      "state": "success",
+      "viewport": 360,
+      "consoleErrors": []
+    },
+    {
+      "url": "/?view=work&surface=todo",
+      "title": "할 일",
+      "h1Count": 1,
+      "currentSurface": "할 일Goal·문서·Calendar task",
+      "overflow": 0,
+      "doubleScroll": false,
+      "shortTargets": [],
+      "portalControlTargets": {
+        "total": 0,
+        "measurements": [],
+        "failures": []
+      },
+      "modal": null,
+      "minimumParagraphPx": 14,
+      "selectedCount": 1,
+      "bodyFontPx": 16,
+      "text": "할 일\nGoal·문서·Calendar task\n일정\n시간과 Calendar 원장\n프로젝트\n프로젝트·Goal·정합성\n\nWORK · TODO\n\n할 일\n\n서로 다른 원장의 완료 의미를 섞지 않고, 지금 확인할 작업을 한곳에서 봅니다.\n\n통합 할 일\n\n각 행의 source가 완료 권한을 결정합니다.\n\n새로고침\n전체\n6\n지금\n1\n오늘\n1\n예정\n1\n대기\n3\n지금\n1\nGoal\n작업 URL 복원 계약을 검증한다\nyohan-control-tower\n오늘\n1\nCalendar\n작업 형제 보기 QA를 마친다\n2026-08-25\n예정\n1\nCalendar\nKST 자정 뒤 오늘로 재분류한다\n2026-08-26\n대기\n3\n문서\n디자인 QA 결과를 확인한다\n읽기 전용\nGoal\n동일 Completion Check parser 키를 검증한다\nyohan-control-tower\nGoal\n동일 Completion Check parser 키를 검증한다\nyohan-control-tower\n\n수집 범위: goals · memory/decisions\n\nCALENDAR\n\n오늘 일정\n\n2026-08-25 · 일반 할 일과 별도인 시간 블록입니다.\n\n15:00\n주간 검토\n15:00–16:00",
+      "surface": "todo",
+      "state": "success",
+      "viewport": 432,
+      "consoleErrors": []
+    },
+    {
+      "url": "/?view=work&surface=calendar&date=2026-08-25&mode=month",
+      "title": "일정",
+      "h1Count": 1,
+      "currentSurface": "일정시간과 Calendar 원장",
+      "overflow": 0,
+      "doubleScroll": false,
+      "shortTargets": [],
+      "portalControlTargets": {
+        "total": 0,
+        "measurements": [],
+        "failures": []
+      },
+      "modal": null,
+      "minimumParagraphPx": 14,
+      "selectedCount": 1,
+      "bodyFontPx": 16,
+      "text": "할 일\nGoal·문서·Calendar task\n일정\n시간과 Calendar 원장\n프로젝트\n프로젝트·Goal·정합성\n\nWORK · CALENDAR\n\n일정\n\nCalendar 원장에서 시간과 날짜를 관리합니다. 모바일에서는 선택일 agenda를 먼저 봅니다.\n\n2026년 8월\n오늘\n월간\n목록\n휴지통\n할 일 추가\n일정 추가\n\nSELECTED DAY\n\n8월 25일 화요일\n2\n\n작업 형제 보기 QA를 마친다\n\n시간 없는 할 일\n\n주간 검토\n\n15:00–16:00\n일정\n할 일\n월\n화\n수\n목\n금\n토\n일\n27\n28\n29\n30\n31\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17\n18\n19\n20\n21\n22\n23\n24\n25\n26\n27\n28\n29\n30\n31\n1\n2\n3\n4\n5\n6",
+      "surface": "calendar",
+      "state": "success",
+      "viewport": 432,
+      "consoleErrors": []
+    },
+    {
+      "url": "/?view=work&surface=projects&mission=work",
+      "title": "프로젝트",
+      "h1Count": 1,
+      "currentSurface": "프로젝트프로젝트·Goal·정합성",
+      "overflow": 0,
+      "doubleScroll": false,
+      "shortTargets": [],
+      "portalControlTargets": {
+        "total": 0,
+        "measurements": [],
+        "failures": []
+      },
+      "modal": null,
+      "minimumParagraphPx": 14,
+      "selectedCount": 1,
+      "bodyFontPx": 16,
+      "text": "할 일\nGoal·문서·Calendar task\n일정\n시간과 Calendar 원장\n프로젝트\n프로젝트·Goal·정합성\n\nWORK · PROJECTS\n\n프로젝트\n\n프로젝트에서 Goal과 Completion Check를 읽고, 정합성 제안은 자동 수정 없이 확인합니다.\n\nMISSION / PROJECT / TASK\n\n프로젝트 지도\n\nBrain 배속을 기준으로 로컬 레포와 Goal을 읽기 전용으로 펼칩니다.\n\n정합성 정상\n제품 작업\n로컬 2/2\n제품 작업\n2 projects\n\n로컬 프로젝트를 먼저 표시합니다.\n\nyohan-control-tower\n진행 1 · 완료 1\nyohan-brain\n진행 1 · 완료 1\n프로젝트를 선택하세요.",
+      "surface": "projects",
+      "state": "success",
+      "viewport": 432,
+      "consoleErrors": []
+    },
+    {
+      "url": "/?view=work&surface=todo",
+      "title": "할 일",
+      "h1Count": 1,
+      "currentSurface": "할 일Goal·문서·Calendar task",
+      "overflow": 0,
+      "doubleScroll": false,
+      "shortTargets": [],
+      "portalControlTargets": {
+        "total": 0,
+        "measurements": [],
+        "failures": []
+      },
+      "modal": null,
+      "minimumParagraphPx": 14,
+      "selectedCount": 1,
+      "bodyFontPx": 16,
+      "text": "할 일\nGoal·문서·Calendar task\n일정\n시간과 Calendar 원장\n프로젝트\n프로젝트·Goal·정합성\n\nWORK · TODO\n\n할 일\n\n서로 다른 원장의 완료 의미를 섞지 않고, 지금 확인할 작업을 한곳에서 봅니다.\n\n통합 할 일\n\n각 행의 source가 완료 권한을 결정합니다.\n\n새로고침\n전체\n6\n지금\n1\n오늘\n1\n예정\n1\n대기\n3\n지금\n1\nGoal\n작업 URL 복원 계약을 검증한다\nyohan-control-tower\n오늘\n1\nCalendar\n작업 형제 보기 QA를 마친다\n2026-08-25\n예정\n1\nCalendar\nKST 자정 뒤 오늘로 재분류한다\n2026-08-26\n대기\n3\n문서\n디자인 QA 결과를 확인한다\n읽기 전용\nGoal\n동일 Completion Check parser 키를 검증한다\nyohan-control-tower\nGoal\n동일 Completion Check parser 키를 검증한다\nyohan-control-tower\n\n수집 범위: goals · memory/decisions\n\nCALENDAR\n\n오늘 일정\n\n2026-08-25 · 일반 할 일과 별도인 시간 블록입니다.\n\n15:00\n주간 검토\n15:00–16:00",
+      "surface": "todo",
+      "state": "success",
+      "viewport": 768,
+      "consoleErrors": []
+    },
+    {
+      "url": "/?view=work&surface=calendar&date=2026-08-25&mode=month",
+      "title": "일정",
+      "h1Count": 1,
+      "currentSurface": "일정시간과 Calendar 원장",
+      "overflow": 0,
+      "doubleScroll": false,
+      "shortTargets": [],
+      "portalControlTargets": {
+        "total": 0,
+        "measurements": [],
+        "failures": []
+      },
+      "modal": null,
+      "minimumParagraphPx": 14,
+      "selectedCount": 1,
+      "bodyFontPx": 16,
+      "text": "할 일\nGoal·문서·Calendar task\n일정\n시간과 Calendar 원장\n프로젝트\n프로젝트·Goal·정합성\n\nWORK · CALENDAR\n\n일정\n\nCalendar 원장에서 시간과 날짜를 관리합니다. 모바일에서는 선택일 agenda를 먼저 봅니다.\n\n2026년 8월\n오늘\n월간\n목록\n휴지통\n할 일 추가\n일정 추가\n\nSELECTED DAY\n\n8월 25일 화요일\n2\n\n작업 형제 보기 QA를 마친다\n\n시간 없는 할 일\n\n주간 검토\n\n15:00–16:00\n일정\n할 일\n월\n화\n수\n목\n금\n토\n일\n27\n28\n29\n30\n31\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17\n18\n19\n20\n21\n22\n23\n24\n25\n작업 형제 보기 QA를 마친다\n15:00 주간 검토\n26\nKST 자정 뒤 오늘로 재분류한다\n27\n28\n29\n30\n31\n1\n2\n3\n4\n5\n6",
+      "surface": "calendar",
+      "state": "success",
+      "viewport": 768,
+      "consoleErrors": []
+    },
+    {
+      "url": "/?view=work&surface=projects&mission=work",
+      "title": "프로젝트",
+      "h1Count": 1,
+      "currentSurface": "프로젝트프로젝트·Goal·정합성",
+      "overflow": 0,
+      "doubleScroll": false,
+      "shortTargets": [],
+      "portalControlTargets": {
+        "total": 0,
+        "measurements": [],
+        "failures": []
+      },
+      "modal": null,
+      "minimumParagraphPx": 14,
+      "selectedCount": 1,
+      "bodyFontPx": 16,
+      "text": "할 일\nGoal·문서·Calendar task\n일정\n시간과 Calendar 원장\n프로젝트\n프로젝트·Goal·정합성\n\nWORK · PROJECTS\n\n프로젝트\n\n프로젝트에서 Goal과 Completion Check를 읽고, 정합성 제안은 자동 수정 없이 확인합니다.\n\nMISSION / PROJECT / TASK\n\n프로젝트 지도\n\nBrain 배속을 기준으로 로컬 레포와 Goal을 읽기 전용으로 펼칩니다.\n\n정합성 정상\n제품 작업\n로컬 2/2\n제품 작업\n2 projects\n\n로컬 프로젝트를 먼저 표시합니다.\n\nyohan-control-tower\n진행 1 · 완료 1\nyohan-brain\n진행 1 · 완료 1\n프로젝트를 선택하세요.",
+      "surface": "projects",
+      "state": "success",
+      "viewport": 768,
+      "consoleErrors": []
+    },
+    {
+      "url": "/?view=work&surface=todo",
+      "title": "할 일",
+      "h1Count": 1,
+      "currentSurface": "할 일Goal·문서·Calendar task",
+      "overflow": 0,
+      "doubleScroll": false,
+      "shortTargets": [],
+      "portalControlTargets": {
+        "total": 0,
+        "measurements": [],
+        "failures": []
+      },
+      "modal": null,
+      "minimumParagraphPx": 14,
+      "selectedCount": 1,
+      "bodyFontPx": 16,
+      "text": "할 일\nGoal·문서·Calendar task\n일정\n시간과 Calendar 원장\n프로젝트\n프로젝트·Goal·정합성\n\nWORK · TODO\n\n할 일\n\n서로 다른 원장의 완료 의미를 섞지 않고, 지금 확인할 작업을 한곳에서 봅니다.\n\n통합 할 일\n\n각 행의 source가 완료 권한을 결정합니다.\n\n새로고침\n전체\n6\n지금\n1\n오늘\n1\n예정\n1\n대기\n3\n지금\n1\nGoal\n작업 URL 복원 계약을 검증한다\nyohan-control-tower\n오늘\n1\nCalendar\n작업 형제 보기 QA를 마친다\n2026-08-25\n예정\n1\nCalendar\nKST 자정 뒤 오늘로 재분류한다\n2026-08-26\n대기\n3\n문서\n디자인 QA 결과를 확인한다\n읽기 전용\nGoal\n동일 Completion Check parser 키를 검증한다\nyohan-control-tower\nGoal\n동일 Completion Check parser 키를 검증한다\nyohan-control-tower\n\n수집 범위: goals · memory/decisions\n\nCALENDAR\n\n오늘 일정\n\n2026-08-25 · 일반 할 일과 별도인 시간 블록입니다.\n\n15:00\n주간 검토\n15:00–16:00",
+      "surface": "todo",
+      "state": "success",
+      "viewport": 1280,
+      "consoleErrors": []
+    },
+    {
+      "url": "/?view=work&surface=calendar&date=2026-08-25&mode=month",
+      "title": "일정",
+      "h1Count": 1,
+      "currentSurface": "일정시간과 Calendar 원장",
+      "overflow": 0,
+      "doubleScroll": false,
+      "shortTargets": [],
+      "portalControlTargets": {
+        "total": 0,
+        "measurements": [],
+        "failures": []
+      },
+      "modal": null,
+      "minimumParagraphPx": 14,
+      "selectedCount": 1,
+      "bodyFontPx": 16,
+      "text": "할 일\nGoal·문서·Calendar task\n일정\n시간과 Calendar 원장\n프로젝트\n프로젝트·Goal·정합성\n\nWORK · CALENDAR\n\n일정\n\nCalendar 원장에서 시간과 날짜를 관리합니다. 모바일에서는 선택일 agenda를 먼저 봅니다.\n\n2026년 8월\n오늘\n월간\n목록\n휴지통\n할 일 추가\n일정 추가\n\nSELECTED DAY\n\n8월 25일 화요일\n2\n\n작업 형제 보기 QA를 마친다\n\n시간 없는 할 일\n\n주간 검토\n\n15:00–16:00\n일정\n할 일\n월\n화\n수\n목\n금\n토\n일\n27\n28\n29\n30\n31\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17\n18\n19\n20\n21\n22\n23\n24\n25\n작업 형제 보기 QA를 마친다\n15:00 주간 검토\n26\nKST 자정 뒤 오늘로 재분류한다\n27\n28\n29\n30\n31\n1\n2\n3\n4\n5\n6",
+      "surface": "calendar",
+      "state": "success",
+      "viewport": 1280,
+      "consoleErrors": []
+    },
+    {
+      "url": "/?view=work&surface=projects&mission=work",
+      "title": "프로젝트",
+      "h1Count": 1,
+      "currentSurface": "프로젝트프로젝트·Goal·정합성",
+      "overflow": 0,
+      "doubleScroll": false,
+      "shortTargets": [],
+      "portalControlTargets": {
+        "total": 0,
+        "measurements": [],
+        "failures": []
+      },
+      "modal": null,
+      "minimumParagraphPx": 14,
+      "selectedCount": 1,
+      "bodyFontPx": 16,
+      "text": "할 일\nGoal·문서·Calendar task\n일정\n시간과 Calendar 원장\n프로젝트\n프로젝트·Goal·정합성\n\nWORK · PROJECTS\n\n프로젝트\n\n프로젝트에서 Goal과 Completion Check를 읽고, 정합성 제안은 자동 수정 없이 확인합니다.\n\nMISSION / PROJECT / TASK\n\n프로젝트 지도\n\nBrain 배속을 기준으로 로컬 레포와 Goal을 읽기 전용으로 펼칩니다.\n\n정합성 정상\n제품 작업\n로컬 2/2\n제품 작업\n2 projects\n\n로컬 프로젝트를 먼저 표시합니다.\n\nyohan-control-tower\n진행 1 · 완료 1\nyohan-brain\n진행 1 · 완료 1\n프로젝트를 선택하세요.",
+      "surface": "projects",
+      "state": "success",
+      "viewport": 1280,
+      "consoleErrors": []
+    },
+    {
+      "url": "/?view=work&surface=todo",
+      "title": "할 일",
+      "h1Count": 1,
+      "currentSurface": "할 일Goal·문서·Calendar task",
+      "overflow": 0,
+      "doubleScroll": false,
+      "shortTargets": [],
+      "portalControlTargets": {
+        "total": 0,
+        "measurements": [],
+        "failures": []
+      },
+      "modal": null,
+      "minimumParagraphPx": 14,
+      "selectedCount": 1,
+      "bodyFontPx": 16,
+      "text": "할 일\nGoal·문서·Calendar task\n일정\n시간과 Calendar 원장\n프로젝트\n프로젝트·Goal·정합성\n\nWORK · TODO\n\n할 일\n\n서로 다른 원장의 완료 의미를 섞지 않고, 지금 확인할 작업을 한곳에서 봅니다.\n\n통합 할 일\n\n각 행의 source가 완료 권한을 결정합니다.\n\n새로고침\n전체\n6\n지금\n1\n오늘\n1\n예정\n1\n대기\n3\n지금\n1\nGoal\n작업 URL 복원 계약을 검증한다\nyohan-control-tower\n오늘\n1\nCalendar\n작업 형제 보기 QA를 마친다\n2026-08-25\n예정\n1\nCalendar\nKST 자정 뒤 오늘로 재분류한다\n2026-08-26\n대기\n3\n문서\n디자인 QA 결과를 확인한다\n읽기 전용\nGoal\n동일 Completion Check parser 키를 검증한다\nyohan-control-tower\nGoal\n동일 Completion Check parser 키를 검증한다\nyohan-control-tower\n\n수집 범위: goals · memory/decisions\n\nCALENDAR\n\n오늘 일정\n\n2026-08-25 · 일반 할 일과 별도인 시간 블록입니다.\n\n15:00\n주간 검토\n15:00–16:00",
+      "surface": "todo",
+      "state": "success",
+      "viewport": 1440,
+      "consoleErrors": []
+    },
+    {
+      "url": "/?view=work&surface=calendar&date=2026-08-25&mode=month",
+      "title": "일정",
+      "h1Count": 1,
+      "currentSurface": "일정시간과 Calendar 원장",
+      "overflow": 0,
+      "doubleScroll": false,
+      "shortTargets": [],
+      "portalControlTargets": {
+        "total": 0,
+        "measurements": [],
+        "failures": []
+      },
+      "modal": null,
+      "minimumParagraphPx": 14,
+      "selectedCount": 1,
+      "bodyFontPx": 16,
+      "text": "할 일\nGoal·문서·Calendar task\n일정\n시간과 Calendar 원장\n프로젝트\n프로젝트·Goal·정합성\n\nWORK · CALENDAR\n\n일정\n\nCalendar 원장에서 시간과 날짜를 관리합니다. 모바일에서는 선택일 agenda를 먼저 봅니다.\n\n2026년 8월\n오늘\n월간\n목록\n휴지통\n할 일 추가\n일정 추가\n\nSELECTED DAY\n\n8월 25일 화요일\n2\n\n작업 형제 보기 QA를 마친다\n\n시간 없는 할 일\n\n주간 검토\n\n15:00–16:00\n일정\n할 일\n월\n화\n수\n목\n금\n토\n일\n27\n28\n29\n30\n31\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17\n18\n19\n20\n21\n22\n23\n24\n25\n작업 형제 보기 QA를 마친다\n15:00 주간 검토\n26\nKST 자정 뒤 오늘로 재분류한다\n27\n28\n29\n30\n31\n1\n2\n3\n4\n5\n6",
+      "surface": "calendar",
+      "state": "success",
+      "viewport": 1440,
+      "consoleErrors": []
+    },
+    {
+      "url": "/?view=work&surface=projects&mission=work",
+      "title": "프로젝트",
+      "h1Count": 1,
+      "currentSurface": "프로젝트프로젝트·Goal·정합성",
+      "overflow": 0,
+      "doubleScroll": false,
+      "shortTargets": [],
+      "portalControlTargets": {
+        "total": 0,
+        "measurements": [],
+        "failures": []
+      },
+      "modal": null,
+      "minimumParagraphPx": 14,
+      "selectedCount": 1,
+      "bodyFontPx": 16,
+      "text": "할 일\nGoal·문서·Calendar task\n일정\n시간과 Calendar 원장\n프로젝트\n프로젝트·Goal·정합성\n\nWORK · PROJECTS\n\n프로젝트\n\n프로젝트에서 Goal과 Completion Check를 읽고, 정합성 제안은 자동 수정 없이 확인합니다.\n\nMISSION / PROJECT / TASK\n\n프로젝트 지도\n\nBrain 배속을 기준으로 로컬 레포와 Goal을 읽기 전용으로 펼칩니다.\n\n정합성 정상\n제품 작업\n로컬 2/2\n제품 작업\n2 projects\n\n로컬 프로젝트를 먼저 표시합니다.\n\nyohan-control-tower\n진행 1 · 완료 1\nyohan-brain\n진행 1 · 완료 1\n프로젝트를 선택하세요.",
+      "surface": "projects",
+      "state": "success",
+      "viewport": 1440,
+      "consoleErrors": []
+    },
+    {
+      "url": "/?view=work&surface=todo",
+      "title": "할 일",
+      "h1Count": 1,
+      "currentSurface": "할 일Goal·문서·Calendar task",
+      "overflow": 0,
+      "doubleScroll": false,
+      "shortTargets": [],
+      "portalControlTargets": {
+        "total": 0,
+        "measurements": [],
+        "failures": []
+      },
+      "modal": null,
+      "minimumParagraphPx": 14,
+      "selectedCount": 1,
+      "bodyFontPx": 16,
+      "text": "할 일\nGoal·문서·Calendar task\n일정\n시간과 Calendar 원장\n프로젝트\n프로젝트·Goal·정합성\n\nWORK · TODO\n\n할 일\n\n서로 다른 원장의 완료 의미를 섞지 않고, 지금 확인할 작업을 한곳에서 봅니다.\n\n통합 할 일\n\n각 행의 source가 완료 권한을 결정합니다.\n\n새로고침\n전체\n0\n지금\n0\n오늘\n0\n예정\n0\n대기\n0\n할 일을 읽는 중입니다.\n\nCALENDAR\n\n오늘 일정\n\n2026-08-25 · 일반 할 일과 별도인 시간 블록입니다.\n\n오늘 일정을 읽는 중입니다.",
+      "surface": "todo",
+      "state": "loading",
+      "viewport": 1280,
+      "consoleErrors": []
+    },
+    {
+      "url": "/?view=work&surface=todo",
+      "title": "할 일",
+      "h1Count": 1,
+      "currentSurface": "할 일Goal·문서·Calendar task",
+      "overflow": 0,
+      "doubleScroll": false,
+      "shortTargets": [],
+      "portalControlTargets": {
+        "total": 0,
+        "measurements": [],
+        "failures": []
+      },
+      "modal": null,
+      "minimumParagraphPx": 14,
+      "selectedCount": 1,
+      "bodyFontPx": 16,
+      "text": "할 일\nGoal·문서·Calendar task\n일정\n시간과 Calendar 원장\n프로젝트\n프로젝트·Goal·정합성\n\nWORK · TODO\n\n할 일\n\n서로 다른 원장의 완료 의미를 섞지 않고, 지금 확인할 작업을 한곳에서 봅니다.\n\n통합 할 일\n\n각 행의 source가 완료 권한을 결정합니다.\n\n새로고침\n전체\n0\n지금\n0\n오늘\n0\n예정\n0\n대기\n0\n할 일을 불러오지 못했습니다. Goal·문서: QA fixture source failure · Calendar: QA fixture source failure\n\nCALENDAR\n\n오늘 일정\n\n2026-08-25 · 일반 할 일과 별도인 시간 블록입니다.\n\n오늘 일정을 불러오지 못했습니다.",
+      "surface": "todo",
+      "state": "error",
+      "viewport": 1280,
+      "consoleErrors": []
+    },
+    {
+      "url": "/?view=work&surface=todo",
+      "title": "할 일",
+      "h1Count": 1,
+      "currentSurface": "할 일Goal·문서·Calendar task",
+      "overflow": 0,
+      "doubleScroll": false,
+      "shortTargets": [],
+      "portalControlTargets": {
+        "total": 0,
+        "measurements": [],
+        "failures": []
+      },
+      "modal": null,
+      "minimumParagraphPx": 14,
+      "selectedCount": 1,
+      "bodyFontPx": 16,
+      "text": "할 일\nGoal·문서·Calendar task\n일정\n시간과 Calendar 원장\n프로젝트\n프로젝트·Goal·정합성\n\nWORK · TODO\n\n할 일\n\n서로 다른 원장의 완료 의미를 섞지 않고, 지금 확인할 작업을 한곳에서 봅니다.\n\n통합 할 일\n\n각 행의 source가 완료 권한을 결정합니다.\n\n새로고침\n전체\n0\n지금\n0\n오늘\n0\n예정\n0\n대기\n0\n\n표시할 미완료 작업이 없습니다.\n\nGoal·문서·Calendar 원장은 서로 독립적으로 유지됩니다.\n\n수집 범위: goals · memory/decisions\n\nCALENDAR\n\n오늘 일정\n\n2026-08-25 · 일반 할 일과 별도인 시간 블록입니다.\n\n오늘 등록된 Calendar event가 없습니다.",
+      "surface": "todo",
+      "state": "empty",
+      "viewport": 1280,
+      "consoleErrors": []
+    },
+    {
+      "url": "/?view=work&surface=todo",
+      "title": "할 일",
+      "h1Count": 1,
+      "currentSurface": "할 일Goal·문서·Calendar task",
+      "overflow": 0,
+      "doubleScroll": false,
+      "shortTargets": [],
+      "portalControlTargets": {
+        "total": 0,
+        "measurements": [],
+        "failures": []
+      },
+      "modal": null,
+      "minimumParagraphPx": 14,
+      "selectedCount": 1,
+      "bodyFontPx": 16,
+      "text": "할 일\nGoal·문서·Calendar task\n일정\n시간과 Calendar 원장\n프로젝트\n프로젝트·Goal·정합성\n\nWORK · TODO\n\n할 일\n\n서로 다른 원장의 완료 의미를 섞지 않고, 지금 확인할 작업을 한곳에서 봅니다.\n\n통합 할 일\n\n각 행의 source가 완료 권한을 결정합니다.\n\n새로고침\n전체\n4\n지금\n1\n오늘\n0\n예정\n0\n대기\n3\n일부 원장을 읽지 못했습니다. Calendar: QA fixture source failure\n지금\n1\nGoal\n작업 URL 복원 계약을 검증한다\nyohan-control-tower\n대기\n3\n문서\n디자인 QA 결과를 확인한다\n읽기 전용\nGoal\n동일 Completion Check parser 키를 검증한다\nyohan-control-tower\nGoal\n동일 Completion Check parser 키를 검증한다\nyohan-control-tower\n\n수집 범위: goals · memory/decisions\n\nCALENDAR\n\n오늘 일정\n\n2026-08-25 · 일반 할 일과 별도인 시간 블록입니다.\n\n오늘 일정을 불러오지 못했습니다.",
+      "surface": "todo",
+      "state": "partial",
+      "viewport": 1280,
+      "consoleErrors": []
+    },
+    {
+      "url": "/?view=work&surface=todo&item=goal%3Ayohan-control-tower%2Fgoals%2F23-work-sibling-views.md%23a1b2c3d4",
+      "title": "할 일",
+      "h1Count": 1,
+      "currentSurface": "할 일Goal·문서·Calendar task",
+      "overflow": 0,
+      "doubleScroll": false,
+      "shortTargets": [],
+      "portalControlTargets": {
+        "total": 0,
+        "measurements": [],
+        "failures": []
+      },
+      "modal": null,
+      "minimumParagraphPx": 14,
+      "selectedCount": 2,
+      "bodyFontPx": 16,
+      "text": "할 일\nGoal·문서·Calendar task\n일정\n시간과 Calendar 원장\n프로젝트\n프로젝트·Goal·정합성\n\nWORK · TODO\n\n할 일\n\n서로 다른 원장의 완료 의미를 섞지 않고, 지금 확인할 작업을 한곳에서 봅니다.\n\n통합 할 일\n\n각 행의 source가 완료 권한을 결정합니다.\n\n새로고침\n전체\n6\n지금\n1\n오늘\n1\n예정\n1\n대기\n3\n지금\n1\nGoal\n작업 URL 복원 계약을 검증한다\nyohan-control-tower\n오늘\n1\nCalendar\n작업 형제 보기 QA를 마친다\n2026-08-25\n예정\n1\nCalendar\nKST 자정 뒤 오늘로 재분류한다\n2026-08-26\n대기\n3\n문서\n디자인 QA 결과를 확인한다\n읽기 전용\nGoal\n동일 Completion Check parser 키를 검증한다\nyohan-control-tower\nGoal\n동일 Completion Check parser 키를 검증한다\nyohan-control-tower\n\n수집 범위: goals · memory/decisions\n\nGoal\n\n작업 URL 복원 계약을 검증한다\n완료 소유자\n원문에서만 변경\n근거\nyohan-control-tower/goals/23-work-sibling-views.md\n\nGoal Completion Check는 이 화면에서 완료하지 않습니다.",
+      "surface": "todo",
+      "state": "selected",
+      "viewport": 1280,
+      "consoleErrors": []
+    },
+    {
+      "url": "/?view=work&surface=calendar&date=2026-08-25&mode=month",
+      "title": "일정",
+      "h1Count": 1,
+      "currentSurface": "일정시간과 Calendar 원장",
+      "overflow": 0,
+      "doubleScroll": false,
+      "shortTargets": [],
+      "portalControlTargets": {
+        "total": 0,
+        "measurements": [],
+        "failures": []
+      },
+      "modal": null,
+      "minimumParagraphPx": 14,
+      "selectedCount": 1,
+      "bodyFontPx": 16,
+      "text": "할 일\nGoal·문서·Calendar task\n일정\n시간과 Calendar 원장\n프로젝트\n프로젝트·Goal·정합성\n\nWORK · CALENDAR\n\n일정\n\nCalendar 원장에서 시간과 날짜를 관리합니다. 모바일에서는 선택일 agenda를 먼저 봅니다.\n\n2026년 8월\n오늘\n월간\n목록\n휴지통\n할 일 추가\n일정 추가\nCalendar 원장을 읽는 중",
+      "surface": "calendar",
+      "state": "loading",
+      "viewport": 1280,
+      "consoleErrors": []
+    },
+    {
+      "url": "/?view=work&surface=calendar&date=2026-08-25&mode=month",
+      "title": "일정",
+      "h1Count": 1,
+      "currentSurface": "일정시간과 Calendar 원장",
+      "overflow": 0,
+      "doubleScroll": false,
+      "shortTargets": [],
+      "portalControlTargets": {
+        "total": 0,
+        "measurements": [],
+        "failures": []
+      },
+      "modal": null,
+      "minimumParagraphPx": 14,
+      "selectedCount": 1,
+      "bodyFontPx": 16,
+      "text": "할 일\nGoal·문서·Calendar task\n일정\n시간과 Calendar 원장\n프로젝트\n프로젝트·Goal·정합성\n\nWORK · CALENDAR\n\n일정\n\nCalendar 원장에서 시간과 날짜를 관리합니다. 모바일에서는 선택일 agenda를 먼저 봅니다.\n\n2026년 8월\n오늘\n월간\n목록\n휴지통\n할 일 추가\n일정 추가\nQA fixture source failure\n\nSELECTED DAY\n\n8월 25일 화요일\n0\n\n비어 있는 날입니다.\n\n할 일 추가\n일정\n할 일\n월\n화\n수\n목\n금\n토\n일\n27\n28\n29\n30\n31\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17\n18\n19\n20\n21\n22\n23\n24\n25\n26\n27\n28\n29\n30\n31\n1\n2\n3\n4\n5\n6",
+      "surface": "calendar",
+      "state": "error",
+      "viewport": 1280,
+      "consoleErrors": []
+    },
+    {
+      "url": "/?view=work&surface=calendar&date=2026-08-25&mode=month",
+      "title": "일정",
+      "h1Count": 1,
+      "currentSurface": "일정시간과 Calendar 원장",
+      "overflow": 0,
+      "doubleScroll": false,
+      "shortTargets": [],
+      "portalControlTargets": {
+        "total": 0,
+        "measurements": [],
+        "failures": []
+      },
+      "modal": null,
+      "minimumParagraphPx": 14,
+      "selectedCount": 1,
+      "bodyFontPx": 16,
+      "text": "할 일\nGoal·문서·Calendar task\n일정\n시간과 Calendar 원장\n프로젝트\n프로젝트·Goal·정합성\n\nWORK · CALENDAR\n\n일정\n\nCalendar 원장에서 시간과 날짜를 관리합니다. 모바일에서는 선택일 agenda를 먼저 봅니다.\n\n2026년 8월\n오늘\n월간\n목록\n휴지통\n할 일 추가\n일정 추가\n\nSELECTED DAY\n\n8월 25일 화요일\n0\n\n비어 있는 날입니다.\n\n할 일 추가\n일정\n할 일\n월\n화\n수\n목\n금\n토\n일\n27\n28\n29\n30\n31\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17\n18\n19\n20\n21\n22\n23\n24\n25\n26\n27\n28\n29\n30\n31\n1\n2\n3\n4\n5\n6",
+      "surface": "calendar",
+      "state": "empty",
+      "viewport": 1280,
+      "consoleErrors": []
+    },
+    {
+      "url": "/?view=work&surface=calendar&date=2026-08-25&mode=month",
+      "title": "일정",
+      "h1Count": 1,
+      "currentSurface": "일정시간과 Calendar 원장",
+      "overflow": 0,
+      "doubleScroll": false,
+      "shortTargets": [],
+      "portalControlTargets": {
+        "total": 0,
+        "measurements": [],
+        "failures": []
+      },
+      "modal": null,
+      "minimumParagraphPx": 14,
+      "selectedCount": 1,
+      "bodyFontPx": 16,
+      "text": "할 일\nGoal·문서·Calendar task\n일정\n시간과 Calendar 원장\n프로젝트\n프로젝트·Goal·정합성\n\nWORK · CALENDAR\n\n일정\n\nCalendar 원장에서 시간과 날짜를 관리합니다. 모바일에서는 선택일 agenda를 먼저 봅니다.\n\n2026년 8월\n오늘\n월간\n목록\n휴지통\n할 일 추가\n일정 추가\nQA fixture source failure\n\nSELECTED DAY\n\n8월 25일 화요일\n0\n\n비어 있는 날입니다.\n\n할 일 추가\n일정\n할 일\n월\n화\n수\n목\n금\n토\n일\n27\n28\n29\n30\n31\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17\n18\n19\n20\n21\n22\n23\n24\n25\n26\n27\n28\n29\n30\n31\n1\n2\n3\n4\n5\n6",
+      "surface": "calendar",
+      "state": "partial",
+      "viewport": 1280,
+      "consoleErrors": []
+    },
+    {
+      "url": "/?view=work&surface=calendar&date=2026-08-25&mode=month&item=calendar%3Atask-1%402026-08-25",
+      "title": "일정",
+      "h1Count": 1,
+      "currentSurface": "일정시간과 Calendar 원장",
+      "overflow": 0,
+      "doubleScroll": false,
+      "shortTargets": [],
+      "portalControlTargets": {
+        "total": 8,
+        "measurements": [
+          {
+            "scope": "calendar-portal",
+            "label": "",
+            "width": 480,
+            "height": 45
+          },
+          {
+            "scope": "calendar-portal",
+            "label": "",
+            "width": 234,
+            "height": 45
+          },
+          {
+            "scope": "calendar-portal",
+            "label": "",
+            "width": 234,
+            "height": 45
+          },
+          {
+            "scope": "calendar-portal",
+            "label": "반복 안 함매일매주매월",
+            "width": 234,
+            "height": 45
+          },
+          {
+            "scope": "calendar-portal",
+            "label": "Calendar 원장만 완료할 수 있다.",
+            "width": 480,
+            "height": 50
+          },
+          {
+            "scope": "calendar-portal",
+            "label": "취소",
+            "width": 48.09375,
+            "height": 45
+          },
+          {
+            "scope": "calendar-portal",
+            "label": "변경 저장",
+            "width": 79.53125,
+            "height": 45
+          },
+          {
+            "scope": "calendar-portal",
+            "label": "Close",
+            "width": 45,
+            "height": 45
+          }
+        ],
+        "failures": []
+      },
+      "modal": null,
+      "minimumParagraphPx": 14,
+      "selectedCount": 1,
+      "bodyFontPx": 16,
+      "text": "할 일\nGoal·문서·Calendar task\n일정\n시간과 Calendar 원장\n프로젝트\n프로젝트·Goal·정합성\n\nWORK · CALENDAR\n\n일정\n\nCalendar 원장에서 시간과 날짜를 관리합니다. 모바일에서는 선택일 agenda를 먼저 봅니다.\n\n2026년 8월\n오늘\n월간\n목록\n휴지통\n할 일 추가\n일정 추가\n\nSELECTED DAY\n\n8월 25일 화요일\n2\n\n작업 형제 보기 QA를 마친다\n\n시간 없는 할 일\n\n주간 검토\n\n15:00–16:00\n일정\n할 일\n월\n화\n수\n목\n금\n토\n일\n27\n28\n29\n30\n31\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17\n18\n19\n20\n21\n22\n23\n24\n25\n작업 형제 보기 QA를 마친다\n15:00 주간 검토\n26\nKST 자정 뒤 오늘로 재분류한다\n27\n28\n29\n30\n31\n1\n2\n3\n4\n5\n6",
+      "surface": "calendar",
+      "state": "selected",
+      "viewport": 1280,
+      "consoleErrors": []
+    },
+    {
+      "url": "/?view=work&surface=projects&mission=work",
+      "title": "프로젝트",
+      "h1Count": 1,
+      "currentSurface": "프로젝트프로젝트·Goal·정합성",
+      "overflow": 0,
+      "doubleScroll": false,
+      "shortTargets": [],
+      "portalControlTargets": {
+        "total": 0,
+        "measurements": [],
+        "failures": []
+      },
+      "modal": null,
+      "minimumParagraphPx": 14,
+      "selectedCount": 1,
+      "bodyFontPx": 16,
+      "text": "할 일\nGoal·문서·Calendar task\n일정\n시간과 Calendar 원장\n프로젝트\n프로젝트·Goal·정합성\n\nWORK · PROJECTS\n\n프로젝트\n\n프로젝트에서 Goal과 Completion Check를 읽고, 정합성 제안은 자동 수정 없이 확인합니다.\n\n프로젝트 지도를 읽는 중",
+      "surface": "projects",
+      "state": "loading",
+      "viewport": 1280,
+      "consoleErrors": []
+    },
+    {
+      "url": "/?view=work&surface=projects&mission=work",
+      "title": "프로젝트",
+      "h1Count": 1,
+      "currentSurface": "프로젝트프로젝트·Goal·정합성",
+      "overflow": 0,
+      "doubleScroll": false,
+      "shortTargets": [],
+      "portalControlTargets": {
+        "total": 0,
+        "measurements": [],
+        "failures": []
+      },
+      "modal": null,
+      "minimumParagraphPx": 14,
+      "selectedCount": 1,
+      "bodyFontPx": 16,
+      "text": "할 일\nGoal·문서·Calendar task\n일정\n시간과 Calendar 원장\n프로젝트\n프로젝트·Goal·정합성\n\nWORK · PROJECTS\n\n프로젝트\n\n프로젝트에서 Goal과 Completion Check를 읽고, 정합성 제안은 자동 수정 없이 확인합니다.\n\n프로젝트 지도를 불러오지 못했습니다.\n\n원장을 확인한 뒤 다시 시도해 주세요.\n\n다시 읽기",
+      "surface": "projects",
+      "state": "error",
+      "viewport": 1280,
+      "consoleErrors": []
+    },
+    {
+      "url": "/?view=work&surface=projects&mission=work",
+      "title": "프로젝트",
+      "h1Count": 1,
+      "currentSurface": "프로젝트프로젝트·Goal·정합성",
+      "overflow": 0,
+      "doubleScroll": false,
+      "shortTargets": [],
+      "portalControlTargets": {
+        "total": 0,
+        "measurements": [],
+        "failures": []
+      },
+      "modal": null,
+      "minimumParagraphPx": 14,
+      "selectedCount": 1,
+      "bodyFontPx": 16,
+      "text": "할 일\nGoal·문서·Calendar task\n일정\n시간과 Calendar 원장\n프로젝트\n프로젝트·Goal·정합성\n\nWORK · PROJECTS\n\n프로젝트\n\n프로젝트에서 Goal과 Completion Check를 읽고, 정합성 제안은 자동 수정 없이 확인합니다.\n\nMISSION / PROJECT / TASK\n\n프로젝트 지도\n\nBrain 배속을 기준으로 로컬 레포와 Goal을 읽기 전용으로 펼칩니다.\n\n정합성 정상\n제품 작업\n로컬 0/0\n제품 작업\n0 projects\n\n로컬 프로젝트를 먼저 표시합니다.\n\n이 미션에 배속된 프로젝트가 없습니다.\n\n프로젝트를 선택하세요.",
+      "surface": "projects",
+      "state": "empty",
+      "viewport": 1280,
+      "consoleErrors": []
+    },
+    {
+      "url": "/?view=work&surface=projects&mission=work",
+      "title": "프로젝트",
+      "h1Count": 1,
+      "currentSurface": "프로젝트프로젝트·Goal·정합성",
+      "overflow": 0,
+      "doubleScroll": false,
+      "shortTargets": [],
+      "portalControlTargets": {
+        "total": 0,
+        "measurements": [],
+        "failures": []
+      },
+      "modal": null,
+      "minimumParagraphPx": 14,
+      "selectedCount": 1,
+      "bodyFontPx": 16,
+      "text": "할 일\nGoal·문서·Calendar task\n일정\n시간과 Calendar 원장\n프로젝트\n프로젝트·Goal·정합성\n\nWORK · PROJECTS\n\n프로젝트\n\n프로젝트에서 Goal과 Completion Check를 읽고, 정합성 제안은 자동 수정 없이 확인합니다.\n\nMISSION / PROJECT / TASK\n\n프로젝트 지도\n\nBrain 배속을 기준으로 로컬 레포와 Goal을 읽기 전용으로 펼칩니다.\n\n프로젝트 목록은 유지됩니다. 정합성: QA fixture source failure\n제품 작업\n로컬 2/2\n제품 작업\n2 projects\n\n로컬 프로젝트를 먼저 표시합니다.\n\nyohan-control-tower\n진행 1 · 완료 1\nyohan-brain\n진행 1 · 완료 1\n프로젝트를 선택하세요.",
+      "surface": "projects",
+      "state": "partial",
+      "viewport": 1280,
+      "consoleErrors": []
+    },
+    {
+      "url": "/?view=work&surface=projects&mission=work&project=yohan-control-tower",
+      "title": "프로젝트",
+      "h1Count": 1,
+      "currentSurface": "프로젝트프로젝트·Goal·정합성",
+      "overflow": 0,
+      "doubleScroll": false,
+      "shortTargets": [],
+      "portalControlTargets": {
+        "total": 0,
+        "measurements": [],
+        "failures": []
+      },
+      "modal": null,
+      "minimumParagraphPx": 14,
+      "selectedCount": 2,
+      "bodyFontPx": 16,
+      "text": "할 일\nGoal·문서·Calendar task\n일정\n시간과 Calendar 원장\n프로젝트\n프로젝트·Goal·정합성\n\nWORK · PROJECTS\n\n프로젝트\n\n프로젝트에서 Goal과 Completion Check를 읽고, 정합성 제안은 자동 수정 없이 확인합니다.\n\nMISSION / PROJECT / TASK\n\n프로젝트 지도\n\nBrain 배속을 기준으로 로컬 레포와 Goal을 읽기 전용으로 펼칩니다.\n\n정합성 정상\n제품 작업\n로컬 2/2\n제품 작업\n2 projects\n\n로컬 프로젝트를 먼저 표시합니다.\n\nyohan-control-tower\n진행 1 · 완료 1\nyohan-brain\n진행 1 · 완료 1\nyohan-control-tower\nactive\n\n통합 관제탑\n\nLOCAL\n\n작업 형제 보기와 안전한 URL 복원\n\ngoals/23-work-sibling-views.md\n\nP0\nIN_PROGRESS\nCompletion Check\n4/9 · 44%",
+      "surface": "projects",
+      "state": "selected",
+      "viewport": 1280,
+      "consoleErrors": []
+    },
+    {
+      "url": "/?view=work&surface=todo&item=goal%3Ayohan-control-tower%2Fgoals%2F23-work-sibling-views.md%23a1b2c3d4",
+      "title": "할 일",
+      "h1Count": 1,
+      "currentSurface": "할 일Goal·문서·Calendar task",
+      "overflow": 0,
+      "doubleScroll": false,
+      "shortTargets": [],
+      "portalControlTargets": {
+        "total": 0,
+        "measurements": [],
+        "failures": []
+      },
+      "modal": {
+        "role": "dialog",
+        "ariaModal": "true",
+        "bodyOverflow": "hidden"
+      },
+      "minimumParagraphPx": 14,
+      "selectedCount": 2,
+      "bodyFontPx": 16,
+      "text": "할 일\nGoal·문서·Calendar task\n일정\n시간과 Calendar 원장\n프로젝트\n프로젝트·Goal·정합성\n\nWORK · TODO\n\n할 일\n\n서로 다른 원장의 완료 의미를 섞지 않고, 지금 확인할 작업을 한곳에서 봅니다.\n\n통합 할 일\n\n각 행의 source가 완료 권한을 결정합니다.\n\n새로고침\n전체\n6\n지금\n1\n오늘\n1\n예정\n1\n대기\n3\n지금\n1\nGoal\n작업 URL 복원 계약을 검증한다\nyohan-control-tower\n오늘\n1\nCalendar\n작업 형제 보기 QA를 마친다\n2026-08-25\n예정\n1\nCalendar\nKST 자정 뒤 오늘로 재분류한다\n2026-08-26\n대기\n3\n문서\n디자인 QA 결과를 확인한다\n읽기 전용\nGoal\n동일 Completion Check parser 키를 검증한다\nyohan-control-tower\nGoal\n동일 Completion Check parser 키를 검증한다\nyohan-control-tower\n\n수집 범위: goals · memory/decisions\n\nGoal\n\n작업 URL 복원 계약을 검증한다\n완료 소유자\n원문에서만 변경\n근거\nyohan-control-tower/goals/23-work-sibling-views.md\n\nGoal Completion Check는 이 화면에서 완료하지 않습니다.",
+      "surface": "todo",
+      "state": "selected",
+      "viewport": 360,
+      "consoleErrors": []
+    },
+    {
+      "url": "/?view=work&surface=calendar&date=2026-08-25&mode=month&item=calendar%3Atask-1%402026-08-25",
+      "title": "일정",
+      "h1Count": 1,
+      "currentSurface": "일정시간과 Calendar 원장",
+      "overflow": 0,
+      "doubleScroll": false,
+      "shortTargets": [],
+      "portalControlTargets": {
+        "total": 8,
+        "measurements": [
+          {
+            "scope": "calendar-portal",
+            "label": "",
+            "width": 296,
+            "height": 45
+          },
+          {
+            "scope": "calendar-portal",
+            "label": "",
+            "width": 296,
+            "height": 45
+          },
+          {
+            "scope": "calendar-portal",
+            "label": "",
+            "width": 296,
+            "height": 45
+          },
+          {
+            "scope": "calendar-portal",
+            "label": "반복 안 함매일매주매월",
+            "width": 296,
+            "height": 45
+          },
+          {
+            "scope": "calendar-portal",
+            "label": "Calendar 원장만 완료할 수 있다.",
+            "width": 296,
+            "height": 50
+          },
+          {
+            "scope": "calendar-portal",
+            "label": "취소",
+            "width": 296,
+            "height": 45
+          },
+          {
+            "scope": "calendar-portal",
+            "label": "변경 저장",
+            "width": 296,
+            "height": 45
+          },
+          {
+            "scope": "calendar-portal",
+            "label": "Close",
+            "width": 45,
+            "height": 45
+          }
+        ],
+        "failures": []
+      },
+      "modal": null,
+      "minimumParagraphPx": 14,
+      "selectedCount": 1,
+      "bodyFontPx": 16,
+      "text": "할 일\nGoal·문서·Calendar task\n일정\n시간과 Calendar 원장\n프로젝트\n프로젝트·Goal·정합성\n\nWORK · CALENDAR\n\n일정\n\nCalendar 원장에서 시간과 날짜를 관리합니다. 모바일에서는 선택일 agenda를 먼저 봅니다.\n\n2026년 8월\n오늘\n월간\n목록\n휴지통\n할 일 추가\n일정 추가\n\nSELECTED DAY\n\n8월 25일 화요일\n2\n\n작업 형제 보기 QA를 마친다\n\n시간 없는 할 일\n\n주간 검토\n\n15:00–16:00\n일정\n할 일\n월\n화\n수\n목\n금\n토\n일\n27\n28\n29\n30\n31\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17\n18\n19\n20\n21\n22\n23\n24\n25\n26\n27\n28\n29\n30\n31\n1\n2\n3\n4\n5\n6",
+      "surface": "calendar",
+      "state": "selected",
+      "viewport": 360,
+      "consoleErrors": []
+    },
+    {
+      "url": "/?view=work&surface=projects&mission=work&project=yohan-control-tower",
+      "title": "프로젝트",
+      "h1Count": 1,
+      "currentSurface": "프로젝트프로젝트·Goal·정합성",
+      "overflow": 0,
+      "doubleScroll": false,
+      "shortTargets": [],
+      "portalControlTargets": {
+        "total": 0,
+        "measurements": [],
+        "failures": []
+      },
+      "modal": {
+        "role": "dialog",
+        "ariaModal": "true",
+        "bodyOverflow": "hidden"
+      },
+      "minimumParagraphPx": 14,
+      "selectedCount": 2,
+      "bodyFontPx": 16,
+      "text": "할 일\nGoal·문서·Calendar task\n일정\n시간과 Calendar 원장\n프로젝트\n프로젝트·Goal·정합성\n\nWORK · PROJECTS\n\n프로젝트\n\n프로젝트에서 Goal과 Completion Check를 읽고, 정합성 제안은 자동 수정 없이 확인합니다.\n\nMISSION / PROJECT / TASK\n\n프로젝트 지도\n\nBrain 배속을 기준으로 로컬 레포와 Goal을 읽기 전용으로 펼칩니다.\n\n정합성 정상\n제품 작업\n로컬 2/2\n제품 작업\n2 projects\n\n로컬 프로젝트를 먼저 표시합니다.\n\nyohan-control-tower\n진행 1 · 완료 1\nyohan-brain\n진행 1 · 완료 1\nyohan-control-tower\nactive\n\n통합 관제탑\n\nLOCAL\n\n작업 형제 보기와 안전한 URL 복원\n\ngoals/23-work-sibling-views.md\n\nP0\nIN_PROGRESS\nCompletion Check\n4/9 · 44%",
+      "surface": "projects",
+      "state": "selected",
+      "viewport": 360,
+      "consoleErrors": []
+    },
+    {
+      "url": "/?view=work&surface=todo&item=goal%3Ayohan-control-tower%2Fgoals%2F23-work-sibling-views.md%23a1b2c3d4",
+      "title": "할 일",
+      "h1Count": 1,
+      "currentSurface": "할 일Goal·문서·Calendar task",
+      "overflow": 0,
+      "doubleScroll": false,
+      "shortTargets": [],
+      "portalControlTargets": {
+        "total": 0,
+        "measurements": [],
+        "failures": []
+      },
+      "modal": {
+        "role": "dialog",
+        "ariaModal": "true",
+        "bodyOverflow": "hidden"
+      },
+      "minimumParagraphPx": 14,
+      "selectedCount": 2,
+      "bodyFontPx": 16,
+      "text": "할 일\nGoal·문서·Calendar task\n일정\n시간과 Calendar 원장\n프로젝트\n프로젝트·Goal·정합성\n\nWORK · TODO\n\n할 일\n\n서로 다른 원장의 완료 의미를 섞지 않고, 지금 확인할 작업을 한곳에서 봅니다.\n\n통합 할 일\n\n각 행의 source가 완료 권한을 결정합니다.\n\n새로고침\n전체\n6\n지금\n1\n오늘\n1\n예정\n1\n대기\n3\n지금\n1\nGoal\n작업 URL 복원 계약을 검증한다\nyohan-control-tower\n오늘\n1\nCalendar\n작업 형제 보기 QA를 마친다\n2026-08-25\n예정\n1\nCalendar\nKST 자정 뒤 오늘로 재분류한다\n2026-08-26\n대기\n3\n문서\n디자인 QA 결과를 확인한다\n읽기 전용\nGoal\n동일 Completion Check parser 키를 검증한다\nyohan-control-tower\nGoal\n동일 Completion Check parser 키를 검증한다\nyohan-control-tower\n\n수집 범위: goals · memory/decisions\n\nGoal\n\n작업 URL 복원 계약을 검증한다\n완료 소유자\n원문에서만 변경\n근거\nyohan-control-tower/goals/23-work-sibling-views.md\n\nGoal Completion Check는 이 화면에서 완료하지 않습니다.",
+      "surface": "todo",
+      "state": "selected",
+      "viewport": 768,
+      "consoleErrors": []
+    },
+    {
+      "url": "/?view=work&surface=calendar&date=2026-08-25&mode=month&item=calendar%3Atask-1%402026-08-25",
+      "title": "일정",
+      "h1Count": 1,
+      "currentSurface": "일정시간과 Calendar 원장",
+      "overflow": 0,
+      "doubleScroll": false,
+      "shortTargets": [],
+      "portalControlTargets": {
+        "total": 8,
+        "measurements": [
+          {
+            "scope": "calendar-portal",
+            "label": "",
+            "width": 480,
+            "height": 45
+          },
+          {
+            "scope": "calendar-portal",
+            "label": "",
+            "width": 234,
+            "height": 45
+          },
+          {
+            "scope": "calendar-portal",
+            "label": "",
+            "width": 234,
+            "height": 45
+          },
+          {
+            "scope": "calendar-portal",
+            "label": "반복 안 함매일매주매월",
+            "width": 234,
+            "height": 45
+          },
+          {
+            "scope": "calendar-portal",
+            "label": "Calendar 원장만 완료할 수 있다.",
+            "width": 480,
+            "height": 50
+          },
+          {
+            "scope": "calendar-portal",
+            "label": "취소",
+            "width": 48.09375,
+            "height": 45
+          },
+          {
+            "scope": "calendar-portal",
+            "label": "변경 저장",
+            "width": 79.53125,
+            "height": 45
+          },
+          {
+            "scope": "calendar-portal",
+            "label": "Close",
+            "width": 45,
+            "height": 45
+          }
+        ],
+        "failures": []
+      },
+      "modal": null,
+      "minimumParagraphPx": 14,
+      "selectedCount": 1,
+      "bodyFontPx": 16,
+      "text": "할 일\nGoal·문서·Calendar task\n일정\n시간과 Calendar 원장\n프로젝트\n프로젝트·Goal·정합성\n\nWORK · CALENDAR\n\n일정\n\nCalendar 원장에서 시간과 날짜를 관리합니다. 모바일에서는 선택일 agenda를 먼저 봅니다.\n\n2026년 8월\n오늘\n월간\n목록\n휴지통\n할 일 추가\n일정 추가\n\nSELECTED DAY\n\n8월 25일 화요일\n2\n\n작업 형제 보기 QA를 마친다\n\n시간 없는 할 일\n\n주간 검토\n\n15:00–16:00\n일정\n할 일\n월\n화\n수\n목\n금\n토\n일\n27\n28\n29\n30\n31\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17\n18\n19\n20\n21\n22\n23\n24\n25\n작업 형제 보기 QA를 마친다\n15:00 주간 검토\n26\nKST 자정 뒤 오늘로 재분류한다\n27\n28\n29\n30\n31\n1\n2\n3\n4\n5\n6",
+      "surface": "calendar",
+      "state": "selected",
+      "viewport": 768,
+      "consoleErrors": []
+    },
+    {
+      "url": "/?view=work&surface=projects&mission=work&project=yohan-control-tower",
+      "title": "프로젝트",
+      "h1Count": 1,
+      "currentSurface": "프로젝트프로젝트·Goal·정합성",
+      "overflow": 0,
+      "doubleScroll": false,
+      "shortTargets": [],
+      "portalControlTargets": {
+        "total": 0,
+        "measurements": [],
+        "failures": []
+      },
+      "modal": {
+        "role": "dialog",
+        "ariaModal": "true",
+        "bodyOverflow": "hidden"
+      },
+      "minimumParagraphPx": 14,
+      "selectedCount": 2,
+      "bodyFontPx": 16,
+      "text": "할 일\nGoal·문서·Calendar task\n일정\n시간과 Calendar 원장\n프로젝트\n프로젝트·Goal·정합성\n\nWORK · PROJECTS\n\n프로젝트\n\n프로젝트에서 Goal과 Completion Check를 읽고, 정합성 제안은 자동 수정 없이 확인합니다.\n\nMISSION / PROJECT / TASK\n\n프로젝트 지도\n\nBrain 배속을 기준으로 로컬 레포와 Goal을 읽기 전용으로 펼칩니다.\n\n정합성 정상\n제품 작업\n로컬 2/2\n제품 작업\n2 projects\n\n로컬 프로젝트를 먼저 표시합니다.\n\nyohan-control-tower\n진행 1 · 완료 1\nyohan-brain\n진행 1 · 완료 1\nyohan-control-tower\nactive\n\n통합 관제탑\n\nLOCAL\n\n작업 형제 보기와 안전한 URL 복원\n\ngoals/23-work-sibling-views.md\n\nP0\nIN_PROGRESS\nCompletion Check\n4/9 · 44%",
+      "surface": "projects",
+      "state": "selected",
+      "viewport": 768,
+      "consoleErrors": []
+    }
+  ],
+  "navigation": {
+    "siblingFocus": "일정시간과 Calendar 원장",
+    "afterEnter": "?view=work&surface=calendar",
+    "afterBack": "?view=work&surface=todo",
+    "afterForward": "?view=work&surface=calendar",
+    "noQueryParent": {
+      "search": "",
+      "h1": "작업 URL 복원 계약을 검증한다",
+      "activeTopTab": "홈",
+      "workShellPresent": false
+    },
+    "calendarOptionalState": {
+      "browserToday": "2026-08-25",
+      "default": {
+        "search": "?view=work&surface=calendar",
+        "date": "2026-08-25",
+        "mode": "month"
+      },
+      "bothFieldRemoval": {
+        "before": {
+          "search": "?view=work&surface=calendar&date=2026-10-20&mode=list",
+          "date": "2026-10-20",
+          "mode": "list"
+        },
+        "afterBack": {
+          "search": "?view=work&surface=calendar",
+          "date": "2026-08-25",
+          "mode": "month"
+        },
+        "afterForward": {
+          "search": "?view=work&surface=calendar&date=2026-10-20&mode=list",
+          "date": "2026-10-20",
+          "mode": "list"
+        }
+      },
+      "modeFieldRemoval": {
+        "afterBack": {
+          "search": "?view=work&surface=calendar&date=2026-10-20",
+          "date": "2026-10-20",
+          "mode": "month"
+        },
+        "afterForward": {
+          "search": "?view=work&surface=calendar&date=2026-10-20&mode=list",
+          "date": "2026-10-20",
+          "mode": "list"
+        }
+      },
+      "dateFieldRemoval": {
+        "afterBack": {
+          "search": "?view=work&surface=calendar&mode=list",
+          "date": "2026-08-25",
+          "mode": "list"
+        },
+        "afterForward": {
+          "search": "?view=work&surface=calendar&date=2026-10-20&mode=list",
+          "date": "2026-10-20",
+          "mode": "list"
+        }
+      }
+    },
+    "calendarMidnight": {
+      "beforeClock": "2026-08-25T14:59:59.000Z",
+      "afterClock": "2026-08-25T15:00:01.000Z",
+      "defaultBefore": {
+        "search": "?view=work&surface=calendar",
+        "date": "2026-08-25",
+        "mode": "month"
+      },
+      "defaultAfterBack": {
+        "search": "?view=work&surface=calendar",
+        "date": "2026-08-26",
+        "mode": "month"
+      },
+      "todayAction": {
+        "search": "?view=work&surface=calendar&date=2026-08-26&mode=month",
+        "date": "2026-08-26",
+        "mode": "month"
+      }
+    },
+    "staleHistory": {
+      "todo": {
+        "staleSearch": "?view=work&surface=todo&item=goal%3Ayohan-control-tower%2Fgoals%2Fmissing.md%23deadbeef",
+        "canonicalized": "?view=work&surface=todo",
+        "afterBack": "?view=work&surface=calendar"
+      },
+      "projects": {
+        "staleSearch": "?view=work&surface=projects&mission=work&project=missing-project",
+        "canonicalized": "?view=work&surface=projects&mission=work",
+        "afterBack": "?view=work&surface=todo"
+      },
+      "calendar": {
+        "staleSearch": "?view=work&surface=calendar&date=2026-08-25&mode=month&item=calendar%3Amissing%402026-08-25",
+        "canonicalized": "?view=work&surface=calendar&date=2026-08-25&mode=month",
+        "afterBack": "?view=work&surface=todo"
+      }
+    }
+  },
+  "keyboard": {
+    "todo": {
+      "firstText": "Goal작업 URL 복원 계약을 검증한다yohan-control-tower",
+      "afterArrowDown": "CalendarKST 자정 뒤 오늘로 재분류한다2026-08-26",
+      "selectedItem": "calendar:task-midnight@2026-08-26",
+      "focusTrap": {
+        "count": 2,
+        "first": "할 일 상세 닫기",
+        "last": "Calendar에서 완료",
+        "firstIndex": "0",
+        "lastIndex": "1",
+        "entry": "할 일 상세 닫기",
+        "entryContained": true,
+        "afterForward": "할 일 상세 닫기",
+        "afterForwardIndex": "0",
+        "afterForwardContained": true,
+        "afterBackward": "Calendar에서 완료",
+        "afterBackwardIndex": "1",
+        "afterBackwardContained": true
+      },
+      "afterEscape": {
+        "detailOpen": false,
+        "activeText": "CalendarKST 자정 뒤 오늘로 재분류한다2026-08-26"
+      }
+    },
+    "projects": {
+      "firstText": "yohan-control-tower진행 1 · 완료 1",
+      "afterArrowDown": "yohan-brain진행 1 · 완료 1",
+      "selectedItem": "yohan-brain",
+      "focusTrap": {
+        "count": 1,
+        "first": "프로젝트 상세 닫기",
+        "last": "프로젝트 상세 닫기",
+        "firstIndex": "0",
+        "lastIndex": "0",
+        "entry": "프로젝트 상세 닫기",
+        "entryContained": true,
+        "afterForward": "프로젝트 상세 닫기",
+        "afterForwardIndex": "0",
+        "afterForwardContained": true,
+        "afterBackward": "프로젝트 상세 닫기",
+        "afterBackwardIndex": "0",
+        "afterBackwardContained": true
+      },
+      "afterEscape": {
+        "detailOpen": false,
+        "activeText": "yohan-brain진행 1 · 완료 1"
+      }
+    },
+    "calendar": {
+      "focusTrap": {
+        "count": 8,
+        "first": "",
+        "last": "Close",
+        "firstIndex": "0",
+        "lastIndex": "7",
+        "entry": "",
+        "entryContained": true,
+        "afterForward": "",
+        "afterForwardIndex": "0",
+        "afterForwardContained": true,
+        "afterBackward": "Close",
+        "afterBackwardIndex": "7",
+        "afterBackwardContained": true
+      },
+      "validSelectionOpen": {
+        "search": "?view=work&surface=calendar&date=2026-08-25&mode=month&item=calendar%3Atask-1%402026-08-25",
+        "item": "calendar:task-1@2026-08-25",
+        "dialogOpen": true
+      },
+      "validSelectionBackClose": {
+        "search": "?view=work&surface=calendar&date=2026-08-25&mode=month",
+        "item": null,
+        "dialogOpen": false,
+        "activeEditId": "task-1@2026-08-25"
+      },
+      "userCloseFocus": {
+        "dialogOpen": false,
+        "activeEditId": "task-1@2026-08-25",
+        "fallbackFocused": false
+      },
+      "movedTriggerFallback": {
+        "search": "?view=work&surface=calendar&date=2026-10-20&mode=month",
+        "selectedDate": "2026-10-20",
+        "originalTriggerConnected": false,
+        "fallbackFocused": true,
+        "fallbackText": "오늘"
+      }
+    }
+  },
+  "accessibility": {
+    "desktopInline": {
+      "todo": {
+        "modal": null
+      },
+      "projects": {
+        "modal": null
+      }
+    },
+    "sheet360": {
+      "todo": {
+        "origin": {
+          "text": "Calendar작업 형제 보기 QA를 마친다2026-08-25",
+          "key": "calendar:task-1@2026-08-25"
+        },
+        "focusTrap": {
+          "count": 2,
+          "first": "할 일 상세 닫기",
+          "last": "Calendar에서 완료",
+          "firstIndex": "0",
+          "lastIndex": "1",
+          "entry": "할 일 상세 닫기",
+          "entryContained": true,
+          "afterForward": "할 일 상세 닫기",
+          "afterForwardIndex": "0",
+          "afterForwardContained": true,
+          "afterBackward": "Calendar에서 완료",
+          "afterBackwardIndex": "1",
+          "afterBackwardContained": true
+        },
+        "geometry": {
+          "sheet": {
+            "x": 0,
+            "y": 0,
+            "width": 360,
+            "height": 900
+          },
+          "backdrop": {
+            "x": 0,
+            "y": 0,
+            "width": 360,
+            "height": 900
+          },
+          "clickPoint": {
+            "x": 113,
+            "y": 799.59375
+          },
+          "viewport": {
+            "width": 360,
+            "height": 900
+          }
+        },
+        "pointerProbe": {
+          "backgroundClicks": 0,
+          "dialogOpen": true,
+          "targetInsideSheet": true
+        },
+        "afterBackdrop": {
+          "backgroundClicks": 0,
+          "lastClickTarget": "todo",
+          "focusReturned": true,
+          "dialogOpen": false
+        }
+      },
+      "projects": {
+        "origin": {
+          "text": "yohan-brain진행 1 · 완료 1",
+          "key": "yohan-brain진행 1 · 완료 1"
+        },
+        "focusTrap": {
+          "count": 1,
+          "first": "프로젝트 상세 닫기",
+          "last": "프로젝트 상세 닫기",
+          "firstIndex": "0",
+          "lastIndex": "0",
+          "entry": "프로젝트 상세 닫기",
+          "entryContained": true,
+          "afterForward": "프로젝트 상세 닫기",
+          "afterForwardIndex": "0",
+          "afterForwardContained": true,
+          "afterBackward": "프로젝트 상세 닫기",
+          "afterBackwardIndex": "0",
+          "afterBackwardContained": true
+        },
+        "geometry": {
+          "sheet": {
+            "x": 0,
+            "y": 0,
+            "width": 360,
+            "height": 900
+          },
+          "backdrop": {
+            "x": 0,
+            "y": 0,
+            "width": 360,
+            "height": 900
+          },
+          "clickPoint": {
+            "x": 113,
+            "y": 841.59375
+          },
+          "viewport": {
+            "width": 360,
+            "height": 900
+          }
+        },
+        "pointerProbe": {
+          "backgroundClicks": 0,
+          "dialogOpen": true,
+          "targetInsideSheet": true
+        },
+        "afterBackdrop": {
+          "backgroundClicks": 0,
+          "lastClickTarget": "projects",
+          "focusReturned": true,
+          "dialogOpen": false
+        }
+      }
+    },
+    "sheet768": {
+      "todo": {
+        "origin": {
+          "text": "Calendar작업 형제 보기 QA를 마친다2026-08-25",
+          "key": "calendar:task-1@2026-08-25"
+        },
+        "focusTrap": {
+          "count": 2,
+          "first": "할 일 상세 닫기",
+          "last": "Calendar에서 완료",
+          "firstIndex": "0",
+          "lastIndex": "1",
+          "entry": "할 일 상세 닫기",
+          "entryContained": true,
+          "afterForward": "할 일 상세 닫기",
+          "afterForwardIndex": "0",
+          "afterForwardContained": true,
+          "afterBackward": "Calendar에서 완료",
+          "afterBackwardIndex": "1",
+          "afterBackwardContained": true
+        },
+        "geometry": {
+          "sheet": {
+            "x": 348,
+            "y": 0,
+            "width": 420,
+            "height": 900
+          },
+          "backdrop": {
+            "x": 0,
+            "y": 0,
+            "width": 768,
+            "height": 900
+          },
+          "clickPoint": {
+            "x": 121,
+            "y": 710.859375
+          },
+          "viewport": {
+            "width": 768,
+            "height": 900
+          }
+        },
+        "pointerProbe": {
+          "backgroundClicks": 0,
+          "dialogOpen": true,
+          "targetIsBackdrop": true
+        },
+        "afterBackdrop": {
+          "backgroundClicks": 0,
+          "lastClickTarget": "todo",
+          "focusReturned": true,
+          "dialogOpen": false
+        }
+      },
+      "projects": {
+        "origin": {
+          "text": "yohan-brain진행 1 · 완료 1",
+          "key": "yohan-brain진행 1 · 완료 1"
+        },
+        "focusTrap": {
+          "count": 1,
+          "first": "프로젝트 상세 닫기",
+          "last": "프로젝트 상세 닫기",
+          "firstIndex": "0",
+          "lastIndex": "0",
+          "entry": "프로젝트 상세 닫기",
+          "entryContained": true,
+          "afterForward": "프로젝트 상세 닫기",
+          "afterForwardIndex": "0",
+          "afterForwardContained": true,
+          "afterBackward": "프로젝트 상세 닫기",
+          "afterBackwardIndex": "0",
+          "afterBackwardContained": true
+        },
+        "geometry": {
+          "sheet": {
+            "x": 348,
+            "y": 0,
+            "width": 420,
+            "height": 900
+          },
+          "backdrop": {
+            "x": 0,
+            "y": 0,
+            "width": 768,
+            "height": 900
+          },
+          "clickPoint": {
+            "x": 129,
+            "y": 764.859375
+          },
+          "viewport": {
+            "width": 768,
+            "height": 900
+          }
+        },
+        "pointerProbe": {
+          "backgroundClicks": 0,
+          "dialogOpen": true,
+          "targetIsBackdrop": true
+        },
+        "afterBackdrop": {
+          "backgroundClicks": 0,
+          "lastClickTarget": "projects",
+          "focusReturned": true,
+          "dialogOpen": false
+        }
+      }
+    },
+    "calendarPortalTargets": {
+      "total": 8,
+      "measurements": [
+        {
+          "scope": "calendar-portal",
+          "label": "",
+          "width": 296,
+          "height": 45
+        },
+        {
+          "scope": "calendar-portal",
+          "label": "",
+          "width": 296,
+          "height": 45
+        },
+        {
+          "scope": "calendar-portal",
+          "label": "",
+          "width": 296,
+          "height": 45
+        },
+        {
+          "scope": "calendar-portal",
+          "label": "반복 안 함매일매주매월",
+          "width": 296,
+          "height": 45
+        },
+        {
+          "scope": "calendar-portal",
+          "label": "Calendar 원장만 완료할 수 있다.",
+          "width": 296,
+          "height": 50
+        },
+        {
+          "scope": "calendar-portal",
+          "label": "취소",
+          "width": 296,
+          "height": 45
+        },
+        {
+          "scope": "calendar-portal",
+          "label": "변경 저장",
+          "width": 296,
+          "height": 45
+        },
+        {
+          "scope": "calendar-portal",
+          "label": "Close",
+          "width": 45,
+          "height": 45
+        }
+      ],
+      "failures": []
+    },
+    "calendarDoubleScroll": false
+  },
+  "refreshRestore": {
+    "before": {
+      "search": "?view=work&surface=todo&item=goal%3Ayohan-control-tower%2Fgoals%2F23-work-sibling-views.md%23a1b2c3d4",
+      "item": "goal:yohan-control-tower/goals/23-work-sibling-views.md#a1b2c3d4",
+      "heading": "작업 URL 복원 계약을 검증한다"
+    },
+    "after": {
+      "search": "?view=work&surface=todo&item=goal%3Ayohan-control-tower%2Fgoals%2F23-work-sibling-views.md%23a1b2c3d4",
+      "item": "goal:yohan-control-tower/goals/23-work-sibling-views.md#a1b2c3d4",
+      "heading": "작업 URL 복원 계약을 검증한다"
+    }
+  },
+  "todoMidnight": {
+    "before": {
+      "clock": "2026-08-25T14:59:59.000Z",
+      "group": "todo-group-upcoming",
+      "dateLabel": "2026-08-25 · 일반 할 일과 별도인 시간 블록입니다."
+    },
+    "afterRefresh": {
+      "clock": "2026-08-25T15:00:01.000Z",
+      "group": "todo-group-today",
+      "dateLabel": "2026-08-26 · 일반 할 일과 별도인 시간 블록입니다.",
+      "calendarFrom": "2026-08-26"
+    }
+  },
+  "keyEvidence": {
+    "requestedUnicodeItem": "doc:memory/decisions/한글 문서.md#11111111",
+    "parsedUnicodeItem": "doc:memory/decisions/한글 문서.md#11111111",
+    "encodedSearch": "?view=work&surface=todo&item=doc%3Amemory%2Fdecisions%2F%ED%95%9C%EA%B8%80+%EB%AC%B8%EC%84%9C.md%2311111111",
+    "detailHeading": "디자인 QA 결과를 확인한다",
+    "duplicateRows": [
+      {
+        "key": "goal:yohan-control-tower/goals/qa-duplicate.md#9da51df7",
+        "text": "Goal동일 Completion Check parser 키를 검증한다yohan-control-tower"
+      },
+      {
+        "key": "goal:yohan-control-tower/goals/qa-duplicate.md#f8cd0088",
+        "text": "Goal동일 Completion Check parser 키를 검증한다yohan-control-tower"
+      }
+    ],
+    "distinctDuplicateKeys": 2,
+    "parserProduced": [
+      {
+        "id": "yohan-control-tower/goals/qa-duplicate.md#9da51df7",
+        "line": 3,
+        "text": "동일 Completion Check parser 키를 검증한다",
+        "renderedKey": "goal:yohan-control-tower/goals/qa-duplicate.md#9da51df7"
+      },
+      {
+        "id": "yohan-control-tower/goals/qa-duplicate.md#f8cd0088",
+        "line": 4,
+        "text": "동일 Completion Check parser 키를 검증한다",
+        "renderedKey": "goal:yohan-control-tower/goals/qa-duplicate.md#f8cd0088"
+      }
+    ]
+  },
+  "detailFailure": {
+    "sourceFailure": {
+      "search": "?view=work&surface=todo&item=goal%3Ayohan-control-tower%2Fgoals%2F23-work-sibling-views.md%23a1b2c3d4",
+      "item": "goal:yohan-control-tower/goals/23-work-sibling-views.md#a1b2c3d4",
+      "detailOpen": false
+    },
+    "project": {
+      "search": "?view=work&surface=projects&mission=work&project=yohan-control-tower",
+      "project": "yohan-control-tower",
+      "listItems": 2,
+      "errorVisible": true
+    }
+  },
+  "todoOverlapRace": {
+    "beforeLate": {
+      "newestVisible": true,
+      "olderVisible": false
+    },
+    "lateRelease": "canceled",
+    "afterLate": {
+      "newestVisible": true,
+      "olderVisible": false
+    }
+  },
+  "saveClose": {
+    "historyLengthBefore": 50,
+    "historyLengthAfter": 50,
+    "searchBefore": "?view=work&surface=calendar&date=2026-08-25&mode=month&item=calendar%3Atask-1%402026-08-25",
+    "searchAfter": "?view=work&surface=calendar&date=2026-08-25&mode=month",
+    "itemBefore": "calendar:task-1@2026-08-25",
+    "itemAfter": null,
+    "dialogOpenAfter": false,
+    "activeEditIdAfter": "task-1@2026-08-25"
+  },
+  "crossMonthRestore": {
+    "octoberPendingBeforeBack": {
+      "search": "?view=work&surface=calendar&date=2026-10-20&mode=list&item=calendar%3Atask-2%402026-10-20",
+      "item": "calendar:task-2@2026-10-20",
+      "dialogOpen": false,
+      "loadingVisible": true
+    },
+    "augustAfterBack": {
+      "search": "?view=work&surface=calendar&date=2026-08-25&mode=month&item=calendar%3Atask-1%402026-08-25",
+      "item": "calendar:task-1@2026-08-25",
+      "title": "작업 형제 보기 QA를 마친다"
+    },
+    "lateOctoberRelease": {
+      "attempted": 1,
+      "fulfilled": 0,
+      "canceled": 1
+    },
+    "augustAfterLateOctober": {
+      "search": "?view=work&surface=calendar&date=2026-08-25&mode=month&item=calendar%3Atask-1%402026-08-25",
+      "item": "calendar:task-1@2026-08-25",
+      "title": "작업 형제 보기 QA를 마친다"
+    },
+    "octoberPendingAfterForward": {
+      "search": "?view=work&surface=calendar&date=2026-10-20&mode=list&item=calendar%3Atask-2%402026-10-20",
+      "item": "calendar:task-2@2026-10-20",
+      "dialogOpen": false,
+      "loadingVisible": true
+    },
+    "currentOctoberRelease": {
+      "attempted": 1,
+      "fulfilled": 1,
+      "canceled": 0
+    },
+    "octoberAfterResolve": {
+      "search": "?view=work&surface=calendar&date=2026-10-20&mode=list&item=calendar%3Atask-2%402026-10-20",
+      "item": "calendar:task-2@2026-10-20",
+      "title": "10월 지연 응답 복원을 검증한다"
+    }
+  },
+  "consoleErrors": [],
+  "interactionAssertions": {
+    "siblingArrowRightMovesFocus": true,
+    "siblingEnterNavigatesCalendar": true,
+    "historyBackRestoresTodo": true,
+    "historyForwardRestoresCalendar": true,
+    "noQueryRemainsNowAtParent": true,
+    "calendarBothOptionalFieldsResetOnBack": true,
+    "calendarBothOptionalFieldsRestoreOnForward": true,
+    "calendarModeRemovalResetsIndependently": true,
+    "calendarDateRemovalResetsIndependently": true,
+    "calendarKstMidnightBackUsesNewDate": true,
+    "calendarKstMidnightTodayUsesNewDate": true,
+    "todoArrowDownMovesFocus": true,
+    "todoEnterSelectsCalendarItem": true,
+    "todoModalFocusEntry": true,
+    "todoModalFocusTrap": true,
+    "todoEscapeClosesDetail": true,
+    "todoEscapeReturnsFocus": true,
+    "projectArrowDownMovesFocus": true,
+    "projectEnterSelectsItem": true,
+    "projectModalFocusEntry": true,
+    "projectModalFocusTrap": true,
+    "projectEscapeClosesDetail": true,
+    "projectEscapeReturnsFocus": true,
+    "todo360FullScreenDetailPreserved": true,
+    "todo360BackdropCoversViewport": true,
+    "todo360BackdropBlocksBackgroundPointer": true,
+    "todo360BackdropClosesAndReturnsFocus": true,
+    "project360FullScreenDetailPreserved": true,
+    "project360BackdropCoversViewport": true,
+    "project360BackdropBlocksBackgroundPointer": true,
+    "project360BackdropClosesAndReturnsFocus": true,
+    "todo768SheetWidthPreserved": true,
+    "todo768BackdropCoversViewport": true,
+    "todo768BackdropBlocksBackgroundPointer": true,
+    "todo768BackdropReturnsFocus": true,
+    "todo768FocusTrap": true,
+    "project768SheetWidthPreserved": true,
+    "project768BackdropCoversViewport": true,
+    "project768BackdropBlocksBackgroundPointer": true,
+    "project768BackdropReturnsFocus": true,
+    "project768FocusTrap": true,
+    "desktopTodoIsInline": true,
+    "desktopProjectIsInline": true,
+    "productionKeyRefreshRestores": true,
+    "todoKstMidnightRefreshUsesNewDate": true,
+    "unicodeRelativePathRoundTrips": true,
+    "duplicateTextKeysRemainDistinct": true,
+    "todoLateOlderResponseCannotOverwriteRefresh": true,
+    "sourceFailurePreservesSelection": true,
+    "detailFailurePreservesProject": true,
+    "todoStaleReplaceAvoidsBackTrap": true,
+    "projectStaleReplaceAvoidsBackTrap": true,
+    "calendarStaleReplaceAvoidsBackTrap": true,
+    "calendarModalFocusEntry": true,
+    "calendarModalFocusTrap": true,
+    "calendarPortalTargetsMeasured": true,
+    "calendarValidSelectionBackClosesDialog": true,
+    "calendarValidSelectionBackReturnsFocus": true,
+    "calendarUserCloseReturnsExactEditTrigger": true,
+    "calendarSaveClearsItemWithoutPush": true,
+    "calendarSaveReturnsExactEditTrigger": true,
+    "calendarMovedTriggerUsesFocusFallback": true,
+    "calendarCrossMonthDoesNotClearEarly": true,
+    "calendarCrossMonthBackRestoresAugust": true,
+    "calendarLateOctoberCannotReplaceAugust": true,
+    "calendarCrossMonthForwardDoesNotClearEarly": true,
+    "calendarCrossMonthForwardResolvesOctober": true
+  },
+  "summary": {
+    "scenarios": 36,
+    "interactionAssertions": 67,
+    "overflowFailures": 0,
+    "doubleScrollFailures": 0,
+    "h1Failures": 0,
+    "targetFailures": 0,
+    "portalTargetFailures": 0,
+    "consoleErrors": 0,
+    "minimumParagraphPx": 14
+  }
+}

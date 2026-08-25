@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>요한 관제탑 — 지금 R2</title>
+    <style>
+      :root {
+        color: #172326;
+        background: #e7ecee;
+        font-family: "Segoe UI Variable Text", "Segoe UI", "Malgun Gothic", sans-serif;
+        font-synthesis: none;
+      }
+
+      * { box-sizing: border-box; }
+      body { margin: 0; min-width: 1180px; background: #e7ecee; }
+      button { font: inherit; }
+
+      .shell {
+        width: 1176px;
+        margin: 0 auto;
+        padding: 18px 0 28px;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 48px;
+        border-bottom: 1px solid #b9c5c8;
+      }
+
+      .brand,
+      .eyebrow,
+      .lane-code,
+      .rail-code {
+        font-family: "Cascadia Mono", Consolas, monospace;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+
+      .brand { font-size: 14px; }
+      .nav { display: flex; gap: 24px; align-items: center; }
+      .nav span { color: #526367; font-size: 14px; font-weight: 600; }
+      .nav .current { color: #172326; border-bottom: 3px solid #146c94; padding: 18px 2px 15px; }
+
+      .hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 220px;
+        gap: 64px;
+        align-items: end;
+        padding: 36px 0 30px;
+        border-bottom: 1px solid #b9c5c8;
+      }
+
+      .eyebrow { margin: 0 0 18px; color: #146c94; font-size: 14px; }
+      h1 { margin: 0; max-width: 850px; font-size: 52px; line-height: 1.08; letter-spacing: -0.045em; }
+      .hero-copy { margin: 14px 0 0; color: #526367; font-size: 18px; line-height: 1.6; }
+
+      .decision-state {
+        border: 1px solid #bdc8cb;
+        background: #f7f9f9;
+        padding: 18px;
+      }
+
+      .decision-state strong { display: block; margin-top: 8px; font-size: 19px; }
+      .decision-state p { margin: 8px 0 0; color: #526367; font-size: 14px; line-height: 1.5; }
+
+      .workspace { padding-top: 28px; }
+      .section-head { display: flex; justify-content: space-between; align-items: end; margin-bottom: 14px; }
+      .section-head h2 { margin: 5px 0 0; font-size: 30px; line-height: 1.25; }
+      .section-head p { margin: 0; color: #526367; font-size: 14px; }
+
+      .board {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 296px;
+        gap: 28px;
+        align-items: start;
+      }
+
+      .work-stack { display: grid; gap: 18px; }
+      .path {
+        border: 1px solid #bdc8cb;
+        background: #f7f9f9;
+        box-shadow: 0 18px 34px rgb(23 35 38 / 0.06);
+      }
+
+      .path-row {
+        display: grid;
+        grid-template-columns: 104px minmax(0, 1fr) 150px;
+        gap: 20px;
+        align-items: center;
+        min-height: 76px;
+        padding: 13px 20px;
+        border-bottom: 1px solid #cbd4d6;
+      }
+
+      .path-row:last-child { border-bottom: 0; }
+      .path-row.current { background: #edf6fa; outline: 2px solid #146c94; outline-offset: -2px; }
+      .lane-code { color: #146c94; font-size: 14px; }
+      .path-name { min-width: 0; }
+      .path-name strong { display: block; font-size: 19px; line-height: 1.4; }
+      .path-row.current .path-name strong { font-size: 23px; }
+      .path-name span { display: block; margin-top: 4px; color: #526367; font-size: 14px; line-height: 1.45; }
+      .path-state { justify-self: end; font-size: 14px; font-weight: 700; }
+      .path-state.waiting { color: #a84f18; }
+
+      .action {
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 44px;
+        padding: 0 16px;
+        border: 1px solid #0f5574;
+        background: #146c94;
+        color: #fff;
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      .followups { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+      .followup {
+        min-height: 98px;
+        padding: 14px 20px;
+        border-top: 2px solid #9eacb0;
+        background: rgb(247 249 249 / 0.55);
+      }
+      .followup strong { display: block; margin: 8px 0 5px; font-size: 17px; }
+      .followup p { margin: 0; color: #526367; font-size: 14px; line-height: 1.55; }
+
+      .receipt {
+        position: sticky;
+        top: 24px;
+        border: 1px solid #bdc8cb;
+        background: #f7f9f9;
+        padding: 18px;
+        box-shadow: 0 18px 34px rgb(23 35 38 / 0.06);
+      }
+
+      .receipt h2 { margin: 6px 0 14px; font-size: 28px; }
+      .definition { padding: 11px 0; border-top: 1px solid #cbd4d6; }
+      .definition strong { display: block; font-size: 15px; }
+      .definition p { margin: 5px 0 0; color: #526367; font-size: 14px; line-height: 1.5; }
+      .source { margin-top: 12px; padding-top: 12px; border-top: 1px solid #cbd4d6; }
+      .source p { margin: 7px 0 0; color: #526367; font: 14px/1.5 "Cascadia Mono", Consolas, monospace; overflow-wrap: anywhere; }
+
+      .fixture-note { margin-top: 18px; color: #526367; font-size: 14px; }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <header class="topbar">
+        <div class="brand">YOHAN CONTROL TOWER</div>
+        <nav class="nav" aria-label="주요 화면">
+          <span class="current">지금</span>
+          <span>작업</span>
+          <span>지식·디자인</span>
+          <span>스킬·도구</span>
+          <span>운영 기록</span>
+        </nav>
+      </header>
+
+      <section class="hero" aria-labelledby="page-title">
+        <div>
+          <p class="eyebrow">TASK 4 / 5 · NOW</p>
+          <h1 id="page-title">MOVA 기준 R2 시안을 보고 진행 방향을 결정합니다.</h1>
+          <p class="hero-copy">Goal 15의 현재 Task입니다. 선택 전에는 실제 UI를 수정하지 않습니다.</p>
+        </div>
+        <aside class="decision-state" aria-label="현재 결정 상태">
+          <span class="rail-code">STATUS</span>
+          <strong>사용자 결정 대기</strong>
+          <p>승인 · 수정 · 재거절 중 하나를 남깁니다.</p>
+        </aside>
+      </section>
+
+      <main class="workspace">
+        <div class="section-head">
+          <div>
+            <span class="rail-code">CURRENT WORK</span>
+            <h2>현재 작업 위치</h2>
+          </div>
+          <p>큰 결과에서 지금 행동까지 한 방향으로 읽습니다.</p>
+        </div>
+
+        <div class="board">
+          <div class="work-stack">
+            <section class="path" aria-label="Phase Goal Task 계층">
+              <div class="path-row">
+                <span class="lane-code">PHASE</span>
+                <div class="path-name">
+                  <strong>관제탑 vNext 디자인 확정</strong>
+                  <span>화면 구조와 시각 기준을 확정하는 결과 묶음</span>
+                </div>
+                <span class="path-state">진행 중</span>
+              </div>
+
+              <div class="path-row">
+                <span class="lane-code">GOAL 15</span>
+                <div class="path-name">
+                  <strong>관제탑 디자인 방향과 구현 명세 확정</strong>
+                  <span>단독으로 검증하고 완료할 결과</span>
+                </div>
+                <span class="path-state">4 / 5</span>
+              </div>
+
+              <div class="path-row current">
+                <span class="lane-code">TASK 4 / 5</span>
+                <div class="path-name">
+                  <strong>R2 시안을 검토하고 진행 방향 결정</strong>
+                  <span>지금 실행할 한 행동 · Goal 15 완료 조건 4/5</span>
+                </div>
+                <button class="action" type="button">검토 결과 남기기</button>
+              </div>
+            </section>
+
+            <div class="followups">
+              <section class="followup">
+                <span class="lane-code">NEXT</span>
+                <strong>선택한 방향의 디자인·기술 명세 작성</strong>
+                <p>R2 승인 뒤에만 시작합니다.</p>
+              </section>
+              <section class="followup">
+                <span class="lane-code">ALWAYS</span>
+                <strong>사람 선택 전 실제 UI 변경 금지</strong>
+                <p>Brain 기존 파일·배포·push도 이번 범위 밖입니다.</p>
+              </section>
+            </div>
+          </div>
+
+          <aside class="receipt" aria-labelledby="definition-title">
+            <span class="rail-code">DEFINITION</span>
+            <h2 id="definition-title">용어 기준</h2>
+            <div class="definition">
+              <strong>Phase · 결과 묶음</strong>
+              <p>여러 Goal이 모여 만드는 사용자 결과입니다.</p>
+            </div>
+            <div class="definition">
+              <strong>Goal · 완료 결과</strong>
+              <p>단독으로 검증하고 완료할 한 가지 결과입니다.</p>
+            </div>
+            <div class="definition">
+              <strong>Task · 지금 행동</strong>
+              <p>참·거짓으로 확인할 수 있는 원자 행동입니다.</p>
+            </div>
+            <div class="source">
+              <span class="rail-code">SOURCE</span>
+              <p>goals/15-control-tower-design-direction.md</p>
+            </div>
+          </aside>
+        </div>
+
+        <p class="fixture-note">예시 화면 · 2026-08-24 · 실제 UI 미연결</p>
+      </main>
+    </div>
+  </body>
+</html>
