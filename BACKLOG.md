@@ -43,4 +43,5 @@ rename 은 import 수정을 동반하므로 7파일 이상 — 별도 작업으�
 - **모바일 B** — Tailscale + PWA. MagicDNS → `tailscale cert` → `tailscale serve`. **Vercel 0개**
 - **재무축 2차** — 노션 가계부 연결 · 투자봇 계측 · 프로젝트별 투입시간
 - **`api/search` silent fallback** — LLM 파싱 실패가 `catch { indices = [] }` 로 "결과 없음"과 합쳐진다. 팔레트의 유일한 검색 경로라 중요도 상승
-- **`api/run` args 필터** — 블록리스트(`route.ts:89` TODO)를 allowlist 로 좁힐 것
+- ~~**`api/run` args 필터** — 블록리스트(`route.ts:89` TODO)를 allowlist 로 좁힐 것~~ 해결(Goal 24): action별 고정 executable·argv registry, 정확한 JSON media type, `ingest:url` 전용 HTTP(S) 원문·control 검사, same-origin 선검사, `execFile` no-shell runner, URL/route 보존형 output redaction과 실행 없는 주입 테스트로 교체했다.
+- **`api/run` 출고 잔존 위험 (Goal 24 P2)** — timeout 뒤 손자 프로세스 회수는 미실측 추론이고, POSIX의 `npm`/`npx`는 PATH 상대 executable이며, Windows 고정 `npm-cli.js`/`npx-cli.js` 경로 존재는 실행 없이 검증되지 않았다. 서버측 실패 로그 부재와 문자열 기반 정적 checker 한계도 유지하며 process-tree kill·외부 action 실행·신규 설계는 별도 승인 범위로 남긴다.
