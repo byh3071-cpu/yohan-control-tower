@@ -89,7 +89,8 @@
 │   │   ├── 2026-08-24-goal-16-now-r3.md
 │   │   ├── 2026-08-24-main-conductor-handoff.md
 │   │   ├── 2026-08-25-work-sibling-views.md
-│   │   └── 2026-08-26-run-command-boundary.md
+│   │   ├── 2026-08-26-run-command-boundary.md
+│   │   └── 2026-08-26-search-failure-boundary.md
 │   ├── operations/
 │   │   ├── agent-session-recovery-runbook.md
 │   │   ├── current-workstreams.md
@@ -145,6 +146,7 @@
 │   ├── 22-live-now-r3.md
 │   ├── 23-work-sibling-views.md
 │   ├── 24-run-command-boundary.md
+│   ├── 25-search-failure-boundary.md
 │   ├── 3-mission-project-drilldown-lint.md
 │   ├── 4-local-calendar-mvp.md
 │   ├── 5-calendar-item-editing.md
@@ -187,6 +189,7 @@
 │   ├── check-goal-22.mjs
 │   ├── check-goal-23.mjs
 │   ├── check-goal-24.mjs
+│   ├── check-goal-25.mjs
 │   ├── check-goal-3.mjs
 │   ├── check-goal-4.mjs
 │   ├── check-goal-5.mjs
@@ -280,6 +283,10 @@
 │       ├── run-command-route.test.ts
 │       ├── run-command-runner.test.ts
 │       ├── run-command-runner.ts
+│       ├── search-controller.test.ts
+│       ├── search-controller.ts
+│       ├── search-response.test.ts
+│       ├── search-response.ts
 │       ├── server-cache.test.ts
 │       ├── server-cache.ts
 │       ├── types.ts
@@ -368,14 +375,14 @@
 ## 최근 활동 (git log — goals/blockers/memory 미사용 시 폴백)
 
 ```
+97135a0 Merge pull request #38 from byh3071-cpu/control-tower-run-boundary
+264fd92 fix: /api/run 실행 신뢰 경계 강화
 94cf87f Merge pull request #37 from byh3071-cpu/byh3071-cpu/control-tower-work-siblings-scout
 9477808 feat: 작업 화면 형제 보기를 통합한다
 3e6c38e Merge pull request #32 from byh3071-cpu/feat/session-operations-recovery
-002793b chore: 관제탑 출고 검증 증거 기록
-62c2f5a docs: 상시 지휘자 인수인계 마감
 ```
 
 ---
 
-_생성: 2026. 8. 26. 오전 9:36:02_
-_vhk-context-git: 94cf87fce7ec69682079a324fe0c55865a468cfb_
+_생성: 2026. 8. 26. 오전 11:22:16_
+_vhk-context-git: 97135a0887d6a3a1b4a50db65e67f1692f69b2bf_
