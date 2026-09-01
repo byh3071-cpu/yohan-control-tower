@@ -314,7 +314,7 @@
             <div class="sib">
               <a class="on" href="?v=review">검토</a>
               <a href="?v=inbox">인박스</a>
-              <a href="?v=shelf">서가</a>
+              <a href="?v=shelf">문서</a>
             </div>
           </div>
           <div class="meta">대기 4</div>
@@ -325,7 +325,7 @@
               <button class="row sel" type="button"><span class="circ"></span><span><span class="ttl">로컬 RAG를 파일 정본으로 유지하는 법</span><div class="sub">유튜브 18:42 · NotebookLM 통과</div></span><span class="tag">검토 대기</span></button>
               <button class="row" type="button"><span class="circ"></span><span><span class="ttl">1인 개발자의 지식 보관 실패 패턴</span><div class="sub">유튜브 12:05 · 타임스탬프 부족</div></span><span class="tag" style="color:#6b6662;background:#f1eeea">보류</span></button>
               <button class="row" type="button"><span class="circ"></span><span><span class="ttl">온톨로지를 위키처럼 쓰지 않는 이유</span><div class="sub">유튜브 41:10 · 품질 검사 중</div></span><span class="tag">대기</span></button>
-              <button class="row" type="button"><span class="circ"></span><span><span class="ttl">이력서 문장을 증거 문장으로 바꾸는 법</span><div class="sub">유튜브 07:22 · 서가 연결 후보</div></span><span class="tag">검토 대기</span></button>
+              <button class="row" type="button"><span class="circ"></span><span><span class="ttl">이력서 문장을 증거 문장으로 바꾸는 법</span><div class="sub">유튜브 07:22 · 문서 연결 후보</div></span><span class="tag">검토 대기</span></button>
             </div>
           </div>
           <aside class="side">
@@ -351,13 +351,17 @@
             <div class="sib">
               <a href="?v=review">검토</a>
               <a class="on" href="?v=inbox">인박스</a>
-              <a href="?v=shelf">서가</a>
+              <a href="?v=shelf">문서</a>
             </div>
           </div>
           <div class="meta">오늘 도착 3</div>
         </div>
         <div class="stage">
           <div class="board" style="padding:8px 12px 16px">
+            <div class="quick" style="margin:8px 4px 12px">
+              <input placeholder="링크·메모 던지기 — Enter" aria-label="인박스 던지기" />
+              <button class="go" type="button" aria-label="넣기">↑</button>
+            </div>
             <div class="list">
               <button class="row sel" type="button"><span class="circ"></span><span><span class="ttl">인스타 저장: AI 트렌드 가이드</span><div class="sub">텔레그램 · 이미지 · 13:22</div></span><span class="tag">대기</span></button>
               <button class="row" type="button"><span class="circ"></span><span><span class="ttl">챗GPT 대화: 자소서 문장 후보</span><div class="sub">텔레그램 · 텍스트</div></span><span class="tag">대기</span></button>
@@ -382,13 +386,14 @@
       <section class="view" id="shelf">
         <div class="toolbar">
           <div style="display:flex;align-items:baseline">
-            <div class="month">서가</div>
+            <div class="month">문서</div>
             <div class="sib">
               <a href="?v=review">검토</a>
               <a href="?v=inbox">인박스</a>
-              <a class="on" href="?v=shelf">서가</a>
+              <a class="on" href="?v=shelf">문서</a>
             </div>
           </div>
+          <button class="add" type="button">+ 새 기록</button>
         </div>
         <div class="stage" style="grid-template-columns: 240px minmax(0,1fr)">
           <div class="board folders" style="padding:10px">
