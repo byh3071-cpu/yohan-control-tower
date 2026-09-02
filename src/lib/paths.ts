@@ -6,7 +6,8 @@ import { config as loadDotenv } from "dotenv"
 /**
  * brain(요한 브레인) 레포 루트 — 모든 SoT 의 출발점.
  *
- * `YOHAN_OS_ROOT` env 로만 해석한다. **cwd 추론 폴백은 전부 제거했다**(ARCHITECTURE §6-②).
+ * `YOHAN_OS_ROOT` env 로만 해석한다. 이 이름은 역사적 별명이다 — 요한 OS 웹앱이 아니라
+ * **brain 레포 경로**다. **cwd 추론 폴백은 전부 제거했다**(ARCHITECTURE §6-②).
  * 제거 이유: 이 레포에 `memory/` 디렉토리가 생기는 순간 옛 폴백이 자기 자신을 brain 으로
  * 조용히 해석해, 엉뚱한 곳을 SoT 로 읽으면서도 성공한 척한다. 그게 silent fallback 이다.
  *

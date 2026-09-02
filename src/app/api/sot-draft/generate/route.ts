@@ -21,7 +21,7 @@ const INSIGHT_DRAFT_RULES = `마크다운 본문만. 코드펜스 금지. 한국
 ## 요약 — 짧은 문단 2~4개. 첫 문장에 결론·주장. 요약을 불릿 키워드만으로 채우지 말 것. 사실과 해석 분리; 불확실하면 「확인 필요」
 ## 출처·원문 — 상대 경로·URL·붙여넣은 맥락 출처
 ## 본문 — 논지·단계·증거
-## 적용·주의 — Yohan OS 또는 본인 워크플로에 걸리는 점
+## 적용·주의 — yohan-brain 또는 본인 워크플로에 걸리는 점
 ## 다음 액션 (선택)
 수치·연도·제품명은 사용자 맥락에 있을 때만 쓰고, 없으면 만들지 말 것.`
 
@@ -44,7 +44,7 @@ async function callOpenAIDraft(
   const key = process.env.OPENAI_API_KEY?.trim()
   if (!key) return { ok: false, error: "NO_API_KEY" }
 
-  const sys = `Yohan OS memory 저장용 초안 작성기. ${TEMPLATE_HINT[template]}`
+  const sys = `yohan-brain memory 저장용 초안 작성기. ${TEMPLATE_HINT[template]}`
   const user = `주제:\n${topic}\n\n추가 맥락:\n${context || "(없음)"}\n\n본문만 출력(코드펜스 금지).`
 
   const res = await fetch("https://api.openai.com/v1/chat/completions", {
