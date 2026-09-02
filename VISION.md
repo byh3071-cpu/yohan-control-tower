@@ -1,6 +1,6 @@
 # VISION — yohan-control-tower
 
-> 북극성 앵커. 사람용 정의: `docs/product/definition.md`. 사는 곳: `docs/adr/ADR-005-one-app-two-faces.md`.
+> 사람용 정의: `docs/product/definition.md`. **다음 세션 첫 파일:** `docs/product/big-picture.md`.
 
 ## What (한 줄)
 요한 한 사람의 로컬 한 설치. **앱**에서 할 일·달력·삶을 적고, 집 에이전트가 그 파일을 읽는다. **대시보드**는 프로젝트·에이전트를 한눈에. 노션은 집 밖 AI 다리지 달력 본사가 아니다.

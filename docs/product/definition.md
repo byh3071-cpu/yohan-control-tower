@@ -2,9 +2,11 @@
 
 - 날짜: 2026-09-02
 - 상태: 초안 · 사람 확인 대기
+- **다음 세션은 이 파일보다 `big-picture.md`를 먼저 읽는다.**
 - 짧은 북극성: [`VISION.md`](../../VISION.md)
 - 사는 곳: [`ADR-005`](../adr/ADR-005-one-app-two-faces.md)
 - 삶과 일정 기준: [`life-calendar-criteria.md`](./life-calendar-criteria.md)
+- 큰 그림: [`big-picture.md`](./big-picture.md)
 
 공식 이름(현재): **요한 관제탑**. 저장소: `yohan-control-tower`. 문서에는 별명 “간지탑”을 쓰지 않는다.
 
@@ -27,7 +29,7 @@
 
 ---
 
-## 노션을  copilot DB로 쓰던 이유
+## 노션을 코파일럿 DB로 쓰던 이유
 
 ChatGPT 같은 집 밖 AI는 이 PC 폴더를 못 연다. 생각을 노션 페이지에 두면 집·폰·다른 AI가 “그 DB 봐”로 읽었다. 전사·노트도 그쪽이었다.
 
