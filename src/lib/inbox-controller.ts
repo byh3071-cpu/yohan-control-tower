@@ -10,6 +10,7 @@ import {
 } from "@/lib/inbox-limits"
 import { resolveRepoRoot } from "@/lib/paths"
 import {
+  isServerRequestHostname,
   isTrustedHostname,
   originMatchesExpected,
   parseRequestHosts,
@@ -258,7 +259,7 @@ export function isSameOriginRequest(request: Request): boolean {
     const { requestUrl, expectedUrl } = parsed
     // Next production server가 -H 127.0.0.1로 떠도 사용자는 localhost로 접속할 수 있다.
     // request.url 내부 host보다 검증된 Host 헤더를 우선해야 브라우저가 본 origin과 일치한다.
-    if (!isTrustedHostname(requestUrl.hostname) || !isTrustedHostname(expectedUrl.hostname)) return false
+    if (!isServerRequestHostname(requestUrl.hostname) || !isTrustedHostname(expectedUrl.hostname)) return false
 
     const origin = request.headers.get("origin")
     if (origin) return originMatchesExpected(origin, expectedUrl)
@@ -267,7 +268,8 @@ export function isSameOriginRequest(request: Request): boolean {
     // 제공하는 Fetch Metadata와 Referer를 둘 다 요구해 curl 등 헤더 없는 쓰기를 막는다.
     if (request.headers.get("sec-fetch-site")?.toLowerCase() !== "same-origin") return false
     const referer = request.headers.get("referer")
-    return Boolean(referer) && originMatchesExpected(new URL(referer).origin, expectedUrl)
+    if (!referer) return false
+    return originMatchesExpected(new URL(referer).origin, expectedUrl)
   } catch {
     return false
   }
@@ -282,7 +284,7 @@ export function isLocalReadRequest(request: Request): boolean {
     const parsed = parseRequestHosts(request)
     if (!parsed) return false
     const { requestUrl, expectedUrl } = parsed
-    if (!isTrustedHostname(requestUrl.hostname) || !isTrustedHostname(expectedUrl.hostname)) return false
+    if (!isServerRequestHostname(requestUrl.hostname) || !isTrustedHostname(expectedUrl.hostname)) return false
     if (request.headers.get("sec-fetch-site")?.toLowerCase() === "cross-site") return false
     const origin = request.headers.get("origin")
     return !origin || originMatchesExpected(origin, expectedUrl)

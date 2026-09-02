@@ -159,13 +159,22 @@ test("GET 신뢰 경계는 Origin 없는 로컬 조회를 허용하고 cross-sit
   assert.equal(isLocalReadRequest(crossSite), false)
   assert.equal(isLocalReadRequest(foreignOrigin), false)
   assert.equal(isLocalReadRequest(rebound), false)
+
+  const bindAll = new Request("http://0.0.0.0:3101/api/inbox", {
+    headers: { host: "127.0.0.1:3101" },
+  })
+  const bindAllHost = new Request("http://0.0.0.0:3101/api/inbox", {
+    headers: { host: "0.0.0.0:3101" },
+  })
+  assert.equal(isLocalReadRequest(bindAll), true)
+  assert.equal(isLocalReadRequest(bindAllHost), false)
 })
 
 test("YOHAN_PREVIEW_HOST가 있을 때만 그 hostname의 조회·쓰기를 연다", () => {
   const previous = process.env.YOHAN_PREVIEW_HOST
   process.env.YOHAN_PREVIEW_HOST = "preview.example"
   try {
-    const previewGet = new Request("http://127.0.0.1:3101/api/calendar", {
+    const previewGet = new Request("http://0.0.0.0:3101/api/calendar", {
       headers: { host: "preview.example" },
     })
     const previewGetHttpsOrigin = new Request("http://preview.example/api/calendar", {

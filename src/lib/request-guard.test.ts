@@ -3,6 +3,7 @@ import { test } from "node:test"
 
 import {
   configuredPreviewHostname,
+  isServerRequestHostname,
   isTrustedHostname,
   originMatchesExpected,
   PREVIEW_HOST_ENV,
@@ -33,4 +34,9 @@ test("미리보기 origin은 https 터널과 http origin hostname만 맞으면 �
   assert.equal(originMatchesExpected("https://preview.example", expected, env), true)
   assert.equal(originMatchesExpected("http://evil.example", expected, env), false)
   assert.equal(originMatchesExpected("https://preview.example", expected, {}), false)
+})
+
+test("0.0.0.0은 request.url 바인드 주소로만 신뢰하고 Host 헤더로는 신뢰하지 않는다", () => {
+  assert.equal(isServerRequestHostname("0.0.0.0", {}), true)
+  assert.equal(isTrustedHostname("0.0.0.0", {}), false)
 })
