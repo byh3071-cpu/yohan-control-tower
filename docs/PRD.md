@@ -1,5 +1,6 @@
 # PRD — yohan-control-tower (요한 생태계 통합 관제탑)
 
+> 사람용 한 줄 정의는 [`VISION.md`](../VISION.md) · [`docs/product/definition.md`](./product/definition.md). 이 문서는 기능 번호표다.
 > 유형: 웹앱(로컬 전용 대시보드) · 포트 3001 · 정본 = 파일(`yohan-brain`), 노션은 사람용 뷰(ADR-009)
 > v1 은 **v1.0(이관·통합)**, **v1.1(계층축)**, **v1.2(Calendar 일상 사용 세로 슬라이스)**로 분할한다.
 > 후속 홈·Notion 연결 방향은 [`RFC 0001 — Notion 연동 공통 작업대`](./rfc/0001-notion-backed-common-workbench.md)에서 제안한다. 현재 구현 완료 범위와 섞어 쓰지 않는다.
