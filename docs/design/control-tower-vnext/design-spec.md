@@ -1,11 +1,12 @@
 # 요한 관제탑 vNext 디자인·기술 명세
 
-- Status: verified · NOW-R3 사용자 승인 · Goal 22 production 구현·QA 완료
-- Revision: CONTROL-TOWER-VNEXT-SPEC-R3.1
-- Visual source: `docs/prototypes/control-tower-now-mova-r3/`
+- Status: verified · NOW-R3 사용자 승인 · Goal 22·23 production 구현 완료 · 일상 표면 시안은 Goal 25·26 대기
+- Revision: CONTROL-TOWER-VNEXT-SPEC-R3.2
+- Visual source: `docs/prototypes/control-tower-now-mova-r3/` (`지금`) · `docs/prototypes/four-lanes/` (일정·검토·인박스·문서)
+- Daily surface spec: `four-lanes-implementation-spec.md`
 - Language source: `work-item-language-contract.md`
 - Target runtime: localhost `3001`, Next.js 16 · React 19 · TypeScript strict
-- Human gate: Goal 22 결과 확인 후 권장 순서 2번 `작업` 화면 Goal 범위 승인
+- Human gate: 일상 표면 코드는 Goal 25·26. 이 명세 개정은 배포를 승인하지 않는다.
 
 ## 디자인 명제
 
@@ -166,10 +167,12 @@
 권장 구현 Goal 순서:
 
 1. ✅ Goal 22 완료 — 현재 Home 진입을 유지한 채 live Goal·Task를 연결한 R3 `지금` 화면 구현
-2. `작업`의 할 일·일정·프로젝트 형제 보기 구현
-3. `지식·디자인`과 Vector 검색 역할 재배치
-4. `스킬·도구` 읽기 계약과 화면 구현
-5. `운영 기록` 감축 후 다섯 상위 탐색을 한 번에 전환하고 전체 회귀 검증
+2. ✅ Goal 23 완료 — `작업`의 할 일·일정·프로젝트 형제 보기
+3. Goal 25 — 일정 일상 표면 시각과 빠른 추가 (`four-lanes-implementation-spec.md`, ADR-004)
+4. Goal 26 — `문서·검토` 레인(검토·인박스·문서). 탭 개명·Vector 재배치는 이 Goal에 넣지 않음
+5. `지식·디자인` 탭 개명과 Vector 검색 역할 재배치는 별도 사람 게이트
+6. `스킬·도구` 읽기 계약과 화면 구현
+7. `운영 기록` 감축 후 다섯 상위 탐색을 한 번에 전환하고 전체 회귀 검증
 
 각 Goal은 독립 build·test·visual QA가 가능해야 하며 한 Goal에서 다섯 화면을 동시에 바꾸지 않는다. 아직 구현되지 않은 화면을 빈 상위 탭으로 먼저 노출하지 않는다.
 

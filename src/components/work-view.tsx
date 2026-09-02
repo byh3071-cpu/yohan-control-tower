@@ -1,11 +1,11 @@
 "use client"
 
-import { CalendarDays, CheckSquare2, FolderKanban } from "lucide-react"
 import { useRef } from "react"
 
 import { CalendarView } from "@/components/calendar-view"
 import { ProjectView } from "@/components/project-view"
 import { TodoView } from "@/components/todo-view"
+import { DAILY_SURFACE, DAILY_VISUAL } from "@/lib/daily-visual"
 import { cn } from "@/lib/utils"
 import type { WorkLocation, WorkSurface } from "@/lib/work-navigation"
 
@@ -13,11 +13,10 @@ const SURFACES: Array<{
   id: WorkSurface
   label: string
   description: string
-  icon: typeof CheckSquare2
 }> = [
-  { id: "todo", label: "할 일", description: "Goal·문서·Calendar task", icon: CheckSquare2 },
-  { id: "calendar", label: "일정", description: "시간과 Calendar 원장", icon: CalendarDays },
-  { id: "projects", label: "프로젝트", description: "프로젝트·Goal·정합성", icon: FolderKanban },
+  { id: "todo", label: "할 일", description: "Goal·문서·Calendar task" },
+  { id: "calendar", label: "일정", description: "시간과 Calendar 원장" },
+  { id: "projects", label: "프로젝트", description: "프로젝트·Goal·정합성" },
 ]
 
 const TITLES: Record<WorkSurface, { title: string; summary: string }> = {
@@ -35,6 +34,7 @@ interface WorkViewProps {
 export function WorkView({ location, onLocationChange, onSelectDoc }: WorkViewProps) {
   const navRefs = useRef<Array<HTMLButtonElement | null>>([])
   const copy = TITLES[location.surface]
+  const isDailyCalendar = location.surface === "calendar"
 
   const changeSurface = (surface: WorkSurface) => {
     if (surface === location.surface) return
@@ -55,12 +55,14 @@ export function WorkView({ location, onLocationChange, onSelectDoc }: WorkViewPr
   }
 
   return (
-    <main className="work-shell min-h-full bg-[#e7ecee] text-[#172326]">
+    <main
+      className={cn("min-h-full", isDailyCalendar ? "overflow-x-hidden" : "work-shell bg-[#e7ecee] text-[#172326]")}
+      {...(isDailyCalendar ? { "data-surface": DAILY_SURFACE } : {})}
+    >
       <div className="mx-auto w-full max-w-[1176px] px-4 pb-16 pt-6 sm:px-6 sm:pt-8 lg:px-8">
-        <nav aria-label="작업 형제 보기" className="grid grid-cols-3 border border-[#b9c5c8] bg-[#f7f9f9]">
+        <nav aria-label="작업 형제 보기" className="flex flex-wrap items-end gap-5">
           {SURFACES.map((surface, index) => {
             const active = surface.id === location.surface
-            const Icon = surface.icon
             return (
               <button
                 key={surface.id}
@@ -69,27 +71,29 @@ export function WorkView({ location, onLocationChange, onSelectDoc }: WorkViewPr
                 aria-current={active ? "page" : undefined}
                 onClick={() => changeSurface(surface.id)}
                 onKeyDown={(event) => handleNavKeyDown(event, index)}
-                className={cn(
-                  "relative flex min-h-14 items-center justify-center gap-2 border-r border-[#c5ced1] px-2 text-sm font-bold transition-colors last:border-r-0 focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#146c94] sm:justify-start sm:px-4",
-                  active ? "bg-[#e7eff5] text-[#172326]" : "text-[#526367] hover:bg-[#eef3f6]",
-                )}
+                className="relative min-h-11 min-w-11 px-1 text-sm font-semibold focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset"
+                style={{
+                  color: active ? DAILY_VISUAL.ink : DAILY_VISUAL.muted,
+                  borderBottom: active ? `2px solid ${DAILY_VISUAL.rose}` : "2px solid transparent",
+                  paddingBottom: 3,
+                }}
               >
-                <Icon size={18} aria-hidden />
                 <span>{surface.label}</span>
                 <span className="sr-only">{surface.description}</span>
-                {active && <span className="absolute inset-x-0 bottom-0 h-[3px] bg-[#146c94]" aria-hidden />}
               </button>
             )
           })}
         </nav>
 
-        <header className="border-b border-[#b9c5c8] py-7 sm:py-8">
-          <p className="font-mono text-sm font-bold tracking-[0.12em] text-[#146c94]">WORK · {location.surface.toUpperCase()}</p>
-          <h1 className="mt-2 text-[clamp(1.75rem,4vw,2rem)] font-bold leading-[1.2] tracking-[-0.035em]">{copy.title}</h1>
-          <p className="mt-2 max-w-3xl text-base leading-7 text-[#526367]">{copy.summary}</p>
-        </header>
+        {!isDailyCalendar && (
+          <header className="border-b border-[#b9c5c8] py-7 sm:py-8">
+            <p className="font-mono text-sm font-bold tracking-[0.12em] text-[#146c94]">WORK · {location.surface.toUpperCase()}</p>
+            <h1 className="mt-2 text-[clamp(1.75rem,4vw,2rem)] font-bold leading-[1.2] tracking-[-0.035em]">{copy.title}</h1>
+            <p className="mt-2 max-w-3xl text-base leading-7 text-[#526367]">{copy.summary}</p>
+          </header>
+        )}
 
-        <div className="pt-5">
+        <div className={isDailyCalendar ? "pt-3" : "pt-5"}>
           {location.surface === "todo" && (
             <TodoView
               onSelectDoc={onSelectDoc}

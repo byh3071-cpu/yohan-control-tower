@@ -159,6 +159,67 @@ test("GET 신뢰 경계는 Origin 없는 로컬 조회를 허용하고 cross-sit
   assert.equal(isLocalReadRequest(crossSite), false)
   assert.equal(isLocalReadRequest(foreignOrigin), false)
   assert.equal(isLocalReadRequest(rebound), false)
+
+  const bindAll = new Request("http://0.0.0.0:3101/api/inbox", {
+    headers: { host: "127.0.0.1:3101" },
+  })
+  const bindAllHost = new Request("http://0.0.0.0:3101/api/inbox", {
+    headers: { host: "0.0.0.0:3101" },
+  })
+  assert.equal(isLocalReadRequest(bindAll), true)
+  assert.equal(isLocalReadRequest(bindAllHost), false)
+})
+
+test("YOHAN_PREVIEW_HOST가 있을 때만 그 hostname의 조회·쓰기를 연다", () => {
+  const previous = process.env.YOHAN_PREVIEW_HOST
+  process.env.YOHAN_PREVIEW_HOST = "preview.example"
+  try {
+    const previewGet = new Request("http://0.0.0.0:3101/api/calendar", {
+      headers: { host: "preview.example" },
+    })
+    const previewGetHttpsOrigin = new Request("http://preview.example/api/calendar", {
+      headers: { host: "preview.example", origin: "https://preview.example" },
+    })
+    const previewPost = new Request("http://127.0.0.1:3101/api/calendar", {
+      method: "POST",
+      headers: { host: "preview.example", origin: "https://preview.example" },
+    })
+    const previewCrossSite = new Request("http://preview.example/api/calendar", {
+      headers: { host: "preview.example", "sec-fetch-site": "cross-site" },
+    })
+    const previewEvilOrigin = new Request("http://preview.example/api/calendar", {
+      headers: { host: "preview.example", origin: "http://evil.example" },
+    })
+    const otherHost = new Request("http://other.example/api/calendar", {
+      headers: { host: "other.example" },
+    })
+
+    assert.equal(isLocalReadRequest(previewGet), true)
+    assert.equal(isLocalReadRequest(previewGetHttpsOrigin), true)
+    assert.equal(isSameOriginRequest(previewPost), true)
+    assert.equal(isLocalReadRequest(previewCrossSite), false)
+    assert.equal(isLocalReadRequest(previewEvilOrigin), false)
+    assert.equal(isLocalReadRequest(otherHost), false)
+    assert.equal(isSameOriginRequest(otherHost), false)
+  } finally {
+    if (previous === undefined) delete process.env.YOHAN_PREVIEW_HOST
+    else process.env.YOHAN_PREVIEW_HOST = previous
+  }
+})
+
+test("YOHAN_PREVIEW_HOST가 없으면 외부 host 조회는 계속 거부한다", () => {
+  const previous = process.env.YOHAN_PREVIEW_HOST
+  delete process.env.YOHAN_PREVIEW_HOST
+  try {
+    const preview = new Request("http://preview.example/api/calendar", {
+      headers: { host: "preview.example" },
+    })
+    assert.equal(isLocalReadRequest(preview), false)
+    assert.equal(isSameOriginRequest(preview), false)
+  } finally {
+    if (previous === undefined) delete process.env.YOHAN_PREVIEW_HOST
+    else process.env.YOHAN_PREVIEW_HOST = previous
+  }
 })
 
 test("한국어·이모지 100,000자 캡처 요청은 바이트 상한에 걸리지 않고 무손실 통과한다", async () => {

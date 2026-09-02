@@ -9,6 +9,12 @@ import {
   MAX_REQUEST_BYTES,
 } from "@/lib/inbox-limits"
 import { resolveRepoRoot } from "@/lib/paths"
+import {
+  isServerRequestHostname,
+  isTrustedHostname,
+  originMatchesExpected,
+  parseRequestHosts,
+} from "@/lib/request-guard"
 import type {
   InboxCounts,
   InboxDashboardResponse,
@@ -22,7 +28,6 @@ const CLI_OUTPUT_MAX_BYTES = 4 * 1024 * 1024
 const INBOX_PAGE_SIZE = 100
 const INBOX_ACTIVE_LOAD_MAX = 10_000
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-const LOOPBACK_HOSTNAMES = new Set(["localhost", "127.0.0.1", "[::1]"])
 
 export const INBOX_DISPOSITIONS = [
   "knowledge",
@@ -249,42 +254,40 @@ export async function readInboxJsonBody(request: InboxJsonRequest): Promise<Reco
 
 export function isSameOriginRequest(request: Request): boolean {
   try {
-    const requestUrl = new URL(request.url)
-    if (!LOOPBACK_HOSTNAMES.has(requestUrl.hostname)) return false
-
+    const parsed = parseRequestHosts(request)
+    if (!parsed) return false
+    const { requestUrl, expectedUrl } = parsed
     // Next production server가 -H 127.0.0.1로 떠도 사용자는 localhost로 접속할 수 있다.
     // request.url 내부 host보다 검증된 Host 헤더를 우선해야 브라우저가 본 origin과 일치한다.
-    const host = request.headers.get("host")
-    const expectedUrl = host ? new URL(`${requestUrl.protocol}//${host}`) : requestUrl
-    if (!LOOPBACK_HOSTNAMES.has(expectedUrl.hostname)) return false
+    if (!isServerRequestHostname(requestUrl.hostname) || !isTrustedHostname(expectedUrl.hostname)) return false
 
     const origin = request.headers.get("origin")
-    if (origin) return new URL(origin).origin === expectedUrl.origin
+    if (origin) return originMatchesExpected(origin, expectedUrl)
 
     // Chromium은 같은 출처 fetch POST에서도 Origin을 생략할 수 있다. 이때는 브라우저가
     // 제공하는 Fetch Metadata와 Referer를 둘 다 요구해 curl 등 헤더 없는 쓰기를 막는다.
     if (request.headers.get("sec-fetch-site")?.toLowerCase() !== "same-origin") return false
     const referer = request.headers.get("referer")
-    return Boolean(referer) && new URL(referer as string).origin === expectedUrl.origin
+    if (!referer) return false
+    return originMatchesExpected(new URL(referer).origin, expectedUrl)
   } catch {
     return false
   }
 }
 
 /**
- * GET은 브라우저가 같은 출처 요청에도 Origin을 생략할 수 있다. loopback URL을 강제하고
- * Sec-Fetch-Site=cross-site 및 명시적으로 다른 Origin을 거부해 정상 로컬 조회는 보존한다.
+ * GET은 브라우저가 같은 출처 요청에도 Origin을 생략할 수 있다. loopback 또는
+ * `YOHAN_PREVIEW_HOST`만 허용하고, Sec-Fetch-Site=cross-site 및 다른 Origin을 거부한다.
  */
 export function isLocalReadRequest(request: Request): boolean {
   try {
-    const requestUrl = new URL(request.url)
-    if (!LOOPBACK_HOSTNAMES.has(requestUrl.hostname)) return false
-    const host = request.headers.get("host")
-    const expectedUrl = host ? new URL(`${requestUrl.protocol}//${host}`) : requestUrl
-    if (!LOOPBACK_HOSTNAMES.has(expectedUrl.hostname)) return false
+    const parsed = parseRequestHosts(request)
+    if (!parsed) return false
+    const { requestUrl, expectedUrl } = parsed
+    if (!isServerRequestHostname(requestUrl.hostname) || !isTrustedHostname(expectedUrl.hostname)) return false
     if (request.headers.get("sec-fetch-site")?.toLowerCase() === "cross-site") return false
     const origin = request.headers.get("origin")
-    return !origin || new URL(origin).origin === expectedUrl.origin
+    return !origin || originMatchesExpected(origin, expectedUrl)
   } catch {
     return false
   }
