@@ -5,18 +5,19 @@
 - Repository: `yohan-control-tower`
 - Branch: `codex/control-tower-design-direction`
 - Evidence baseline: verified working tree based on `46da6ea`
-- Current direction: NOW-R3 approved · Goal 22 implemented and verified
-- Production UI authorization: Goal 22 완료 · Goal 23 `작업` 형제 보기 범위 승인·구현 중
+- Current direction: NOW-R3 approved · 일상 표면 파스텔은 ADR-004
+- Production UI authorization: Goal 22·23 완료. 네 레인 시안은 기획 승인(Goal 25·26)이며 코드 착수 전
 
 ## 현재 상태
 
 - **선택 방향** — NOW-R3의 `한 화면 한 주인공`, `단계 → 목표 → 작업`, 조건부 이슈, 빈 메타 숨김을 사용자가 2026-08-24 승인함.
-- **시각 언어** — Mova 밝은 중립 셸, 강한 단일 H1, 얇은 구분선, 제한된 청록 focus를 사용함.
-- **기술 명세** — `CONTROL-TOWER-VNEXT-SPEC-R3.1`이 다섯 화면 책임과 단계별 구현 순서를 소유함.
+- **시각 언어** — `지금`은 NOW-R3 청록 중립. 일정·검토·인박스·문서는 ADR-004 파스텔.
+- **기술 명세** — `CONTROL-TOWER-VNEXT-SPEC-R3.2` + `four-lanes-implementation-spec.md`
 - **구현 상태** — Goal 22에서 기존 5탭을 유지한 채 Home 진입을 `NowView`로 교체하고 실제 Goal·Completion Check를 연결함.
 - **검증 범위** — 360·432·768·1280·1440px, live·multiple·empty·error·loading, 키보드, 대비, 경로 allowlist, typecheck·lint·test·build를 통과함. 정본은 `design-qa.md`임.
-- **구현 경계** — Goal 23은 기존 `projects` 상위 슬롯을 `작업`으로 바꾸고 `할 일 / 일정 / 프로젝트`만 형제 보기로 묶는다. `지식·디자인`, `스킬·도구`, `운영 기록`의 이름·책임 전환은 승인되지 않음.
-- **VHK 상태** — npm 설치 가능 최신판 `2.14.0`. Goal 21·22는 DONE이고 Goal 23만 IN_PROGRESS임.
+- **구현 경계** — Goal 23은 완료. 다음 코드 Goal은 25(일정 시각)와 26(문서·검토 레인)이다. `지금` 재색, 5탭 개명, Calendar category 스키마, 할 일 일상/개발 필터는 승인되지 않음.
+- **네 레인 명세** — `docs/design/control-tower-vnext/four-lanes-implementation-spec.md`
+- **VHK 상태** — Goal 22·23·24 DONE. Goal 25·26 NOT_STARTED.
 
 ## 먼저 읽을 정본
 
@@ -26,7 +27,9 @@
 4. `docs/design/control-tower-vnext/decision-log.md`
 5. `docs/design/control-tower-vnext/work-item-language-contract.md`
 6. `docs/design/control-tower-vnext/design-spec.md`
-7. `docs/design/control-tower-vnext/now-screen-options.md`
+7. `docs/design/control-tower-vnext/four-lanes-implementation-spec.md`
+8. `docs/adr/ADR-004-daily-surface-visual.md`
+9. `docs/design/control-tower-vnext/now-screen-options.md`
 
 최신 승인 시각·검증 근거는 `docs/prototypes/control-tower-now-mova-r3/`에 있다. 이전 Candidate A 검증은 기술 계보로만 보존한다.
 
@@ -48,13 +51,9 @@
 
 ## 다음 한 가지 작업
 
-다음 한 가지는 `design-spec.md` 권장 순서 2번인 `작업` 화면을 독립 구현 Goal로 분해하고 그 범위를 사람에게 승인받는 것이다.
+다음 한 가지는 **Goal 25**다. 일정 화면에 시안 시각과 빠른 추가를 기존 Calendar API로 입힌다. Goal 26(검토·인박스·문서 레인)은 25 다음이다.
 
-다음 구현 Goal 후보:
-
-> 기존 `할 일`, `일정`, `프로젝트` 기능을 삭제하지 않고 `작업` 화면의 세 형제 보기로 묶되, 각 보기의 완료 의미와 쓰기 경계를 유지한다.
-
-이 Goal에는 `지식·디자인`, `스킬·도구`, `운영 기록`의 본문 구현이나 다섯 상위 탐색명 일괄 전환을 섞지 않는다. 새 Goal을 만들기 전 현재 사용 흐름과 쓰기 경계를 먼저 확인하고, 아직 없는 화면을 빈 탭으로 노출하지 않는다.
+섞지 말 것: `지금` 재색, 5탭 개명, Calendar category, 할 일 일상/개발 필터, brain 파일 덮어쓰기.
 
 ## 팀과 도구 운용
 
@@ -68,7 +67,7 @@
 ## 새 세션 시작 프롬프트
 
 ```text
-요한 관제탑 디자인 세션을 이어받아라. 승인된 NOW-R3와 완료된 Goal 22를 다시 열지 말고, 현재 승인된 Goal 23의 `작업` 형제 보기 범위와 쓰기 경계를 보존하라.
+요한 관제탑 디자인 세션을 이어받아라. NOW-R3와 Goal 22·23을 다시 열지 마라. 일상 표면은 ADR-004와 `four-lanes-implementation-spec.md`를 따른다. 바로 할 일은 Goal 25다.
 
 먼저 저장소 규칙과 현재 Git 상태를 확인하고, 아래 파일을 순서대로 읽어라.
 - docs/design/control-tower-vnext/design-context.md
@@ -79,7 +78,7 @@
 
 Yohan Agent Kit의 최신 design-team 세션 연속성 계약을 적용한다. 시작 응답에는 반드시 ① 읽은 branch/ref ② 현재 승인 상태 ③ 바로 할 한 가지를 한국어로 짧게 되말해 수신을 확인하라.
 
-NOW-R3와 해결된 취향을 다시 묻지 마라. Goal 22은 production 구현·QA까지 완료됐다. 다음 작업은 `작업`의 할 일·일정·프로젝트 형제 보기를 독립 Goal로 분해하고 범위를 사람에게 승인받는 것이다. R3의 54px Task H1을 모든 목록 화면에 기계적으로 복제하지 말고, `한 화면 한 주인공·표준 용어·빈 메타 숨김`만 공통 불변식으로 적용하라.
+NOW-R3와 해결된 취향을 다시 묻지 마라. Goal 22·23은 완료다. 다음 코드는 Goal 25(일정 일상 표면)다. 카테고리 스키마와 탭 개명을 끼워 넣지 마라.
 ```
 
 ## 전달 영수증

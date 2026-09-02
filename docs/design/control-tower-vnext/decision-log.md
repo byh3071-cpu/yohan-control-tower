@@ -1,5 +1,15 @@
 # 요한 관제탑 vNext 결정 로그
 
+## 2026-09-02 — 네 레인 시안을 일상 표면 구현 범위로 고정
+
+- Status: approved for planning · production 미착수
+- Decider: 사용자
+- Options considered: 시안 4화면 즉시 전면 구현 / 개발·일상·프로젝트를 새 탭으로 분리 / 시안을 구현 명세·Goal로 쪼개 기존 원장에 입히기
+- Decision and rationale: 시안의 일정·검토·인박스·문서만 구현 대상으로 삼는다. 상위 5탭은 개명하지 않고, 지식 세 화면은 `문서·검토` 형제 레인이다. 개발 할 일/일상 할 일 필터와 프로젝트 재설계는 시안이 없어 제외한다. 시각은 일상 표면에만 캘린더 레퍼런스 파스텔을 쓰고 `지금`은 NOW-R3를 유지한다(ADR-004). 원장에 없는 카테고리·다가 일정·서가 4폴더는 그리지 않는다.
+- Evidence: 2026-09-02 사용자 요청「지금 시안 나온것들로 기획 및 설계」, `docs/prototypes/four-lanes/`, `four-lanes-implementation-spec.md`
+- Consequences: 구현은 Goal 25(일정) → Goal 26(문서·검토 레인) 순서. 이 결정이 배포나 Calendar 스키마 확장을 승인하지 않는다.
+- Revisit trigger: 사용자가 카테고리 원장, 문서 인간 폴더, 또는 할 일 `일상/개발` 필터 시안을 따로 승인할 때
+
 ## 2026-08-24 — 실행 계층과 이슈 추적 객체를 분리
 
 - Status: approved
