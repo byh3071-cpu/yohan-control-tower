@@ -1,12 +1,13 @@
 # 요한 관제탑 디자인 세션 인수인계
 
-- Handoff version: 1.3
-- Prepared: 2026-08-24 (Asia/Seoul)
+- Handoff version: 1.4
+- Prepared: 2026-09-02 (Asia/Seoul)
 - Repository: `yohan-control-tower`
-- Branch: `codex/control-tower-design-direction`
-- Evidence baseline: verified working tree based on `46da6ea`
-- Current direction: NOW-R3 approved · 일상 표면 파스텔은 ADR-004
-- Production UI authorization: Goal 22·23 완료. 네 레인 시안은 기획 승인(Goal 25·26)이며 코드 착수 전
+- Branch: `cursor/four-lane-sketches-2f80`
+- Evidence baseline: `af8bbe8` + 이 교대 인수인계 커밋
+- Current direction: NOW-R3(`지금`) + ADR-004 파스텔(일상 표면)
+- Production UI authorization: Goal 22·23 코드 완료. 네 레인 시안은 기획 완료. **다음 코드는 Goal 25**
+- 교대 인수인계: `docs/operations/handoffs/2026-09-02-four-lanes-goal-25.md`
 
 ## 현재 상태
 
@@ -66,29 +67,22 @@
 
 ## 새 세션 시작 프롬프트
 
+전체 복붙본은 `docs/operations/handoffs/2026-09-02-four-lanes-goal-25.md` 하단이다.
+
 ```text
-요한 관제탑 디자인 세션을 이어받아라. NOW-R3와 Goal 22·23을 다시 열지 마라. 일상 표면은 ADR-004와 `four-lanes-implementation-spec.md`를 따른다. 바로 할 일은 Goal 25다.
-
-먼저 저장소 규칙과 현재 Git 상태를 확인하고, 아래 파일을 순서대로 읽어라.
-- docs/design/control-tower-vnext/design-context.md
-- docs/design/control-tower-vnext/taste-profile.md
-- docs/design/control-tower-vnext/design-operations-manual.md
-- docs/design/control-tower-vnext/session-handoff.md
-- docs/design/control-tower-vnext/decision-log.md
-
-Yohan Agent Kit의 최신 design-team 세션 연속성 계약을 적용한다. 시작 응답에는 반드시 ① 읽은 branch/ref ② 현재 승인 상태 ③ 바로 할 한 가지를 한국어로 짧게 되말해 수신을 확인하라.
-
-NOW-R3와 해결된 취향을 다시 묻지 마라. Goal 22·23은 완료다. 다음 코드는 Goal 25(일정 일상 표면)다. 카테고리 스키마와 탭 개명을 끼워 넣지 마라.
+요한 관제탑을 이어서 구현한다. 대화 기억 말고 Git 정본만 따른다.
+브랜치 cursor/four-lane-sketches-2f80, 인수인계 docs/operations/handoffs/2026-09-02-four-lanes-goal-25.md.
+바로 할 일은 Goal 25다. Goal 22·23과 카테고리 스키마를 다시 열지 마라.
 ```
 
 ## 전달 영수증
 
 | 단계 | 상태 | 근거 |
 | --- | --- | --- |
-| prepared | 완료 | NOW-R3 승인·Goal 22 구현·QA·VHK 2.14.0 검증·프로젝트 정본 묶음 |
-| sent | 대기 | 새 독립 디자인 세션에 프롬프트 전송 필요 |
-| acknowledged | 대기 | 대상 세션의 branch/ref·승인 상태·다음 행동 회신 필요 |
-| current session closed | 대기 | 수신 확인과 최종 보고 뒤 종료 |
+| prepared | 완료 | 2026-09-02 네 레인 명세·ADR-004·Goal 25·26 · HEAD `af8bbe8` |
+| sent | 준비됨 | 인수인계 `docs/operations/handoffs/2026-09-02-four-lanes-goal-25.md` |
+| acknowledged | 대기 | 새 세션이 branch/HEAD·Goal 25·다음 파일을 되말하면 수신 확인 |
+| current session closed | 대기 | 이 교대 커밋 후 대화 종료 |
 
 ## 2026-08-23 Resource Guard 종료 영수증
 
@@ -101,4 +95,4 @@ NOW-R3와 해결된 취향을 다시 묻지 마라. Goal 22·23은 완료다. �
 - Option C: docs/prototypes/control-tower-now-options/now-option-c-exception-sweep-r1.png
 - Verification: 세 PNG 1440×1024, overflow 0, visible text 최소 14px, console·page error 0.
 - Historical gate: A/B/C 선택은 종료됐고 세 안 모두 기각됨. NOW-R3가 사용자 승인됨.
-- Production UI authorization: Goal 23 `작업` 형제 보기 범위만 있음.
+- Production UI authorization: Goal 25 일정 일상 표면. Goal 23 범위는 완료됨.
