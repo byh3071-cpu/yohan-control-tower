@@ -1,24 +1,5 @@
 @AGENTS.md
 
-<!-- YOHAN-ROSTER-CARD:BEGIN (managed by yohan-brain ops/propagation — SoT를 고쳐라, 직접수정 금지) -->
-
-## 상시 지휘자 — 라우팅 카드 (yohan ecosystem)
-
-> SoT: yohan-brain `memory/core/agent-roster.yaml` `conductor_always_on` (v0.4+, status=active면 obey).
-> 이 레포 자체 규칙(RULES/CLAUDE LIVE)이 있으면 그게 우선(precedence).
-
-- 모든 태스크: 해법 구상 **전에** 크기 판정 → `라우팅: S|M|L — 계획 1줄 (근거: 파일수/신규설계/리스크)` 선언 후 진행. 키워드("풀개발") 불필요, 항상.
-- **판정법(감 금지)**: ①하드 트리거 먼저 → 해당 시 즉시 확정 · ②없으면 예상 수정 파일 수를 먼저 세고 구간 매핑(≤2=S·3~6=M·≥7/다레포=L). LLM 자유분류는 불안정(실측 33~56%) — 파일수 결정론이 정답.
-- **S**(≤2파일·신규설계 없음·≤15분): 지휘자 단독. 서브에이전트·orca 금지(오버헤드).
-- **M**(3~6파일·부분 신규): 서브에이전트 티어링 — 탐색 haiku → 계획 opus(승인) → 구현 sonnet → 적대검증 opus/fable 루프.
-- **L**(≥7파일·신규 모듈·다레포·릴리즈급): /goal orca 풀파이프라인 — Scout→Plan승인★→worktree fanout→타벤더 적대검증→머지게이트★. "풀개발"=L 강제.
-- 하드 트리거(분류 생략): 스키마 마이그레이션·인증/결제/보안·크로스레포·릴리즈 = 무조건 **L** · 오타·문서/주석만 = **S**.
-- 애매하면 작은 쪽 시작 → 검증 실패(테스트/tsc/critic) 시 **재선언 후 승급**(몰래 계속 금지).
-- 동시 작업 = worktree만. 같은 레포·같은 브랜치 2에이전트 금지.
-- Antigravity(agy) = 보조·초안 전용(메인 지휘 금지) — 산출물은 상위 티어 검증 필수.
-- 배포·시크릿·npm publish·main 직push = 사람 게이트(불변).
-<!-- YOHAN-ROSTER-CARD:END -->
-
 <!-- vhk:rules:start -->
 > ⚡ 아래 규칙 섹션은 RULES.md에서 자동 생성됨 (vhk sync). 직접 수정 금지.
 
@@ -31,7 +12,7 @@
 ## 프로젝트 정체성 · 아키텍처 불변식
 - 한 줄 설명: 요한 생태계 **통합 관제탑** — brain(SoT)을 읽어 미션·프로젝트·Task·문서·벡터를 한 화면에서 관제하는 **로컬 전용** 대시보드
 - 포트: **3001**
-- **brain = SoT.** 관제탑은 읽기 자유 + **신규 파일 생성만** 허용. 기존 brain 파일 수정은 금지. active `ecosystem-contract.yaml` v0.3.0의 `control_tower.must_not: modify_existing_brain_files`가 이를 강제한다.
+- **brain = SoT.** 관제탑은 읽기 자유 + **신규 파일 생성만** 허용. 기존 brain 파일 수정은 금지. active `ecosystem-contract.yaml`의 `control_tower.must_not: modify_existing_brain_files`가 이를 강제한다.
 - **로컬 전용.** localhost 서비스(Qdrant 6333 · Ollama 11434)와 로컬 파일시스템에 의존한다. 클라우드 배포 대상이 아니다.
 - brain 경로는 `YOHAN_OS_ROOT` env 로만 해석한다.
 - 소스 코드에 개인·시스템 절대경로를 하드코딩하지 않는다.

@@ -15,7 +15,7 @@
 ## 프로젝트 정체성 · 아키텍처 불변식
 - 한 줄 설명: 요한 생태계 **통합 관제탑** — brain(SoT)을 읽어 미션·프로젝트·Task·문서·벡터를 한 화면에서 관제하는 **로컬 전용** 대시보드
 - 포트: **3001**
-- **brain = SoT.** 관제탑은 읽기 자유 + **신규 파일 생성만** 허용. 기존 brain 파일 수정은 금지. active `ecosystem-contract.yaml` v0.3.0의 `control_tower.must_not: modify_existing_brain_files`가 이를 강제한다.
+- **brain = SoT.** 관제탑은 읽기 자유 + **신규 파일 생성만** 허용. 기존 brain 파일 수정은 금지. active `ecosystem-contract.yaml`의 `control_tower.must_not: modify_existing_brain_files`가 이를 강제한다.
 - **로컬 전용.** localhost 서비스(Qdrant 6333 · Ollama 11434)와 로컬 파일시스템에 의존한다. 클라우드 배포 대상이 아니다.
 - brain 경로는 `YOHAN_OS_ROOT` env 로만 해석한다.
 - 소스 코드에 개인·시스템 절대경로를 하드코딩하지 않는다.
