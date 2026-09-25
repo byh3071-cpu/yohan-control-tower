@@ -16,6 +16,7 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "test": "node --import tsx --test src/lib/*.test.ts src/lib/**/*.test.ts",
+    "check:goal-25": "node scripts/check-goal-25.mjs",
     "setup:check": "node scripts/check-local-setup.mjs",
     "session:health": "node scripts/check-agent-session-health.mjs",
     "verify:docs": "node --import tsx scripts/verify-doc-paths.ts",

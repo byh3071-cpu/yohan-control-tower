@@ -11,6 +11,12 @@ import {
 } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import type { DocMeta } from "@/lib/types"
+import {
+  parseSearchClientResponse,
+  SEARCH_REQUEST_FAILED_MESSAGE,
+  SEARCH_RESPONSE_MALFORMED_MESSAGE,
+  type SearchSuccessResponse,
+} from "@/lib/search-response"
 
 interface CommandPaletteProps {
   open: boolean
@@ -48,8 +54,8 @@ const CAT_ICON: Record<string, React.ReactNode> = {
   templates: <FileText size={14} />,
 }
 
-/** `/api/search` 응답. `method` = `ai` | `keyword` | `keyword-fallback`. */
-type AiSearch = { results: DocMeta[]; method: string } | null
+/** API 실패와 정상 0건을 분리한 `/api/search` 성공 응답. */
+type AiSearch = SearchSuccessResponse | null
 
 /**
  * ⌘K 팔레트 — 문서 찾기와 명령 실행 두 가지만 한다.
@@ -104,12 +110,22 @@ export function CommandPalette({ open, onOpenChange, docs, onSelectDoc, onQuickA
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ query: q }),
       })
-      const data = await res.json()
+      let data: unknown
+      try {
+        data = await res.json()
+      } catch {
+        setAiError(SEARCH_RESPONSE_MALFORMED_MESSAGE)
+        return
+      }
       // 실패를 빈 결과로 삼키지 않는다 — "못 찾음"과 "검색이 죽음"은 다른 상태다.
-      if (!res.ok) throw new Error(data?.error ?? `검색 실패 (${res.status})`)
-      setAi({ results: Array.isArray(data.results) ? data.results : [], method: data.method ?? "?" })
-    } catch (e) {
-      setAiError(e instanceof Error ? e.message : "검색 실패")
+      const parsed = parseSearchClientResponse(res.ok, res.status, data)
+      if (!parsed.ok) {
+        setAiError(parsed.error)
+        return
+      }
+      setAi(parsed.value)
+    } catch {
+      setAiError(SEARCH_REQUEST_FAILED_MESSAGE)
     } finally {
       setAiLoading(false)
     }
