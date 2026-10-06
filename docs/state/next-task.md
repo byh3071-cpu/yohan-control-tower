@@ -1,8 +1,10 @@
 # Next Task
 
-_Auto-updated 2026-08-26T00:47:24.230Z via `vhk goal next` + project workaround for VHK #558._
+_Auto-updated 2026-09-02T03:05:46.245Z via `vhk goal next`._
 
 ```
-TASK: 없음 — 모든 Goal 완료
-  status: DONE
+TASK: Goal 25 — 일정 일상 표면 시각과 빠른 추가
+  status: NOT_STARTED
+  priority: P0
+  file: /workspace/goals/25-calendar-daily-visual.md
 ```

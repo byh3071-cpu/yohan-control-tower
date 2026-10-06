@@ -170,4 +170,29 @@
     font-size: 14px !important;
     line-height: 1.5 !important;
   }
+
+  [data-surface="daily"] {
+    --daily-bg: #ffffff;
+    --daily-ink: #2a2a2a;
+    --daily-muted: #9a9692;
+    --daily-line: #eeeae6;
+    --daily-rose: #f0a3b0;
+    --daily-rose-deep: #e07a8c;
+    --daily-rose-fill: #fde8ec;
+    --daily-pill-pink: #f7d5dc;
+    --daily-pill-blue: #cfe6f4;
+    --daily-pill-cyan: #c8e8ee;
+    --daily-pill-mint: #d4eadc;
+    --daily-pill-lav: #e3daf3;
+    --daily-pill-peach: #f6dfd0;
+    --daily-pill-sand: #eee8e0;
+    --daily-pill-gray: #ebe8e4;
+    background: var(--daily-bg);
+    color: var(--daily-ink);
+  }
+
+  [data-surface="daily"] .daily-add {
+    min-height: 44px;
+    min-width: 44px;
+  }
 }

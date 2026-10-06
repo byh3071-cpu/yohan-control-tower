@@ -1,6 +1,6 @@
 "use client"
 
-import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { FormEvent, forwardRef, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import {
   CalendarDays,
   Check,
@@ -8,13 +8,11 @@ import {
   ChevronRight,
   CircleAlert,
   Clock3,
-  List,
   Loader2,
   Pencil,
   Plus,
   Repeat2,
   RotateCcw,
-  Square,
   Trash2,
 } from "lucide-react"
 
@@ -26,6 +24,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { DAILY_SURFACE, DAILY_VISUAL, buildQuickAddTaskInput, pillColorForKind } from "@/lib/daily-visual"
 import { cn } from "@/lib/utils"
 import { resolveCalendarViewState, seoulDate } from "@/lib/work-navigation"
 import type {
@@ -197,6 +196,8 @@ export function CalendarView({
   const [trashLoading, setTrashLoading] = useState(false)
   const [trashError, setTrashError] = useState<string | null>(null)
   const [restoringTrashId, setRestoringTrashId] = useState<string | null>(null)
+  const [quickTitle, setQuickTitle] = useState("")
+  const [quickSaving, setQuickSaving] = useState(false)
   const requestSequenceRef = useRef(0)
   const activeRequestRef = useRef<{ id: number; key: string; controller: AbortController } | null>(null)
   const editTriggerRef = useRef<HTMLButtonElement | null>(null)
@@ -416,6 +417,30 @@ export function CalendarView({
     }
   }
 
+  async function submitQuickAdd() {
+    const input = buildQuickAddTaskInput(selectedDate, quickTitle)
+    if (!input) return
+    setQuickSaving(true)
+    setActionError(null)
+    try {
+      const response = await fetch("/api/calendar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(input),
+      })
+      const payload = await response.json() as { ok?: boolean; error?: string }
+      if (!response.ok || !payload.ok) throw new Error(payload.error ?? `HTTP ${response.status}`)
+      setQuickTitle("")
+      const targetMonth = input.date.slice(0, 7)
+      if (targetMonth === month) await load()
+      else setMonth(targetMonth)
+    } catch (quickError: unknown) {
+      setActionError(quickError instanceof Error ? quickError.message : String(quickError))
+    } finally {
+      setQuickSaving(false)
+    }
+  }
+
   async function toggleTask(item: CalendarOccurrence) {
     setPendingTaskId(item.id)
     setActionError(null)
@@ -528,33 +553,35 @@ export function CalendarView({
   }
 
   return (
-    <section aria-label="로컬 캘린더" data-calendar-date={selectedDate} data-calendar-mode={mode} className="space-y-4">
-      <div className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-3 sm:flex-row sm:items-center sm:justify-between sm:p-4">
-        <div className="flex min-w-0 items-center gap-2">
-          <button type="button" onClick={() => moveMonth(-1)} aria-label="이전 달" className="calendar-icon-button">
-            <ChevronLeft size={16} aria-hidden />
-          </button>
-          <button type="button" onClick={() => moveMonth(1)} aria-label="다음 달" className="calendar-icon-button">
-            <ChevronRight size={16} aria-hidden />
-          </button>
-          <h2 className="ml-1 min-w-28 text-base font-semibold tracking-[-0.025em] sm:text-lg">{formatMonth(month)}</h2>
-          <button ref={fallbackFocusRef} type="button" data-calendar-focus-fallback onClick={goToday} className="rounded-lg border border-border px-2.5 py-1.5 text-[10px] font-semibold hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring">
-            오늘
-          </button>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="flex rounded-lg bg-muted p-0.5" aria-label="Calendar 보기 방식">
-            <ModeButton active={mode === "month"} onClick={() => { setMode("month"); onLocationChange?.({ date: selectedDate, mode: "month" }) }} icon={<CalendarDays size={12} />} label="월간" />
-            <ModeButton active={mode === "list"} onClick={() => { setMode("list"); onLocationChange?.({ date: selectedDate, mode: "list" }) }} icon={<List size={12} />} label="목록" />
-          </div>
-          <button type="button" onClick={openTrash} className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-2 text-[11px] font-semibold hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring">
+    <section aria-label="로컬 캘린더" data-calendar-date={selectedDate} data-calendar-mode={mode} data-surface={DAILY_SURFACE} className="space-y-4 overflow-x-hidden">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <p className="min-w-0 text-[22px] font-bold tracking-[-0.04em]" style={{ color: DAILY_VISUAL.ink }}>{formatMonth(month)}</p>
+        <div className="flex flex-wrap items-center gap-1.5">
+          <ToolbarPill ref={fallbackFocusRef} data-calendar-focus-fallback onClick={goToday}>오늘</ToolbarPill>
+          <ToolbarPill onClick={() => moveMonth(-1)} aria-label="이전 달"><ChevronLeft size={16} aria-hidden /></ToolbarPill>
+          <ToolbarPill onClick={() => moveMonth(1)} aria-label="다음 달"><ChevronRight size={16} aria-hidden /></ToolbarPill>
+          <ToolbarPill
+            aria-pressed={mode === "list"}
+            aria-label="월간과 목록 전환"
+            onClick={() => {
+              const next = mode === "month" ? "list" : "month"
+              setMode(next)
+              onLocationChange?.({ date: selectedDate, mode: next })
+            }}
+            active={mode === "list"}
+          >
+            ALL
+          </ToolbarPill>
+          <button type="button" onClick={openTrash} className="inline-flex min-h-11 items-center gap-1.5 rounded-full border px-3 text-[13px] font-semibold" style={{ borderColor: DAILY_VISUAL.line, color: DAILY_VISUAL.muted }}>
             <Trash2 size={12} aria-hidden /> 휴지통
           </button>
-          <button type="button" onClick={() => openCreate("task")} className="rounded-lg border border-border bg-background px-3 py-2 text-[11px] font-semibold hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring">
-            할 일 추가
-          </button>
-          <button type="button" onClick={() => openCreate("event")} className="inline-flex items-center gap-1.5 rounded-lg bg-foreground px-3 py-2 text-[11px] font-semibold text-background hover:opacity-90 focus-visible:ring-2 focus-visible:ring-[#ff5c28]">
+          <button
+            type="button"
+            data-daily-add
+            onClick={() => openCreate("event")}
+            className="daily-add inline-flex items-center gap-1 rounded-full px-3.5 text-[13px] font-bold"
+            style={{ background: DAILY_VISUAL.roseFill, color: DAILY_VISUAL.roseDeep }}
+          >
             <Plus size={13} aria-hidden /> 일정 추가
           </button>
         </div>
@@ -568,9 +595,9 @@ export function CalendarView({
       )}
 
       {lastTrashed && (
-        <div role="status" className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border bg-card px-3 py-2.5 text-xs">
+        <div role="status" className="flex flex-wrap items-center justify-between gap-2 rounded-xl border px-3 py-2.5 text-xs" style={{ borderColor: DAILY_VISUAL.line, background: DAILY_VISUAL.bg }}>
           <span><strong>{lastTrashed.title}</strong>을(를) 휴지통으로 이동했습니다.</span>
-          <button type="button" disabled={restoringTrashId === lastTrashed.trashId} onClick={() => restoreTrashItem(lastTrashed)} className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-semibold text-[#d94718] hover:bg-[#ff5c28]/10 disabled:opacity-50">
+          <button type="button" disabled={restoringTrashId === lastTrashed.trashId} onClick={() => restoreTrashItem(lastTrashed)} className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-semibold disabled:opacity-50" style={{ color: DAILY_VISUAL.roseDeep }}>
             {restoringTrashId === lastTrashed.trashId ? <Loader2 size={12} className="animate-spin" /> : <RotateCcw size={12} />}
             되돌리기
           </button>
@@ -584,26 +611,29 @@ export function CalendarView({
       )}
 
       {loading && !data ? (
-        <div className="flex min-h-96 items-center justify-center gap-2 rounded-2xl border border-border bg-card text-xs text-muted-foreground">
+        <div className="flex min-h-96 items-center justify-center gap-2 rounded-[14px] border text-xs" style={{ borderColor: DAILY_VISUAL.line, color: DAILY_VISUAL.muted, background: DAILY_VISUAL.bg }}>
           <Loader2 size={15} className="animate-spin" aria-hidden /> Calendar 원장을 읽는 중
         </div>
       ) : mode === "month" ? (
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">
+        <div className="grid gap-3.5 min-[1024px]:grid-cols-[minmax(0,1fr)_328px]">
           <DayAgenda
             className="order-1 lg:order-2"
             date={selectedDate}
             items={selectedItems}
             pendingTaskId={pendingTaskId}
+            quickTitle={quickTitle}
+            quickSaving={quickSaving}
+            onQuickTitleChange={setQuickTitle}
+            onQuickAdd={submitQuickAdd}
             onToggleTask={toggleTask}
             onEdit={openEdit}
             onDelete={openDelete}
-            onAddTask={() => openCreate("task")}
           />
 
-          <div className="order-2 overflow-hidden rounded-2xl border border-border bg-card lg:order-1">
-            <div className="grid grid-cols-7 border-b border-border bg-muted/35">
-              {WEEKDAYS.map((weekday, index) => (
-                <div key={weekday} className={cn("py-2 text-center text-[9px] font-semibold text-muted-foreground sm:text-[10px]", index === 5 && "text-blue-600", index === 6 && "text-[#e25128]")}>{weekday}</div>
+          <div className="order-2 overflow-hidden rounded-[14px] border lg:order-1 min-w-0" style={{ borderColor: DAILY_VISUAL.line, background: DAILY_VISUAL.bg }}>
+            <div className="grid grid-cols-7" style={{ borderBottom: `1px solid ${DAILY_VISUAL.line}` }}>
+              {WEEKDAYS.map((weekday) => (
+                <div key={weekday} className="py-2 text-center text-[11px] font-medium" style={{ color: DAILY_VISUAL.muted }}>{weekday}</div>
               ))}
             </div>
             <div className="grid grid-cols-7">
@@ -622,25 +652,25 @@ export function CalendarView({
           </div>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-border bg-card">
-          <div className="flex items-center justify-between border-b border-border px-4 py-3">
+        <div className="overflow-hidden rounded-[14px] border min-w-0" style={{ borderColor: DAILY_VISUAL.line, background: DAILY_VISUAL.bg }}>
+          <div className="flex items-center justify-between border-b px-4 py-3" style={{ borderColor: DAILY_VISUAL.line }}>
             <div>
-              <h3 className="text-sm font-semibold">{formatMonth(month)} 목록</h3>
-              <p className="mt-0.5 text-[10px] text-muted-foreground">일정과 할 일을 날짜·시간순으로 봅니다.</p>
+              <h1 className="text-xl font-bold tracking-[-0.03em]" style={{ color: DAILY_VISUAL.ink }}>{formatSelectedDate(selectedDate)}</h1>
+              <p className="mt-0.5 text-xs" style={{ color: DAILY_VISUAL.muted }}>{formatMonth(month)} 목록</p>
             </div>
-            <span className="rounded-full bg-muted px-2 py-1 text-[10px] font-semibold tabular-nums text-muted-foreground">{monthItems.length}개</span>
+            <span className="rounded-full px-2 py-1 text-[10px] font-semibold tabular-nums" style={{ background: DAILY_VISUAL.roseFill, color: DAILY_VISUAL.roseDeep }}>{monthItems.length}개</span>
           </div>
           {monthGroups.length === 0 ? (
             <div className="flex min-h-72 flex-col items-center justify-center text-center">
-              <CalendarDays size={20} className="mb-2 text-muted-foreground" aria-hidden />
+              <CalendarDays size={20} className="mb-2" style={{ color: DAILY_VISUAL.muted }} aria-hidden />
               <p className="text-xs font-medium">이번 달 항목이 없습니다.</p>
-              <p className="mt-1 text-[10px] text-muted-foreground">필요한 일정이나 할 일을 바로 추가하세요.</p>
+              <p className="mt-1 text-[10px]" style={{ color: DAILY_VISUAL.muted }}>필요한 일정이나 할 일을 바로 추가하세요.</p>
             </div>
           ) : (
-            <div className="divide-y divide-border">
+            <div>
               {monthGroups.map((group) => (
-                <div key={group.date} className="grid gap-2 px-4 py-4 sm:grid-cols-[150px_1fr] sm:px-5">
-                  <button type="button" onClick={() => { setSelectedDate(group.date); setMode("month"); onLocationChange?.({ date: group.date, mode: "month" }) }} className="self-start min-h-11 text-left text-sm font-semibold hover:underline hover:underline-offset-4 focus-visible:ring-2 focus-visible:ring-[#146c94]">
+                <div key={group.date} className="grid gap-2 px-4 py-4 sm:grid-cols-[150px_1fr] sm:px-5" style={{ borderTop: `1px solid ${DAILY_VISUAL.line}` }}>
+                  <button type="button" onClick={() => { setSelectedDate(group.date); setMode("month"); onLocationChange?.({ date: group.date, mode: "month" }) }} className="self-start min-h-11 text-left text-sm font-semibold focus-visible:ring-2" style={{ color: DAILY_VISUAL.ink }}>
                     {formatSelectedDate(group.date)}
                   </button>
                   <div className="space-y-2">
@@ -652,6 +682,17 @@ export function CalendarView({
           )}
         </div>
       )}
+
+      <button
+        type="button"
+        data-daily-add
+        onClick={() => openCreate("event")}
+        aria-label="일정 추가"
+        className="daily-add fixed bottom-5 right-5 z-20 flex size-11 items-center justify-center rounded-full md:hidden"
+        style={{ background: DAILY_VISUAL.rose, color: DAILY_VISUAL.checkMark }}
+      >
+        <Plus size={18} aria-hidden />
+      </button>
 
       <CreateCalendarDialog
         open={createOpen}
@@ -697,11 +738,28 @@ export function CalendarView({
   )
 }
 
-function ModeButton({ active, onClick, icon, label }: { active: boolean; onClick: () => void; icon: React.ReactNode; label: string }) {
+const ToolbarPill = forwardRef<HTMLButtonElement, React.ButtonHTMLAttributes<HTMLButtonElement> & { active?: boolean }>(function ToolbarPill({
+  active = false,
+  children,
+  className,
+  ...props
+}, ref) {
   return (
-    <button type="button" aria-pressed={active} onClick={onClick} className={cn("inline-flex items-center gap-1 rounded-md px-2.5 py-1.5 text-[10px] font-semibold transition-colors", active ? "bg-[#e7eff5] text-[#172326] ring-1 ring-inset ring-[#146c94]/35" : "text-muted-foreground hover:text-foreground")}>{icon}{label}</button>
+    <button
+      ref={ref}
+      type="button"
+      className={cn("inline-flex min-h-11 min-w-11 items-center justify-center rounded-full border px-3 text-[13px] font-semibold", className)}
+      style={{
+        borderColor: DAILY_VISUAL.line,
+        background: active ? DAILY_VISUAL.roseFill : DAILY_VISUAL.bg,
+        color: active ? DAILY_VISUAL.roseDeep : DAILY_VISUAL.toolInk,
+      }}
+      {...props}
+    >
+      {children}
+    </button>
   )
-}
+})
 
 function CalendarDay({ date, currentMonth, today, selected, items, onClick }: {
   date: string
@@ -718,61 +776,97 @@ function CalendarDay({ date, currentMonth, today, selected, items, onClick }: {
       aria-pressed={selected}
       aria-label={`${formatSelectedDate(date)}, ${items.length}개 항목`}
       onClick={onClick}
-      className={cn(
-        "relative min-h-16 min-w-0 border-r border-b border-border p-1.5 text-left outline-none transition-colors [border-right-width:1px] sm:min-h-24 sm:p-2",
-        "nth-[7n]:border-r-0 hover:bg-muted/50 focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
-        !inMonth && "bg-muted/20 text-muted-foreground/50",
-        selected && "bg-[#e7eff5] ring-1 ring-inset ring-[#146c94]"
-      )}
+      className="relative min-h-16 min-w-0 p-1.5 text-left outline-none sm:min-h-24 sm:p-2"
+      style={{
+        borderRight: `1px solid ${DAILY_VISUAL.line}`,
+        borderBottom: `1px solid ${DAILY_VISUAL.line}`,
+        color: inMonth ? DAILY_VISUAL.ink : DAILY_VISUAL.outMonth,
+        background: selected ? DAILY_VISUAL.selectedWash : DAILY_VISUAL.bg,
+        boxShadow: selected ? `inset 0 0 0 1.5px ${DAILY_VISUAL.rose}` : undefined,
+        borderRadius: selected ? 10 : 0,
+      }}
     >
-      <span className={cn("inline-flex size-5 items-center justify-center rounded-full text-[10px] font-semibold tabular-nums sm:size-6 sm:text-[11px]", date === today && "bg-[#ff5c28] text-white")}>{Number(date.slice(-2))}</span>
-      <div className="mt-1 hidden space-y-1 sm:block">
+      <span
+        className="inline-flex size-5 items-center justify-center rounded-lg text-[12px] font-semibold tabular-nums sm:size-[22px] sm:text-[12px]"
+        style={date === today || selected ? { color: DAILY_VISUAL.roseDeep, background: DAILY_VISUAL.roseFill } : undefined}
+      >
+        {Number(date.slice(-2))}
+      </span>
+      <div className="mt-1 hidden space-y-0.5 sm:block">
         {items.slice(0, 3).map((item) => (
-          <span key={item.id} className={cn("block truncate rounded px-1 py-0.5 text-[8px] font-medium", item.kind === "event" ? "bg-[#ff5c28]/12 text-[#b83c16] dark:text-orange-300" : item.status === "done" ? "bg-muted text-muted-foreground line-through" : "bg-foreground/[0.06] text-foreground")}>{item.startTime ? `${item.startTime} ` : ""}{item.title}</span>
+          <span
+            key={item.id}
+            className={cn("block truncate rounded-[10px] px-2 py-0.5 text-[11px] font-medium leading-5", item.status === "done" && "line-through")}
+            style={{ background: pillColorForKind(item.kind), color: DAILY_VISUAL.ink, opacity: item.status === "done" ? 0.55 : 1 }}
+          >
+            {item.startTime ? `${item.startTime} ` : ""}{item.title}
+          </span>
         ))}
       </div>
       <div className="mt-1 flex flex-wrap gap-1 sm:hidden" aria-hidden>
-        {items.slice(0, 4).map((item) => <span key={item.id} className={cn("size-1.5", item.kind === "event" ? "rounded-full bg-[#ff5c28]" : "rounded-[2px] border border-foreground/65", item.status === "done" && "opacity-35")} />)}
+        {items.slice(0, 4).map((item) => (
+          <span key={item.id} className="size-1.5 rounded-full" style={{ background: pillColorForKind(item.kind), opacity: item.status === "done" ? 0.35 : 1 }} />
+        ))}
       </div>
-      {items.length > 3 && <span className="mt-1 hidden text-[8px] font-semibold text-muted-foreground sm:block">+{items.length - 3}</span>}
+      {items.length > 3 && <span className="mt-1 hidden text-[10px] font-medium sm:block" style={{ color: DAILY_VISUAL.muted }}>+{items.length - 3}</span>}
     </button>
   )
 }
 
-function DayAgenda({ className, date, items, pendingTaskId, onToggleTask, onEdit, onDelete, onAddTask }: {
+function DayAgenda({ className, date, items, pendingTaskId, quickTitle, quickSaving, onQuickTitleChange, onQuickAdd, onToggleTask, onEdit, onDelete }: {
   className?: string
   date: string
   items: CalendarOccurrence[]
   pendingTaskId: string | null
+  quickTitle: string
+  quickSaving: boolean
+  onQuickTitleChange: (value: string) => void
+  onQuickAdd: () => void
   onToggleTask: (item: CalendarOccurrence) => void
   onEdit: (item: CalendarOccurrence, trigger: HTMLButtonElement) => void
   onDelete: (item: CalendarOccurrence) => void
-  onAddTask: () => void
 }) {
+  const quickPlaceholder = formatQuickPlaceholder(date)
   return (
-    <aside aria-label="선택한 날짜 일정" className={cn("rounded-2xl border border-border bg-card p-4", className)}>
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#d94718]">Selected day</p>
-          <h3 className="mt-1 text-sm font-semibold">{formatSelectedDate(date)}</h3>
-        </div>
-        <span className="rounded-full bg-muted px-2 py-1 text-[9px] font-semibold tabular-nums text-muted-foreground">{items.length}</span>
-      </div>
+    <aside aria-label="선택한 날짜 일정" className={cn("flex min-h-[min(720px,70vh)] flex-col rounded-[14px] border p-4", className)} style={{ borderColor: DAILY_VISUAL.line, background: DAILY_VISUAL.bg }}>
+      <h1 className="text-xl font-bold tracking-[-0.03em]" style={{ color: DAILY_VISUAL.ink }}>{formatSelectedDate(date)}</h1>
       {items.length === 0 ? (
         <div className="flex min-h-32 flex-col items-center justify-center text-center sm:min-h-52">
-          <CalendarDays size={19} className="mb-2 text-muted-foreground" aria-hidden />
+          <CalendarDays size={19} className="mb-2" style={{ color: DAILY_VISUAL.muted }} aria-hidden />
           <p className="text-xs font-medium">비어 있는 날입니다.</p>
-          <button type="button" onClick={onAddTask} className="mt-3 text-[10px] font-semibold text-[#d94718] hover:underline hover:underline-offset-4">할 일 추가</button>
         </div>
       ) : (
-        <div className="mt-4 space-y-2">
+        <div className="mt-4 flex-1 space-y-0">
           {items.map((item) => <AgendaItem key={item.id} item={item} pending={pendingTaskId === item.id} onToggleTask={onToggleTask} onEdit={onEdit} onDelete={onDelete} />)}
         </div>
       )}
-      <div className="mt-4 flex items-center gap-3 border-t border-border pt-3 text-[9px] text-muted-foreground">
-        <span className="inline-flex items-center gap-1"><span className="size-1.5 rounded-full bg-[#ff5c28]" /> 일정</span>
-        <span className="inline-flex items-center gap-1"><span className="size-2 rounded-[2px] border border-foreground/60" /> 할 일</span>
-      </div>
+      <form
+        className="mt-auto flex items-center gap-2 rounded-full border px-3.5 py-1.5"
+        style={{ borderColor: DAILY_VISUAL.line, background: DAILY_VISUAL.quickFill }}
+        onSubmit={(event) => {
+          event.preventDefault()
+          onQuickAdd()
+        }}
+      >
+        <input
+          value={quickTitle}
+          onChange={(event) => onQuickTitleChange(event.target.value)}
+          aria-label="빠른 추가"
+          placeholder={quickPlaceholder}
+          maxLength={160}
+          className="min-h-11 min-w-0 flex-1 bg-transparent text-[13px] outline-none"
+          style={{ color: DAILY_VISUAL.ink }}
+        />
+        <button
+          type="submit"
+          aria-label="추가"
+          disabled={quickSaving}
+          className="flex size-11 shrink-0 items-center justify-center rounded-full text-sm font-bold disabled:opacity-50"
+          style={{ background: DAILY_VISUAL.rose, color: DAILY_VISUAL.checkMark }}
+        >
+          {quickSaving ? <Loader2 size={14} className="animate-spin" /> : "↑"}
+        </button>
+      </form>
     </aside>
   )
 }
@@ -786,30 +880,52 @@ function AgendaItem({ item, pending, onToggleTask, onEdit, onDelete }: {
 }) {
   const done = item.status === "done"
   return (
-    <div className={cn("flex items-start gap-2.5 rounded-xl border px-3 py-2.5", item.kind === "event" ? "border-[#ff5c28]/25 bg-[#ff5c28]/[0.055]" : "border-border bg-background", done && "opacity-60")}>
+    <div className="grid items-center gap-2 py-2" style={{ gridTemplateColumns: item.kind === "event" ? "4px 44px minmax(0,1fr) auto" : "44px minmax(0,1fr) auto", borderBottom: `1px solid ${DAILY_VISUAL.line}` }}>
+      {item.kind === "event" && <span className="h-[22px] w-1 rounded" style={{ background: DAILY_VISUAL.eventAccent }} aria-hidden />}
       {item.kind === "task" ? (
-        <button type="button" disabled={pending} onClick={() => onToggleTask(item)} aria-label={done ? `${item.title} 다시 열기` : `${item.title} 완료`} className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-md border border-border hover:border-foreground/40 focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50">
-          {pending ? <Loader2 size={11} className="animate-spin" /> : done ? <Check size={12} /> : <Square size={10} className="text-transparent" />}
+        <button
+          type="button"
+          disabled={pending}
+          onClick={() => onToggleTask(item)}
+          aria-label={done ? `${item.title} 다시 열기` : `${item.title} 완료`}
+          className="flex size-11 items-center justify-center disabled:opacity-50"
+        >
+          <span
+            className="relative flex size-[18px] items-center justify-center rounded-full border-[1.5px]"
+            style={{
+              background: done ? DAILY_VISUAL.rose : DAILY_VISUAL.bg,
+              borderColor: done ? DAILY_VISUAL.rose : DAILY_VISUAL.checkBorder,
+            }}
+          >
+            {pending ? <Loader2 size={10} className="animate-spin" style={{ color: DAILY_VISUAL.roseDeep }} /> : done ? <Check size={10} strokeWidth={3} style={{ color: DAILY_VISUAL.checkMark }} /> : null}
+          </span>
         </button>
-      ) : <span className="mt-1 size-2 shrink-0 rounded-full bg-[#ff5c28]" aria-hidden />}
-      <div className="min-w-0 flex-1">
-        <p className={cn("text-[11px] font-semibold leading-relaxed", done && "line-through")}>{item.title}</p>
-        <div className="mt-1 flex flex-wrap items-center gap-2 text-[9px] text-muted-foreground">
+      ) : (
+        <span className="size-11" aria-hidden />
+      )}
+      <div className="min-w-0">
+        <p className={cn("text-sm font-medium leading-relaxed", done && "line-through")} style={{ color: done ? DAILY_VISUAL.strike : DAILY_VISUAL.ink }}>{item.title}</p>
+        <div className="mt-0.5 flex flex-wrap items-center gap-2 text-[12px]" style={{ color: DAILY_VISUAL.muted }}>
           {item.startTime && <span className="inline-flex items-center gap-1"><Clock3 size={10} />{item.startTime}{item.endTime ? `–${item.endTime}` : ""}</span>}
           {item.recurring && <span className="inline-flex items-center gap-1"><Repeat2 size={10} />{recurrenceLabel(item)}</span>}
           {!item.startTime && <span>{item.kind === "task" ? "시간 없는 할 일" : "종일"}</span>}
         </div>
       </div>
-      <div className="flex shrink-0 items-center gap-0.5">
-        <button type="button" data-calendar-edit-id={item.id} onClick={(event) => onEdit(item, event.currentTarget)} aria-label={`${item.title} 수정`} className="flex size-7 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring">
+      <div className="flex shrink-0 items-center">
+        <button type="button" data-calendar-edit-id={item.id} onClick={(event) => onEdit(item, event.currentTarget)} aria-label={`${item.title} 수정`} className="flex size-11 items-center justify-center rounded-lg" style={{ color: DAILY_VISUAL.muted }}>
           <Pencil size={12} aria-hidden />
         </button>
-        <button type="button" onClick={() => onDelete(item)} aria-label={`${item.title} 휴지통으로 이동`} className="flex size-7 items-center justify-center rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive focus-visible:ring-2 focus-visible:ring-ring">
+        <button type="button" onClick={() => onDelete(item)} aria-label={`${item.title} 휴지통으로 이동`} className="flex size-11 items-center justify-center rounded-lg" style={{ color: DAILY_VISUAL.muted }}>
           <Trash2 size={12} aria-hidden />
         </button>
       </div>
     </div>
   )
+}
+
+function formatQuickPlaceholder(date: string): string {
+  const parsed = parseYmd(date)
+  return `${parsed.getUTCMonth() + 1}/${parsed.getUTCDate()} 빠른 추가 — Enter`
 }
 
 function DeleteCalendarDialog({ item, deleting, error, onOpenChange, onConfirm }: {
