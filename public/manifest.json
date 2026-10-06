@@ -1,7 +1,7 @@
 {
-  "name": "Yohan OS",
-  "short_name": "YohanOS",
-  "description": "개인 지식·맥락·자동화 대시보드",
+  "name": "요한 관제탑",
+  "short_name": "관제탑",
+  "description": "로컬 달력·할 일·프로젝트 한눈",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0f172a",

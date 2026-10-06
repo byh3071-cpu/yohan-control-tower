@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { useTheme } from "@/components/theme-provider"
 import { cn } from "@/lib/utils"
 import type { Stats } from "@/lib/types"
+import { PRODUCT_NAME_SHORT } from "@/lib/product"
 
 interface HeaderProps {
   onOpenSearch: () => void
@@ -44,7 +45,7 @@ export function Header({ onOpenSearch, onOpenKnowledgeReview, onOpenMobileNav, s
         <div className="w-7 h-7 rounded-lg bg-foreground flex items-center justify-center shrink-0">
           <span className="text-background font-bold text-sm">Y</span>
         </div>
-        <span className="font-semibold text-sm tracking-tight truncate max-w-[5.5rem] min-[400px]:max-w-none">Yohan OS</span>
+        <span className="font-semibold text-sm tracking-tight truncate max-w-[5.5rem] min-[400px]:max-w-none">{PRODUCT_NAME_SHORT}</span>
       </div>
 
       <button

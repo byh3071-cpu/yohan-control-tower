@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { Database, Inbox, RefreshCw, Settings2 } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import type { StatusResponse, IngestSummary, QueryResponse, CollectionName } from '@/lib/vector/types'
+import { PRODUCT_NAME_SHORT } from '@/lib/product'
 import { sourcesByTier } from '@/lib/vector/sources'
 import CollectionStatus from '@/components/vector/collection-status'
 import IngestButton from '@/components/vector/ingest-button'
@@ -148,7 +149,7 @@ export function VectorPanel({ onOpenReview }: { onOpenReview?: () => void } = {}
           </button>
         ) : (
           <Link href="/" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-foreground px-4 text-xs font-semibold text-background">
-            <Inbox size={15} aria-hidden /> Yohan OS로 돌아가기
+            <Inbox size={15} aria-hidden /> {PRODUCT_NAME_SHORT}으로 돌아가기
           </Link>
         )}
       </header>
