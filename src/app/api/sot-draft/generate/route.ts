@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 
+import { isSameOriginRequest } from "@/lib/inbox-controller"
 import { loadBrainEnv } from "@/lib/paths"
 
 export const dynamic = "force-dynamic"
@@ -89,6 +90,10 @@ function stubDraft(topic: string, template: NonNullable<SotDraftGenerateBody["te
 }
 
 export async function POST(req: Request) {
+  // 모델 키로 외부 호출을 한다. 다른 웹페이지가 로컬 서버로 보내는 단순 POST 를 막는다.
+  if (!isSameOriginRequest(req)) {
+    return NextResponse.json({ ok: false, error: "same_origin_required" }, { status: 403 })
+  }
   let body: unknown
   try {
     body = await req.json()
