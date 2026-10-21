@@ -3,6 +3,7 @@ import { existsSync } from "node:fs"
 import { mkdir, writeFile } from "node:fs/promises"
 import { join } from "node:path"
 import { clearDocsCache } from "@/lib/docs-cache"
+import { isSameOriginRequest } from "@/lib/inbox-controller"
 import { getMemoryDir } from "@/lib/paths"
 
 export const dynamic = "force-dynamic"
@@ -95,6 +96,10 @@ ${domainLine}---
 }
 
 export async function POST(req: Request) {
+  // brain 에 파일을 쓰는 통로다. 다른 웹페이지가 로컬 서버로 보내는 단순 POST 를 막는다.
+  if (!isSameOriginRequest(req)) {
+    return NextResponse.json({ error: "로컬 same-origin 쓰기만 허용합니다." }, { status: 403 })
+  }
   let body: unknown
   try {
     body = await req.json()
